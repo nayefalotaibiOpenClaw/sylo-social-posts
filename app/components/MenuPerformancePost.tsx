@@ -3,7 +3,8 @@ import EditableText from './EditableText';
 import DraggableWrapper from './DraggableWrapper';
 import { useEditMode, useAspectRatio } from './EditContext';
 import { useTheme } from './ThemeContext';
-import { Command, TrendingUp, PieChart } from 'lucide-react';
+import { IPhoneMockup, PostHeader, FloatingCard } from './shared';
+import { TrendingUp, PieChart } from 'lucide-react';
 
 export default function MenuPerformancePost() {
   const isEditMode = useEditMode();
@@ -22,23 +23,13 @@ export default function MenuPerformancePost() {
 
       {/* Content */}
       <div className="relative z-10 w-full h-full flex flex-col p-8">
-        
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <DraggableWrapper id="logo-menu" className="flex items-center gap-3">
-             <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: t.primary }}>
-                <Command size={24} style={{ color: t.accentLime }} strokeWidth={2.5} />
-             </div>
-             <div className="flex flex-col leading-none">
-                <span className="font-black text-xl tracking-tight" style={{ color: t.primary }}>SYLO</span>
-                <span className="text-[9px] font-bold uppercase tracking-widest mt-1" style={{ color: t.accent }}>ANALYTICS</span>
-             </div>
-          </DraggableWrapper>
-          <DraggableWrapper id="badge-menu" className="px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg" style={{ backgroundColor: t.primary }}>
-             <TrendingUp size={12} className={`${isEditMode ? '' : 'animate-pulse'}`} style={{ color: t.accentLime }} />
-             <span className="text-[9px] font-black text-white tracking-widest uppercase">MARGIN OPTIMIZER</span>
-          </DraggableWrapper>
-        </div>
+
+        <PostHeader
+          id="menu"
+          subtitle="ANALYTICS"
+          badge={<><TrendingUp size={12} className={isEditMode ? '' : 'animate-pulse'} /> MARGIN OPTIMIZER</>}
+          variant="light"
+        />
 
         {/* Headline */}
         <DraggableWrapper id="headline-menu" className="mt-12 text-right z-30" dir="rtl">
@@ -56,35 +47,24 @@ export default function MenuPerformancePost() {
         <div className="flex-1 flex items-end justify-center relative">
            {/* Ground Shadow */}
            <div className="absolute bottom-16 w-48 h-4 bg-black/10 blur-xl rounded-full"></div>
-           
+
            <div className={`relative z-20 group transform translate-y-24 transition-all duration-500 ${isTall ? 'w-[300px] h-[580px]' : 'w-[260px] h-[360px]'}`}>
-              
-              {/* Hardware Buttons */}
-              <div className="absolute -left-[6px] top-24 w-[3px] h-10 opacity-20 rounded-l-md" style={{ backgroundColor: t.primary }}></div>
-              <div className="absolute -right-[6px] top-32 w-[3px] h-14 opacity-20 rounded-r-md" style={{ backgroundColor: t.primary }}></div>
 
-              {/* iPhone Frame */}
-              <DraggableWrapper id="mockup-menu" className="relative h-full w-full rounded-[42px] border-[6px] overflow-hidden shadow-2xl bg-white z-20" style={{ borderColor: t.primary }}>
-                 <img src="/4.jpg" alt="Analytics" className="w-full h-full object-cover object-top" />
-                 
-                 {/* Glass Reflection Overlays */}
-                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent pointer-events-none"></div>
-                 <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-
-                 {/* Notch */}
-                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 rounded-b-xl z-20" style={{ backgroundColor: t.primary }}></div>
+              <DraggableWrapper id="mockup-menu" className="relative h-full w-full z-20">
+                 <IPhoneMockup src="/4.jpg" alt="Analytics" notch="notch" />
               </DraggableWrapper>
 
               {/* Floating Stat Card */}
-              <DraggableWrapper id="stat-card-menu" className={`absolute -right-8 top-12 bg-white p-3 rounded-2xl shadow-xl flex items-center gap-4 border-2 z-30 ${isEditMode ? '' : 'animate-bounce-slow transform -rotate-2'}`} style={{ borderColor: t.primaryLight }}>
-                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: t.primary, color: t.accentLime }}>
-                    <PieChart size={20} />
-                 </div>
-                 <div className="flex flex-col leading-none">
-                    <span className="text-[8px] text-gray-400 font-bold uppercase mb-1 leading-none">Profit Margin</span>
-                    <span className="text-lg font-black" style={{ color: t.primary }}>80.00%</span>
-                 </div>
-              </DraggableWrapper>
+              <FloatingCard
+                id="stat-card-menu"
+                icon={<PieChart size={20} style={{ color: t.accentLime }} />}
+                label="Profit Margin"
+                value="80.00%"
+                className="absolute -right-8 top-12"
+                rotate={-2}
+                animation="animate-bounce-slow"
+                borderColor={t.primaryLight}
+              />
            </div>
         </div>
 

@@ -3,7 +3,8 @@ import EditableText from './EditableText';
 import DraggableWrapper from './DraggableWrapper';
 import { useEditMode, useAspectRatio } from './EditContext';
 import { useTheme } from './ThemeContext';
-import { Command, RefreshCcw, Boxes, AlertTriangle } from 'lucide-react';
+import { IPhoneMockup, PostHeader } from './shared';
+import { RefreshCcw, Boxes, AlertTriangle } from 'lucide-react';
 
 export default function InventoryStockPost() {
   const isEditMode = useEditMode();
@@ -21,23 +22,13 @@ export default function InventoryStockPost() {
 
       {/* Content */}
       <div className="relative z-10 w-full h-full flex flex-col p-8">
-        
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <DraggableWrapper id="logo-inv" className="flex items-center gap-3">
-             <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: t.accentLime }}>
-                <Command size={24} style={{ color: t.primary }} strokeWidth={2.5} />
-             </div>
-             <div className="flex flex-col leading-none">
-                <span className="font-black text-xl tracking-tight" style={{ color: t.primaryLight }}>SYLO</span>
-                <span className="text-[9px] font-bold uppercase tracking-widest mt-1" style={{ color: t.accentLight }}>INVENTORY AI</span>
-             </div>
-          </DraggableWrapper>
-          <DraggableWrapper id="badge-inv" className="px-4 py-1.5 border rounded-full flex items-center gap-2" style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }}>
-             <RefreshCcw size={12} className={`${isEditMode ? '' : 'animate-spin-slow'}`} style={{ color: t.accentLime }} />
-             <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: t.primaryLight }}>AUTO-SYNC ON</span>
-          </DraggableWrapper>
-        </div>
+
+        <PostHeader
+          id="inv"
+          subtitle="INVENTORY AI"
+          badge={<><RefreshCcw size={12} className={`${isEditMode ? '' : 'animate-spin-slow'}`} /> AUTO-SYNC ON</>}
+          variant="dark"
+        />
 
         {/* Headline */}
         <DraggableWrapper id="headline-inv" className="mt-8 text-center z-30" dir="rtl">
@@ -53,22 +44,11 @@ export default function InventoryStockPost() {
         {/* iPhone Mockup (Center) */}
         <div className="flex-1 flex items-center justify-center relative mt-4">
            <div className="absolute bottom-4 w-48 h-4 bg-black/40 blur-xl rounded-full"></div>
-           
-           <div className={`relative z-20 transition-all duration-500 ${isTall ? 'w-[280px] h-[540px]' : 'w-[230px] h-[330px]'} transform translate-y-4`}>
-              
-              {/* Hardware Buttons */}
-              <div className="absolute -left-[6px] top-16 w-[3px] h-10 rounded-l-md opacity-30" style={{ backgroundColor: t.border }}></div>
-              <div className="absolute -right-[6px] top-24 w-[3px] h-14 rounded-r-md opacity-30" style={{ backgroundColor: t.border }}></div>
 
-              {/* iPhone Frame */}
-              <DraggableWrapper id="mockup-inv" className="absolute inset-0 rounded-[40px] border-[6px] shadow-2xl overflow-hidden z-20" style={{ backgroundColor: t.primaryDark, borderColor: t.border }}>
-                 <div className="absolute inset-0 bg-white">
-                    <img src="/3.jpg" alt="Inventory" className="w-full h-full object-cover object-top" />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent pointer-events-none"></div>
-                    <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-                 </div>
-                 {/* Notch */}
-                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 rounded-b-xl z-20" style={{ backgroundColor: t.primaryDark }}></div>
+           <div className={`relative z-20 transition-all duration-500 ${isTall ? 'w-[280px] h-[540px]' : 'w-[230px] h-[330px]'} transform translate-y-4`}>
+
+              <DraggableWrapper id="mockup-inv" className="absolute inset-0 z-20">
+                 <IPhoneMockup src="/3.jpg" alt="Inventory" notch="notch" />
               </DraggableWrapper>
 
               {/* Floating Alert Card */}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef } from "react";
-import { LayoutGrid, List, Sparkles, Palette, ArrowUpDown } from "lucide-react";
+import { LayoutGrid, List, Sparkles, Palette, ArrowUpDown, Pencil } from "lucide-react";
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext } from "./components/EditContext";
 import Link from "next/link";
 import SummerOfferPost from "./components/SummerOffer";
@@ -32,9 +32,15 @@ import TableOrderingPost from "./components/TableOrderingPost";
 import MenuManagementPost from "./components/MenuManagementPost";
 import DashboardOverviewPost from "./components/DashboardOverviewPost";
 import ReportsExportPost from "./components/ReportsExportPost";
+import ProfitCenterPost from "./components/ProfitCenterPost";
+import SmartWorkflowsPost from "./components/SmartWorkflowsPost";
+import OnlineOrderingPost from "./components/OnlineOrderingPost";
 import PostWrapper from "./components/PostWrapper";
 
 const POST_REGISTRY: { id: string; filename: string; component: React.ComponentType }[] = [
+  { id: "profit-center", filename: "profit-center", component: ProfitCenterPost },
+  { id: "smart-workflows", filename: "smart-workflows", component: SmartWorkflowsPost },
+  { id: "online-ordering", filename: "online-ordering", component: OnlineOrderingPost },
   { id: "table-ordering", filename: "table-ordering", component: TableOrderingPost },
   { id: "menu-management", filename: "menu-management", component: MenuManagementPost },
   { id: "dashboard-overview", filename: "dashboard-overview", component: DashboardOverviewPost },
@@ -67,7 +73,7 @@ const POST_REGISTRY: { id: string; filename: string; component: React.ComponentT
 
 export default function Home() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const editMode = true;
+  const [editMode, setEditMode] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<AspectRatioType>('1:1');
   const [gridCols, setGridCols] = useState(3);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -110,6 +116,17 @@ export default function Home() {
             <Palette size={16} />
             Theme
           </Link>
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border shadow-sm transition-all ${
+              editMode
+                ? 'bg-yellow-400 text-yellow-900 border-yellow-500'
+                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Pencil size={16} />
+            {editMode ? 'Editing' : 'Edit Mode'}
+          </button>
           <button
             onClick={() => setReorderMode(!reorderMode)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border shadow-sm transition-all ${
