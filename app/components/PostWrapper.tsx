@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { toPng } from "html-to-image";
 
@@ -28,7 +28,9 @@ interface PostWrapperProps {
 
 export default function PostWrapper({ children, filename = "post", aspectRatio = "1:1" }: PostWrapperProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+  const [scale, setScale] = useState(1);
 
   const handleDownload = async () => {
     if (!ref.current) return;
@@ -50,15 +52,33 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
   };
 
   const size = SIZES[aspectRatio] || SIZES["1:1"];
+  const ar = ASPECT_RATIOS[aspectRatio] || ASPECT_RATIOS["1:1"];
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setScale(entry.contentRect.width / size.width);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [size.width]);
 
   return (
-    <div className="relative group mx-auto">
+    <div ref={containerRef} className="relative group overflow-hidden rounded-xl" style={{ width: '100%', aspectRatio: ar }}>
       <div
-        ref={ref}
-        className="overflow-hidden rounded-xl post-wrapper"
-        style={{ width: size.width, height: size.height }}
+        className="absolute top-0 left-0"
+        style={{ width: size.width, height: size.height, transform: `scale(${scale})`, transformOrigin: 'top left' }}
       >
-        {children}
+        <div
+          ref={ref}
+          className="overflow-hidden rounded-xl post-wrapper"
+          style={{ width: size.width, height: size.height }}
+        >
+          {children}
+        </div>
       </div>
       <button
         onClick={handleDownload}
