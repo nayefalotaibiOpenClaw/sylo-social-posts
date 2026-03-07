@@ -14,11 +14,6 @@ interface IPhoneMockupProps {
 /**
  * Reusable iPhone mockup frame.
  * Renders at 100% of its parent container — wrap in a sized div to control dimensions.
- *
- * Usage:
- *   <div className="w-[230px] h-[360px]">
- *     <IPhoneMockup src="/1.jpg" />
- *   </div>
  */
 export default function IPhoneMockup({
   src,
@@ -31,9 +26,9 @@ export default function IPhoneMockup({
   return (
     <div className={`relative w-full h-full ${className}`}>
       {/* Hardware Buttons */}
-      <div className="absolute -left-[7px] top-[20%] w-[3px] h-[10%] rounded-l-md" style={{ backgroundColor: t.border }} />
-      <div className="absolute -left-[7px] top-[33%] w-[3px] h-[10%] rounded-l-md" style={{ backgroundColor: t.border }} />
-      <div className="absolute -right-[7px] top-[27%] w-[3px] h-[13%] rounded-r-md" style={{ backgroundColor: t.border }} />
+      <div className="absolute -left-[7px] top-[20%] w-[3px] h-[10%] rounded-l-md opacity-30" style={{ backgroundColor: t.border }} />
+      <div className="absolute -left-[7px] top-[33%] w-[3px] h-[10%] rounded-l-md opacity-30" style={{ backgroundColor: t.border }} />
+      <div className="absolute -right-[7px] top-[27%] w-[3px] h-[13%] rounded-r-md opacity-30" style={{ backgroundColor: t.border }} />
 
       {/* iPhone Frame */}
       <div
@@ -48,11 +43,14 @@ export default function IPhoneMockup({
           <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
         </div>
 
-        {/* Notch / Dynamic Island */}
+        {/* Notch / Dynamic Island - Adjusted to be more proportional */}
         {notch === "pill" ? (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-full z-30" />
+          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-1/3 h-5 bg-black rounded-full z-30 flex items-center justify-end px-2 gap-1">
+             <div className="w-1 h-1 rounded-full bg-blue-500/20" />
+             <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+          </div>
         ) : (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 rounded-b-xl z-30" style={{ backgroundColor: t.primaryDark }} />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-4 rounded-b-xl z-30" style={{ backgroundColor: t.primaryDark }} />
         )}
       </div>
     </div>

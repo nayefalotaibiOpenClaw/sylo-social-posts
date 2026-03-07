@@ -37,8 +37,8 @@ export default function QualityControlPost() {
 
         {/* Visual area */}
         <div className="flex-1 flex items-center gap-6 relative mt-4">
-          <DraggableWrapper id="mockup-quality" className={`relative shrink-0 z-20 transition-all duration-500 ${isTall ? 'w-[260px] h-[500px]' : 'w-[200px] h-[320px]'}`}>
-            <IPhoneMockup src="/pos-screen.jpg" />
+          <DraggableWrapper id="mockup-quality" className={`relative shrink-0 z-20 transition-all duration-500 ${isTall ? 'w-[300px] h-[580px]' : 'w-[230px] h-[440px]'}`}>
+            <IPhoneMockup src="/1.jpg" />
           </DraggableWrapper>
 
           <div className="flex flex-col gap-4 flex-1" dir="rtl">
