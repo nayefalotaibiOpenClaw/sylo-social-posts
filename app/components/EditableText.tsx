@@ -26,7 +26,7 @@ export default function EditableText({
     <Component
       contentEditable
       suppressContentEditableWarning
-      className={`${className} outline-none border-b border-dashed border-[#B7FF5B]/50 hover:border-[#B7FF5B] transition-colors cursor-text select-text`}
+      className={`${className} outline-none border-b border-dashed border-transparent hover:border-[#B7FF5B]/50 focus:border-[#B7FF5B] transition-colors cursor-text select-text`}
       style={style}
       onClick={(e) => e.stopPropagation()} // Prevent drag start when clicking to edit
       onPointerDown={(e) => e.stopPropagation()} // Critical for framer-motion drag
