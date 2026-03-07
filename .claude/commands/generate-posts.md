@@ -42,6 +42,34 @@ import { IPhoneMockup } from './shared';
 </div>
 ```
 Props: `src` (required), `alt`, `notch` ("pill" | "notch"), `className`
+- Upload button appears automatically when parent DraggableWrapper is selected
+
+#### `<IPadMockup src="/screenshot.jpg" />`
+Renders a complete iPad frame (bezels, buttons, camera, home indicator). Fills its parent container — wrap in a sized div:
+```tsx
+import { IPadMockup } from './shared';
+// Landscape (default):
+<div className={isTall ? 'w-full h-[300px]' : 'w-[320px] h-[220px]'}>
+  <IPadMockup src="/pos-screen.jpg" />
+</div>
+// Portrait:
+<div className={isTall ? 'w-[260px] h-[360px]' : 'w-[200px] h-[280px]'}>
+  <IPadMockup src="/pos-screen.jpg" orientation="portrait" />
+</div>
+```
+Props: `src` (required), `alt`, `orientation` ("landscape" | "portrait"), `className`
+- Upload button appears automatically when parent DraggableWrapper is selected
+
+#### `<DesktopMockup src="/screenshot.jpg" />`
+Renders a macOS browser window (traffic lights, address bar, stand). Fills its parent container — wrap in a sized div:
+```tsx
+import { DesktopMockup } from './shared';
+<div className={isTall ? 'w-full h-[350px]' : 'w-[360px] h-[240px]'}>
+  <DesktopMockup src="/pos-screen.jpg" url="app.sylo.com" />
+</div>
+```
+Props: `src` (required), `alt`, `trafficLights` (boolean, default true), `url` (string for address bar), `className`
+- Upload button appears automatically when parent DraggableWrapper is selected
 
 #### `<PostHeader id="mypost" subtitle="ANALYTICS" badge={...} />`
 Renders the SYLO logo + subtitle + optional badge:
