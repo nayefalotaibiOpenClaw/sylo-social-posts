@@ -1,14 +1,16 @@
 import React from 'react';
 import EditableText from './EditableText';
 import { Truck, CheckCircle } from 'lucide-react';
+import { useTheme } from './ThemeContext';
 
 export default function DeliveryIntegrationPost() {
+  const t = useTheme();
   return (
-      <div className="relative w-full max-w-[600px] aspect-square shadow-2xl rounded-xl overflow-hidden mx-auto bg-[#F9FAFB] text-[#1B4332] font-sans">
+      <div className="relative w-full max-w-[600px] aspect-square shadow-2xl rounded-xl overflow-hidden mx-auto font-sans" style={{ backgroundColor: t.primaryLight, color: t.primary }}>
         
             {/* Background Map Pattern */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none" 
-                 style={{backgroundImage: 'radial-gradient(#1B4332 0.5px, transparent 0.5px)', backgroundSize: '10px 10px'}}>
+            <div className="absolute inset-0 opacity-10 pointer-events-none"
+                 style={{backgroundImage: `radial-gradient(${t.primary} 0.5px, transparent 0.5px)`, backgroundSize: '10px 10px'}}>
             </div>
             
             {/* Road/Path Graphic */}
@@ -24,23 +26,23 @@ export default function DeliveryIntegrationPost() {
                 
                 {/* Header */}
                 <div className="text-center mt-4 bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-gray-100">
-                    <EditableText as="h2" className="text-4xl sm:text-5xl font-black mb-1 leading-tight text-[#1B4332]">شاشة وحدة</EditableText>
-                    <EditableText as="p" className="text-[#40916C] text-lg sm:text-xl font-bold">لكل طلبات التوصيل</EditableText>
+                    <EditableText as="h2" className="text-4xl sm:text-5xl font-black mb-1 leading-tight" style={{ color: t.primary }}>شاشة وحدة</EditableText>
+                    <EditableText as="p" className="text-lg sm:text-xl font-bold" style={{ color: t.accent }}>لكل طلبات التوصيل</EditableText>
                 </div>
 
                 {/* Central Visual - Merging Logos */}
                 <div className="flex-1 w-full flex items-center justify-center relative mt-8">
                     
                     {/* Sylo Tablet - The Destination */}
-                    <div className="relative z-20 w-48 h-32 bg-[#1B4332] rounded-xl shadow-2xl flex items-center justify-center border-b-8 border-[#0D241C] transform scale-110">
+                    <div className="relative z-20 w-48 h-32 rounded-xl shadow-2xl flex items-center justify-center border-b-8 transform scale-110" style={{ backgroundColor: t.primary, borderColor: t.primaryDark }}>
                          <div className="w-full h-full bg-white m-1 rounded-lg flex flex-col items-center justify-center gap-2 overflow-hidden relative">
                              {/* Incoming Orders Animation */}
                              <div className="absolute top-2 right-2 flex gap-1 animate-pulse">
                                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                              </div>
-                             <span className="text-3xl font-black text-[#1B4332]">SYLO</span>
-                             <div className="bg-[#EAF4EE] px-3 py-1 rounded text-xs font-bold text-[#40916C]">
+                             <span className="text-3xl font-black" style={{ color: t.primary }}>SYLO</span>
+                             <div className="px-3 py-1 rounded text-xs font-bold" style={{ backgroundColor: t.primaryLight, color: t.accent }}>
                                  +5 طلبات جديدة
                              </div>
                          </div>
@@ -68,14 +70,14 @@ export default function DeliveryIntegrationPost() {
 
                     {/* Connection Lines (SVG) */}
                     <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 opacity-50">
-                        <path d="M100 250 Q 180 300 220 300" fill="none" stroke="#1B4332" strokeWidth="2" strokeDasharray="4 4" />
-                        <path d="M500 250 Q 420 300 380 300" fill="none" stroke="#1B4332" strokeWidth="2" strokeDasharray="4 4" />
+                        <path d="M100 250 Q 180 300 220 300" fill="none" stroke={t.primary} strokeWidth="2" strokeDasharray="4 4" />
+                        <path d="M500 250 Q 420 300 380 300" fill="none" stroke={t.primary} strokeWidth="2" strokeDasharray="4 4" />
                     </svg>
 
                 </div>
 
                 {/* Footer Benefit */}
-                <div className="flex items-center gap-2 bg-[#EAF4EE] px-4 py-2 rounded-full text-[#1B4332] text-sm font-bold mt-4 shadow-sm">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold mt-4 shadow-sm" style={{ backgroundColor: t.primaryLight, color: t.primary }}>
                     <CheckCircle size={16} />
                     <EditableText>توقف عن استخدام ٥ تابلتات</EditableText>
                 </div>

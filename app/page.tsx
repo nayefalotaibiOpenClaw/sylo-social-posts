@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LayoutGrid, List, Pencil, Sparkles, Palette } from "lucide-react";
 import { EditContext, AspectRatioContext, AspectRatioType } from "./components/EditContext";
+import { ThemeProvider } from "./components/ThemeContext";
 import Link from "next/link";
 import SummerOfferPost from "./components/SummerOffer";
 import RelaxPost from "./components/RelaxPost";
@@ -105,6 +106,7 @@ export default function Home() {
       </div>
 
       {/* Content Grid/List */}
+      <ThemeProvider>
       <EditContext.Provider value={editMode}>
       <AspectRatioContext.Provider value={aspectRatio}>
       <div className={`
@@ -136,6 +138,7 @@ export default function Home() {
       </div>
       </AspectRatioContext.Provider>
       </EditContext.Provider>
+      </ThemeProvider>
     </main>
   );
 }

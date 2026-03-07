@@ -1,13 +1,15 @@
 import React from 'react';
 import EditableText from './EditableText';
+import { useTheme } from './ThemeContext';
 import { Brain, Sparkles, TrendingUp, Lightbulb, Zap } from 'lucide-react';
 
 export default function AIInsightsPost() {
+  const t = useTheme();
   return (
-      <div className="relative w-full max-w-[600px] aspect-square shadow-2xl rounded-xl overflow-hidden mx-auto bg-[#1B4332] text-white font-sans">
+      <div className="relative w-full max-w-[600px] aspect-square shadow-2xl rounded-xl overflow-hidden mx-auto text-white font-sans" style={{ backgroundColor: t.primary }}>
 
             {/* Background Glow */}
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-[#52B788]/20 rounded-full blur-[120px]"></div>
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full blur-[120px]" style={{ backgroundColor: t.accentLight + '33' }}></div>
             <div className="absolute bottom-0 right-0 w-[200px] h-[200px] bg-purple-500/10 rounded-full blur-[80px]"></div>
 
             {/* Content Container */}
@@ -16,9 +18,9 @@ export default function AIInsightsPost() {
                 {/* Header */}
                 <div className="text-center mt-6">
                     <div className="flex items-center justify-center gap-2 mb-3">
-                        <Sparkles size={20} className="text-[#FCD34D]" fill="#FCD34D" />
-                        <EditableText className="text-xs font-bold tracking-widest text-[#FCD34D] uppercase">Powered by AI</EditableText>
-                        <Sparkles size={20} className="text-[#FCD34D]" fill="#FCD34D" />
+                        <Sparkles size={20} style={{ color: t.accentGold }} fill={t.accentGold} />
+                        <EditableText className="text-xs font-bold tracking-widest uppercase" style={{ color: t.accentGold }}>Powered by AI</EditableText>
+                        <Sparkles size={20} style={{ color: t.accentGold }} fill={t.accentGold} />
                     </div>
                     <h2 className="text-4xl sm:text-5xl font-black mb-2 leading-tight">
                         <EditableText className="text-[#52B788]">قرارات</EditableText> أذكى

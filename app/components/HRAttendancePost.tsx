@@ -1,13 +1,15 @@
 import React from 'react';
 import EditableText from './EditableText';
 import { UserCheck, Clock, CalendarDays, CheckCircle } from 'lucide-react';
+import { useTheme } from './ThemeContext';
 
 export default function HRAttendancePost() {
+  const t = useTheme();
   return (
-      <div className="relative w-full max-w-[600px] aspect-square shadow-2xl rounded-xl overflow-hidden mx-auto bg-[#F9FAFB] text-[#1B4332] font-sans">
+      <div className="relative w-full max-w-[600px] aspect-square shadow-2xl rounded-xl overflow-hidden mx-auto font-sans" style={{ backgroundColor: t.primaryLight, color: t.primary }}>
             {/* Background Grid */}
-            <div className="absolute inset-0 opacity-5 pointer-events-none" 
-                 style={{backgroundImage: 'linear-gradient(#1B4332 0.5px, transparent 0.5px), linear-gradient(90deg, #1B4332 0.5px, transparent 0.5px)', backgroundSize: '20px 20px'}}>
+            <div className="absolute inset-0 opacity-5 pointer-events-none"
+                 style={{backgroundImage: `linear-gradient(${t.primary} 0.5px, transparent 0.5px), linear-gradient(90deg, ${t.primary} 0.5px, transparent 0.5px)`, backgroundSize: '20px 20px'}}>
             </div>
 
             {/* Content Container */}
