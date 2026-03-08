@@ -36,7 +36,7 @@ export default function LiveTrackingPost() {
           <div className="absolute bottom-2 left-16 w-56 h-5 bg-black/40 blur-xl rounded-full" />
 
           <DraggableWrapper
-            id="mockup-tracking"
+            id="mockup-tracking" variant="mockup"
             className={`relative z-20 ${isTall ? 'w-[270px] h-[520px]' : 'w-[210px] h-[370px]'}`}
           >
             <IPhoneMockup src="/3.jpg" alt="Live Tracking" />

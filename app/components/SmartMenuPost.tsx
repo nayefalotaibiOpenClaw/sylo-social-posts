@@ -35,7 +35,7 @@ export default function SmartMenuPost() {
         <div className="flex-1 flex items-end justify-center relative mt-4">
           <div className="absolute bottom-8 w-52 h-4 bg-black/30 blur-xl rounded-full" />
           <DraggableWrapper
-            id="mockup-smartmenu"
+            id="mockup-smartmenu" variant="mockup"
             className={`relative z-20 ${isTall ? 'w-[280px] h-[540px]' : 'w-[220px] h-[380px]'}`}
           >
             <IPhoneMockup src="/4.jpg" alt="Smart Menu" />

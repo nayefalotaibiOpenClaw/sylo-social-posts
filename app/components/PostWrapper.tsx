@@ -53,6 +53,9 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
     }
   };
 
+  const size = SIZES[aspectRatio] || SIZES["1:1"];
+  const ar = ASPECT_RATIOS[aspectRatio] || ASPECT_RATIOS["1:1"];
+
   const handleDownloadVideo = async () => {
     if (!ref.current) return;
     setRecording(true);
@@ -64,12 +67,12 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
     try {
       const { Muxer, ArrayBufferTarget } = await import("mp4-muxer");
 
-      const fps = 30; // Increased for smoothness
+      const fps = 30;
       const duration = 4;
       const totalFrames = fps * duration;
-      const pixelRatio = 1.5; // Slightly reduced for performance during recording
-      const w = size.width * pixelRatio;
-      const h = size.height * pixelRatio;
+      const pxRatio = 1.5;
+      const w = size.width * pxRatio;
+      const h = size.height * pxRatio;
 
       const muxer = new Muxer({
         target: new ArrayBufferTarget(),
@@ -103,7 +106,7 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
         await new Promise(r => setTimeout(r, 1000 / fps));
 
         const frameCanvas = await toCanvas(ref.current, {
-          pixelRatio,
+          pixelRatio: pxRatio,
           cacheBust: true,
           // Optimization: skip features that slow down per-frame capture
           skipFonts: true, 
@@ -142,9 +145,6 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
       setRecordProgress(0);
     }
   };
-
-  const size = SIZES[aspectRatio] || SIZES["1:1"];
-  const ar = ASPECT_RATIOS[aspectRatio] || ASPECT_RATIOS["1:1"];
 
   useEffect(() => {
     const el = containerRef.current;

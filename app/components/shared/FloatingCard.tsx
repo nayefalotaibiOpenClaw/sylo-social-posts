@@ -46,6 +46,7 @@ export default function FloatingCard({
   return (
     <DraggableWrapper
       id={id}
+      variant="card"
       className={`p-3 rounded-2xl shadow-2xl flex items-center gap-3 border-2 z-30 ${animation} ${className}`}
       style={{
         backgroundColor: t.primaryLight,

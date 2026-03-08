@@ -44,7 +44,7 @@ export default function PostFooter({
       style={!isDark ? { borderColor: t.primary + "1a" } : undefined}
       dir="rtl"
     >
-      <DraggableWrapper id={`footer-text-${id}`} className="flex flex-col gap-1">
+      <DraggableWrapper id={`footer-text-${id}`} variant="text" className="flex flex-col gap-1">
         <EditableText
           as="span"
           className="text-[9px] font-black uppercase tracking-[0.3em]"
@@ -63,6 +63,7 @@ export default function PostFooter({
       {icon && (
         <DraggableWrapper
           id={`footer-icon-${id}`}
+          variant="card"
           className="w-12 h-12 rounded-2xl flex items-center justify-center"
           style={{
             backgroundColor: isDark ? t.accentLime : t.primary,

@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import { useTheme } from "../ThemeContext";
-import { useUploadSignal } from "../EditContext";
+import { useUploadSignal, useParentDragging } from "../EditContext";
 
 interface IPadMockupProps {
   src: string;
@@ -25,6 +25,7 @@ export default function IPadMockup({
 }: IPadMockupProps) {
   const t = useTheme();
   const uploadSignal = useUploadSignal();
+  const dragging = useParentDragging();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [customSrc, setCustomSrc] = useState<string | null>(null);
 
@@ -64,7 +65,7 @@ export default function IPadMockup({
 
       {/* iPad Frame */}
       <div
-        className="absolute inset-0 rounded-[20px] border-[8px] shadow-2xl overflow-hidden"
+        className={`absolute inset-0 rounded-[20px] border-[8px] overflow-hidden will-change-transform transition-shadow ${dragging ? 'shadow-none' : 'shadow-2xl'}`}
         style={{ backgroundColor: t.primaryDark, borderColor: t.border }}
       >
         {/* Screen Content */}

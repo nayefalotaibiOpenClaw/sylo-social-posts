@@ -102,7 +102,11 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8" onClick={() => editMode && setSelectedId(null)}>
+    <main className="min-h-screen bg-gray-50 p-8" onClick={(e) => {
+      if (!editMode) return;
+      if ((e.target as HTMLElement).closest?.('[data-toolbar-portal]')) return;
+      setSelectedId(null);
+    }}>
       {/* Controls Header */}
       <div className="max-w-[1920px] mx-auto flex justify-between items-center mb-12">
         <h1 className="text-2xl font-black text-[#1B4332]">Social Media Kit</h1>

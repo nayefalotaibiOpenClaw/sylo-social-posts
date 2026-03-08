@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import { useTheme } from "../ThemeContext";
-import { useUploadSignal } from "../EditContext";
+import { useUploadSignal, useParentDragging } from "../EditContext";
 
 interface DesktopMockupProps {
   src: string;
@@ -21,6 +21,7 @@ export default function DesktopMockup({
 }: DesktopMockupProps) {
   const t = useTheme();
   const uploadSignal = useUploadSignal();
+  const dragging = useParentDragging();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [customSrc, setCustomSrc] = useState<string | null>(null);
 
@@ -43,7 +44,7 @@ export default function DesktopMockup({
     <div className={`relative w-full h-full ${className}`}>
       {/* Laptop Screen Body */}
       <div
-        className="absolute inset-0 rounded-t-2xl border-[10px] border-b-0 shadow-2xl overflow-hidden"
+        className={`absolute inset-0 rounded-t-2xl border-[10px] border-b-0 overflow-hidden will-change-transform transition-shadow ${dragging ? 'shadow-none' : 'shadow-2xl'}`}
         style={{ backgroundColor: t.primaryDark, borderColor: t.border }}
       >
         {/* Screen Content */}
