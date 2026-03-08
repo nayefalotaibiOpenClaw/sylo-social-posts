@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { LayoutGrid, List, Sparkles, Palette, ArrowUpDown, Pencil, Settings, Upload, Image as ImageIcon, X, Check } from "lucide-react";
+import { LayoutGrid, List, Sparkles, Palette, ArrowUpDown, Pencil, Settings, Upload, Image as ImageIcon, X, Check, MousePointer2, Download, Loader2, Code, Eye } from "lucide-react";
+import { toPng } from "html-to-image";
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext } from "./components/EditContext";
 import { useTheme, useSetTheme, Theme, defaultTheme } from "./components/ThemeContext";
+import DynamicPost from "./components/DynamicPost";
 import Link from "next/link";
 import SummerOfferPost from "./components/SummerOffer";
 import RelaxPost from "./components/RelaxPost";
@@ -131,10 +133,54 @@ export default function Home() {
   const [reorderMode, setReorderMode] = useState(false);
   const dragItem = useRef<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
+  const [downloading, setDownloading] = useState(false);
+  const postRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [activeTab, setActiveTab] = useState<SidebarTab>(null);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const currentTheme = useTheme();
   const setTheme = useSetTheme();
+  const [generatePrompt, setGeneratePrompt] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [generatedPosts, setGeneratedPosts] = useState<{ id: string; code: string }[]>([]);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
+
+  const toggleCodeView = (id: string) => {
+    setCodeViewPosts(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const updateGeneratedCode = (id: string, newCode: string) => {
+    setGeneratedPosts(prev => prev.map(p => p.id === id ? { ...p, code: newCode } : p));
+  };
+
+  const handleGenerate = async () => {
+    if (!generatePrompt.trim() || generating) return;
+    setGenerating(true);
+    setGenerateError(null);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: generatePrompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Generation failed');
+      const newId = `generated-${Date.now()}`;
+      setGeneratedPosts(prev => [{ id: newId, code: data.code }, ...prev]);
+      setPostOrder(prev => [newId, ...prev]);
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : 'Generation failed');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const handleDragEnter = useCallback((targetId: string) => {
     if (!dragItem.current || dragItem.current === targetId) return;
@@ -161,6 +207,49 @@ export default function Home() {
     });
     e.target.value = '';
   };
+
+  const togglePostSelection = useCallback((id: string) => {
+    setSelectedPosts(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
+  }, []);
+
+  const handleDownloadSelected = useCallback(async () => {
+    if (selectedPosts.length === 0) return;
+    setDownloading(true);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+
+      for (let i = 0; i < selectedPosts.length; i++) {
+        const id = selectedPosts[i];
+        const container = postRefs.current.get(id);
+        if (!container) continue;
+        const postEl = container.querySelector('.post-wrapper') as HTMLElement;
+        if (!postEl) continue;
+        const dataUrl = await toPng(postEl, {
+          pixelRatio: 2,
+          cacheBust: true,
+          skipFonts: true,
+        });
+        const base64 = dataUrl.split(",")[1];
+        const post = POST_REGISTRY.find(p => p.id === id);
+        zip.file(`${i + 1}-${post?.filename || id}.png`, base64, { base64: true });
+      }
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `posts-${selectedPosts.length}.zip`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download posts:", err);
+    } finally {
+      setDownloading(false);
+    }
+  }, [selectedPosts]);
 
   const panelOpen = activeTab !== null;
 
@@ -211,7 +300,7 @@ export default function Home() {
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Mode</label>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => { setEditMode(!editMode); setReorderMode(false); }}
+                      onClick={() => { setEditMode(!editMode); setReorderMode(false); setSelectMode(false); }}
                       className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border transition-all ${
                         editMode
                           ? 'bg-yellow-400 text-yellow-900 border-yellow-500'
@@ -222,7 +311,7 @@ export default function Home() {
                       Edit
                     </button>
                     <button
-                      onClick={() => { setReorderMode(!reorderMode); setEditMode(false); }}
+                      onClick={() => { setReorderMode(!reorderMode); setEditMode(false); setSelectMode(false); }}
                       className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border transition-all ${
                         reorderMode
                           ? 'bg-[#1B4332] text-white border-[#1B4332]'
@@ -233,6 +322,17 @@ export default function Home() {
                       Reorder
                     </button>
                   </div>
+                  <button
+                    onClick={() => { setSelectMode(!selectMode); setEditMode(false); setReorderMode(false); if (selectMode) setSelectedPosts([]); }}
+                    className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border transition-all mt-2 ${
+                      selectMode
+                        ? 'bg-blue-500 text-white border-blue-600'
+                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    <MousePointer2 size={14} />
+                    Select & Download
+                  </button>
                 </div>
 
                 {/* Aspect Ratio */}
@@ -442,13 +542,50 @@ export default function Home() {
             {/* Generate Panel */}
             {activeTab === 'generate' && (
               <div className="space-y-4">
-                <p className="text-sm text-gray-500">AI-generate new social media posts from your brand config.</p>
-                <Link
-                  href="/generate"
-                  className="block w-full text-center px-4 py-2.5 rounded-lg text-sm font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] transition-colors"
+                <p className="text-sm text-gray-500">Describe the post you want and AI will generate it live.</p>
+                <textarea
+                  value={generatePrompt}
+                  onChange={(e) => setGeneratePrompt(e.target.value)}
+                  placeholder="e.g. A post about our new delivery tracking feature with a phone mockup showing live order status"
+                  className="w-full h-28 px-3 py-2.5 rounded-lg border border-gray-200 text-sm resize-none focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] placeholder:text-gray-500"
+                />
+                <button
+                  onClick={handleGenerate}
+                  disabled={generating || !generatePrompt.trim()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Open Generator
-                </Link>
+                  {generating ? (
+                    <><Loader2 size={16} className="animate-spin" /> Generating...</>
+                  ) : (
+                    <><Sparkles size={16} /> Generate Post</>
+                  )}
+                </button>
+                {generateError && (
+                  <p className="text-xs text-red-500 font-medium">{generateError}</p>
+                )}
+                {generatedPosts.length > 0 && (
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
+                      Generated ({generatedPosts.length})
+                    </label>
+                    <div className="space-y-1.5">
+                      {generatedPosts.map((gp) => (
+                        <div key={gp.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                          <span className="text-xs font-medium text-gray-600 truncate">{gp.id}</span>
+                          <button
+                            onClick={() => {
+                              setGeneratedPosts(prev => prev.filter(p => p.id !== gp.id));
+                              setPostOrder(prev => prev.filter(id => id !== gp.id));
+                            }}
+                            className="text-gray-400 hover:text-red-500 shrink-0"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -479,13 +616,17 @@ export default function Home() {
             gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
           } : undefined}
         >
-            {postOrder.map((id) => {
+            {postOrder.map((id, index) => {
               const post = POST_REGISTRY.find(p => p.id === id);
-              if (!post) return null;
-              const PostComponent = post.component;
+              const generatedPost = generatedPosts.find(gp => gp.id === id);
+              if (!post && !generatedPost) return null;
+              const PostComponent = post?.component;
+              const selectionIndex = selectedPosts.indexOf(id);
+              const isSelected = selectionIndex !== -1;
               return (
                 <div
                   key={id}
+                  ref={(el) => { if (el) postRefs.current.set(id, el); else postRefs.current.delete(id); }}
                   draggable={reorderMode}
                   onDragStart={reorderMode ? (e) => {
                     dragItem.current = id;
@@ -503,17 +644,47 @@ export default function Home() {
                     dragItem.current = null;
                     setDraggingId(null);
                   } : undefined}
+                  onClick={selectMode ? (e) => { e.stopPropagation(); togglePostSelection(id); } : undefined}
                   className="relative"
                   style={{
                     opacity: draggingId === id ? 0.4 : 1,
                     transition: 'opacity 0.2s',
-                    cursor: reorderMode ? 'grab' : undefined,
+                    cursor: reorderMode ? 'grab' : selectMode ? 'pointer' : undefined,
                   }}
                 >
-                  <PostWrapper aspectRatio={aspectRatio} filename={post.filename}>
-                    <PostComponent />
-                  </PostWrapper>
+                  {generatedPost && codeViewPosts.has(id) ? (
+                    <div className="relative w-full rounded-xl overflow-hidden border border-gray-200 bg-[#1e1e1e]" style={{ aspectRatio: aspectRatio.replace(':', ' / ') }}>
+                      <textarea
+                        value={generatedPost.code}
+                        onChange={(e) => updateGeneratedCode(id, e.target.value)}
+                        className="w-full h-full p-4 text-xs font-mono text-green-400 bg-transparent resize-none focus:outline-none leading-relaxed"
+                        spellCheck={false}
+                      />
+                    </div>
+                  ) : (
+                    <PostWrapper aspectRatio={aspectRatio} filename={post?.filename || id}>
+                      {PostComponent ? <PostComponent /> : generatedPost ? <DynamicPost code={generatedPost.code} /> : null}
+                    </PostWrapper>
+                  )}
+                  {generatedPost && (
+                    <button
+                      onClick={() => toggleCodeView(id)}
+                      className="absolute top-3 left-3 z-30 bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-lg shadow-md border border-gray-200 hover:bg-white hover:scale-105 active:scale-95 transition-all"
+                      title={codeViewPosts.has(id) ? 'Show Preview' : 'Show Code'}
+                    >
+                      {codeViewPosts.has(id) ? <Eye size={16} /> : <Code size={16} />}
+                    </button>
+                  )}
                   {reorderMode && <div className="absolute inset-0 z-10 border-2 border-dashed border-transparent hover:border-[#1B4332]/30 transition-colors" />}
+                  {selectMode && (
+                    <div className={`absolute inset-0 z-20 rounded-xl transition-all ${isSelected ? 'ring-4 ring-blue-500 bg-blue-500/10' : 'hover:bg-black/5'}`}>
+                      <div className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center text-sm font-black transition-all ${
+                        isSelected ? 'bg-blue-500 text-white shadow-lg' : 'bg-white/80 backdrop-blur-sm text-gray-400 border-2 border-gray-300'
+                      }`}>
+                        {isSelected ? selectionIndex + 1 : ''}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -523,6 +694,27 @@ export default function Home() {
         </AspectRatioContext.Provider>
         </EditContext.Provider>
       </main>
+
+      {/* Floating download bar */}
+      {selectMode && selectedPosts.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 px-6 py-3 flex items-center gap-4">
+          <span className="text-sm font-bold text-gray-700">{selectedPosts.length} selected</span>
+          <button
+            onClick={() => setSelectedPosts([])}
+            className="text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            Clear
+          </button>
+          <button
+            onClick={handleDownloadSelected}
+            disabled={downloading}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-blue-500 text-white hover:bg-blue-600 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {downloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            Download All
+          </button>
+        </div>
+      )}
     </div>
   );
 }
