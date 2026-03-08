@@ -38,6 +38,11 @@ body {
   animation: none !important;
 }
 
+/* Ensure animations are triggered/restarted when recording starts */
+.recording-active * {
+  animation-play-state: running !important;
+}
+
 @layer utilities {
   .animate-spin-slow {
     animation: spin 12s linear infinite;
@@ -54,19 +59,53 @@ body {
   .animate-float-slow {
     animation: float 6s ease-in-out infinite;
   }
+  .animate-reveal {
+    animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-zoom-in {
+    animation: zoomIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .animate-slide-left {
+    animation: slideLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-slide-right {
+    animation: slideRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-blur-in {
+    animation: blurIn 1s ease-out forwards;
+  }
+  .animate-stagger-1 { animation-delay: 0.1s; }
+  .animate-stagger-2 { animation-delay: 0.2s; }
+  .animate-stagger-3 { animation-delay: 0.3s; }
+  .animate-stagger-4 { animation-delay: 0.4s; }
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
-  50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes blurIn {
+  from { opacity: 0; filter: blur(10px); transform: scale(1.1); }
+  to { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

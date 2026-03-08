@@ -40,7 +40,7 @@ export default function DashboardOverviewPost() {
         {/* Desktop Mockup */}
         <div className="flex-1 flex items-center justify-center relative mt-4">
           <DraggableWrapper id="mockup-dashboard" className={`relative z-20 transition-all duration-500 ${isTall ? 'w-full h-[320px]' : 'w-[360px] h-[240px]'}`}>
-            <DesktopMockup src="/1.jpg" url="dashboard.sylo.com" />
+            <DesktopMockup src="/1.jpg" />
           </DraggableWrapper>
 
           <FloatingCard

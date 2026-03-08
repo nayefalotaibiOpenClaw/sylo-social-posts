@@ -18,3 +18,7 @@ export const useSetSelectedId = () => useContext(SetSelectedIdContext);
 // Whether the current DraggableWrapper parent is selected
 export const ParentSelectedContext = createContext(false);
 export const useParentSelected = () => useContext(ParentSelectedContext);
+
+// Upload signal — increments when toolbar upload button is clicked
+export const UploadSignalContext = createContext(0);
+export const useUploadSignal = () => useContext(UploadSignalContext);

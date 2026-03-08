@@ -35,9 +35,15 @@ import ReportsExportPost from "./components/ReportsExportPost";
 import ProfitCenterPost from "./components/ProfitCenterPost";
 import SmartWorkflowsPost from "./components/SmartWorkflowsPost";
 import OnlineOrderingPost from "./components/OnlineOrderingPost";
+import SmartMenuPost from "./components/SmartMenuPost";
+import DualScreenPost from "./components/DualScreenPost";
+import LiveTrackingPost from "./components/LiveTrackingPost";
 import PostWrapper from "./components/PostWrapper";
 
 const POST_REGISTRY: { id: string; filename: string; component: React.ComponentType }[] = [
+  { id: "smart-menu", filename: "smart-menu", component: SmartMenuPost },
+  { id: "dual-screen", filename: "dual-screen", component: DualScreenPost },
+  { id: "live-tracking", filename: "live-tracking", component: LiveTrackingPost },
   { id: "profit-center", filename: "profit-center", component: ProfitCenterPost },
   { id: "smart-workflows", filename: "smart-workflows", component: SmartWorkflowsPost },
   { id: "online-ordering", filename: "online-ordering", component: OnlineOrderingPost },

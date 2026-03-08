@@ -39,7 +39,7 @@ export default function ReportsExportPost() {
         {/* Desktop Mockup */}
         <div className="flex-1 flex items-center justify-center relative mt-4">
           <DraggableWrapper id="mockup-reports" className={`relative z-20 transition-all duration-500 ${isTall ? 'w-full h-[320px]' : 'w-[360px] h-[240px]'}`}>
-            <DesktopMockup src="/4.jpg" url="reports.sylo.com" />
+            <DesktopMockup src="/4.jpg" />
           </DraggableWrapper>
 
           <FloatingCard

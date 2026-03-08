@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useTheme } from "../ThemeContext";
-import { useParentSelected } from "../EditContext";
-import { ImagePlus } from "lucide-react";
+import { useUploadSignal } from "../EditContext";
 
 interface IPhoneMockupProps {
   src: string;
@@ -16,7 +15,7 @@ interface IPhoneMockupProps {
 /**
  * Reusable iPhone mockup frame.
  * Renders at 100% of its parent container — wrap in a sized div to control dimensions.
- * Shows upload button when parent DraggableWrapper is selected.
+ * Upload is triggered via the toolbar's upload button (UploadSignalContext).
  */
 export default function IPhoneMockup({
   src,
@@ -25,11 +24,18 @@ export default function IPhoneMockup({
   notch = "pill",
 }: IPhoneMockupProps) {
   const t = useTheme();
-  const isSelected = useParentSelected();
+  const uploadSignal = useUploadSignal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [customSrc, setCustomSrc] = useState<string | null>(null);
 
   const displaySrc = customSrc || src;
+
+  // Listen for upload signal from toolbar
+  useEffect(() => {
+    if (uploadSignal > 0) {
+      fileInputRef.current?.click();
+    }
+  }, [uploadSignal]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,16 +83,6 @@ export default function IPhoneMockup({
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-4 rounded-b-xl z-30" style={{ backgroundColor: t.primaryDark }} />
         )}
       </div>
-
-      {/* Upload button — only when parent DraggableWrapper is selected */}
-      {isSelected && (
-        <button
-          onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-          className="absolute -top-2 -right-2 z-50 w-8 h-8 rounded-full bg-[#B7FF5B] text-[#1B4332] flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
-        >
-          <ImagePlus size={14} />
-        </button>
-      )}
     </div>
   );
 }
