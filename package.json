@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "convex": "^1.32.0",
     "framer-motion": "^12.35.1",
     "html-to-image": "^1.11.13",
     "jszip": "^3.10.1",
