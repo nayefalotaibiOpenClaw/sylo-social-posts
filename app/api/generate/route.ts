@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 
-// ─── STATIC TECHNICAL SECTION (never changes) ───────────────────────────────
+// ─── V1: Freestyle (AI builds everything from scratch) ──────────────────────
 
-const STATIC_PROMPT = `You are an expert React component generator for social media posts. Generate a SINGLE visually stunning, UNIQUE React component. Be wildly creative — every post must look completely different.
+const STATIC_PROMPT_V1 = `You are an expert React component generator for social media posts. Generate a SINGLE visually stunning, UNIQUE React component. Be wildly creative — every post must look completely different.
 
 ## IMPORTS
 import React from 'react';
@@ -95,7 +95,123 @@ Vary: dark vs light bg, text alignment, element count, icon choices, spacing, de
 ## OUTPUT
 Return ONLY the raw component code. No markdown fences, no backticks, no explanation. Start with imports.`;
 
-// ─── DYNAMIC CONTEXT BUILDER ─────────────────────────────────────────────────
+// ─── V2: Structured (uses shared components like the skill prompt) ──────────
+
+const STATIC_PROMPT_V2 = `You are an expert social media post designer. Generate a SINGLE visually stunning React/TSX component. Each post should highlight ONE feature or message with a creative visual metaphor.
+
+## Required Imports
+\`\`\`tsx
+import React from 'react';
+import EditableText from './EditableText';
+import DraggableWrapper from './DraggableWrapper';
+import { useAspectRatio } from './EditContext';
+import { useTheme } from './ThemeContext';
+import { IPhoneMockup, IPadMockup, DesktopMockup, PostHeader, PostFooter, FloatingCard } from './shared';
+// Import only the lucide-react icons you use
+\`\`\`
+
+## Theme System (MANDATORY — never hardcode colors)
+\`\`\`tsx
+const t = useTheme();
+// t.primary (dark), t.primaryLight (light bg), t.primaryDark (darkest)
+// t.accent (medium), t.accentLight, t.accentLime (bright), t.accentGold, t.accentOrange
+// t.border, t.font (font family string)
+\`\`\`
+Apply via inline style props: style={{ backgroundColor: t.primary, color: t.primaryLight }}
+NEVER use Tailwind color classes like bg-[#1B4332].
+
+## Aspect Ratio (MANDATORY)
+\`\`\`tsx
+const ratio = useAspectRatio();
+const isTall = ratio === '9:16' || ratio === '3:4';
+\`\`\`
+
+## Shared Components
+
+### <PostHeader> — Top bar with brand logo + subtitle + badge
+\`\`\`tsx
+<PostHeader id="mypost" title="BrandName" subtitle="FLOWERS" badge={<><Star size={12}/> PREMIUM</>} variant="dark" logoUrl="/logo.png" />
+\`\`\`
+Props: id (required), title (brand name), subtitle, badge (JSX), variant ("dark"|"light"), logoUrl
+
+### <PostFooter> — Bottom bar with brand label + text + icon
+\`\`\`tsx
+<PostFooter id="mypost" label="BRAND FLOWERS" text="وصف قصير" icon={<Heart size={24}/>} variant="dark" />
+\`\`\`
+Props: id, label (use actual brand name — NEVER "SYLO"), text, icon (JSX), variant ("dark"|"light")
+
+### <FloatingCard> — Floating stat card with animation
+\`\`\`tsx
+<FloatingCard id="stat1" icon={<BarChart size={16}/>} label="Growth" value="+24%" className="absolute -right-8 top-16" rotate={3} borderColor={t.accentLime} animation="float" />
+\`\`\`
+Props: id, icon, label, value, className, rotate (number), borderColor, animation ("float"|"float-slow"|"none")
+
+### <IPhoneMockup> — iPhone device frame
+Wrap in sized div: \`className={isTall ? 'w-[300px] h-[580px]' : 'w-[230px] h-[360px]'}\`
+Props: src (required), alt, notch ("pill"|"notch")
+
+### <IPadMockup> — iPad device frame
+Landscape: \`className={isTall ? 'w-[420px] h-[300px]' : 'w-[320px] h-[220px]'}\`
+Portrait: \`className={isTall ? 'w-[260px] h-[360px]' : 'w-[200px] h-[280px]'}\`
+Props: src (required), alt, orientation ("landscape"|"portrait")
+
+### <DesktopMockup> — Browser window frame
+Size: \`className={isTall ? 'w-[420px] h-[280px]' : 'w-[360px] h-[240px]'}\`
+Props: src (required), alt, url (address bar text), trafficLights (boolean)
+
+## Mandatory Wrappers
+**<EditableText>** — Wrap ALL visible text. Props: as ("h2"|"p"|"span"|"h3"), className, style
+**<DraggableWrapper>** — Wrap ALL moveable sections. Props: id (unique), className, variant ("mockup" for devices), dir ("rtl" for Arabic)
+
+## Asset Type Rules (CRITICAL)
+- **background** → Full-bleed: \`<img src={url} className="absolute inset-0 w-full h-full object-cover" />\` + overlay. NEVER in mockups.
+- **screenshot/iphone** → ONLY inside <IPhoneMockup>
+- **screenshot/ipad** → ONLY inside <IPadMockup>
+- **screenshot/desktop** → ONLY inside <DesktopMockup>
+- **product** → Hero image: \`<img src={url} className="w-64 h-64 object-contain drop-shadow-2xl" />\`
+- **logo** → Pass to PostHeader via logoUrl prop
+- NEVER put background images in device mockups.
+
+## Background Decorations (pick 1-2 per post, vary them!)
+\`\`\`tsx
+// Gradient (dark posts)
+<div className="absolute inset-0" style={{ background: \\\`linear-gradient(to bottom right, \\\${t.primary}, \\\${t.primaryDark})\\\` }} />
+// Glow circle
+<div className="absolute bottom-0 right-0 w-[400px] h-[400px] opacity-[0.15] blur-[120px] rounded-full" style={{ backgroundColor: t.accentLime }} />
+// Grid pattern
+<div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: \\\`linear-gradient(\\\${t.primaryLight} 0.5px, transparent 0.5px), linear-gradient(90deg, \\\${t.primaryLight} 0.5px, transparent 0.5px)\\\`, backgroundSize: '30px 30px'}} />
+// Dot pattern
+<div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: \\\`radial-gradient(\\\${t.primary} 1px, transparent 1px)\\\`, backgroundSize: '20px 20px'}} />
+\`\`\`
+
+## Design Rules
+- Root div: \`className="relative w-full h-full shadow-2xl overflow-hidden mx-auto font-sans"\` with \`style={{ backgroundColor: t.primary, fontFamily: t.font }}\`
+- Content wrapper: \`className="relative z-10 w-full h-full flex flex-col p-8"\`
+- Alternate dark bg (t.primary) and light bg (t.primaryLight)
+- Each post highlights ONE feature with a creative visual metaphor
+- Icons only from lucide-react
+- Use CSS-only visuals (gradients, blur, patterns) for decoration
+
+## Layout Variety (pick different ones!)
+- Dark bg + iPhone mockup + floating stat cards
+- Light bg + iPad mockup + feature list cards
+- Dark bg + Desktop mockup + gradient overlay
+- Light bg + CSS-only cards (no mockup) + icon grid
+- Dark bg + bold typography + pattern background
+- Split layout: half image, half text
+- Magazine: large photo bg + text panel at bottom
+
+## CONTENT WRITING RULES (CRITICAL)
+- The workspace/company info is for INSPIRATION ONLY
+- NEVER copy text directly from workspace info or features list
+- Write ORIGINAL creative marketing copy — catchy, punchy, social media style
+- Each post = unique angle, unique message
+- Think like a copywriter, not a data displayer
+
+## OUTPUT
+Return ONLY the complete component code. No markdown fences, no backticks, no explanation. Start with import statements.`;
+
+// ─── DYNAMIC CONTEXT BUILDER (shared by both versions) ──────────────────────
 
 interface AssetInfo {
   id: string;
@@ -133,7 +249,7 @@ interface GenerationContext {
   assets: AssetInfo[];
 }
 
-function buildDynamicPrompt(context: GenerationContext): string {
+function buildDynamicPrompt(context: GenerationContext, version: number): string {
   const {
     brandName = "Brand",
     tagline,
@@ -165,9 +281,15 @@ function buildDynamicPrompt(context: GenerationContext): string {
 
   // ── Logo ──
   if (logoUrl) {
-    sections.push(
-      `## LOGO\nURL: ${logoUrl}\nDisplay it in your header area: <img src="${logoUrl}" alt="${brandName}" className="w-10 h-10 object-contain rounded-lg" />`
-    );
+    if (version === 2) {
+      sections.push(
+        `## LOGO (MANDATORY)\nURL: ${logoUrl}\nPass to PostHeader: <PostHeader id="..." title="${brandName}" logoUrl="${logoUrl}" ... />`
+      );
+    } else {
+      sections.push(
+        `## LOGO\nURL: ${logoUrl}\nDisplay in your header: <img src="${logoUrl}" alt="${brandName}" className="w-10 h-10 object-contain rounded-lg" />`
+      );
+    }
   }
 
   // ── Available assets — grouped by type ──
@@ -209,7 +331,9 @@ function buildDynamicPrompt(context: GenerationContext): string {
           usage = "USE AS: Hero product <img> with drop-shadow, positioned creatively.";
           break;
         case "logo":
-          usage = "USE AS: Brand logo <img> in header area.";
+          usage = version === 2
+            ? "USE AS: Pass to PostHeader via logoUrl prop."
+            : "USE AS: Brand logo <img> in header area.";
           break;
         default:
           usage = "USE AS: Best placement based on the analysis.";
@@ -249,14 +373,19 @@ function buildDynamicPrompt(context: GenerationContext): string {
   const dirAttr = isArabic ? ' dir="rtl"' : "";
   const textAlign = isArabic ? "text-right" : "text-left";
 
-  sections.push(`## LAYOUT RULES
-- Brand name in header: "${brandName}"
-${isArabic ? `- dir="rtl" on DraggableWrapper elements\n- Text: className="${textAlign}"` : ""}
-- Use ${dirAttr ? `dir="rtl" and ` : ""}className="${textAlign}" on text containers
-- Write ORIGINAL creative copy inspired by the brand — catchy headlines, not feature lists
-- Each post = unique angle, unique message, unique visual approach
+  const conventionLines = [`- Brand name in header: "${brandName}"`];
+  if (version === 2) {
+    conventionLines.push(`- PostHeader: title="${brandName}"${logoUrl ? ` logoUrl="${logoUrl}"` : ""}`);
+    conventionLines.push(`- PostFooter: label="${brandName.toUpperCase()}" — NEVER use "SYLO"`);
+  }
+  if (isArabic) {
+    conventionLines.push(`- dir="rtl" on DraggableWrapper elements`);
+    conventionLines.push(`- Text: className="${textAlign}"`);
+  }
+  conventionLines.push(`- Use ${dirAttr ? `dir="rtl" and ` : ""}className="${textAlign}" on text containers`);
+  conventionLines.push(`- Write ORIGINAL creative copy — catchy headlines, not feature lists`);
 
-Now create something stunning and original.`);
+  sections.push(`## LAYOUT RULES\n${conventionLines.join("\n")}\n\nNow create something stunning and original.`);
 
   return sections.join("\n\n");
 }
@@ -270,19 +399,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { prompt, context, count = 1 } = await req.json();
+    const { prompt, context, count = 1, version = 1 } = await req.json();
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
 
     const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
+    const promptVersion = version === 2 ? 2 : 1;
 
+    const staticPrompt = promptVersion === 2 ? STATIC_PROMPT_V2 : STATIC_PROMPT_V1;
     const dynamicSection = context
-      ? buildDynamicPrompt(context as GenerationContext)
+      ? buildDynamicPrompt(context as GenerationContext, promptVersion)
       : "";
     const systemPrompt = dynamicSection
-      ? `${STATIC_PROMPT}\n\n${dynamicSection}`
-      : STATIC_PROMPT;
+      ? `${staticPrompt}\n\n${dynamicSection}`
+      : staticPrompt;
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
@@ -300,18 +431,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ code, codes: [code] });
     }
 
-    // Generate multiple posts in parallel with different layout hints
-    const layoutHints = [
-      "Use a Hero Image or Magazine layout — photo-dominant with bold text overlay",
-      "Use Bold Typography or Minimal layout — no mockups, oversized text, icons, whitespace",
-      "Use Card Grid or Angular layout — geometric, structured, multiple info sections",
-      "Use Split or Product Hero layout — half image half text, or centered product",
-    ];
+    const layoutHints = promptVersion === 2
+      ? [
+          "Dark bg + iPhone mockup + floating stat cards",
+          "Light bg + bold typography + CSS pattern, no device mockups",
+          "Dark bg + gradient overlay + card grid with icons",
+          "Light bg + split layout: half image, half text with stats",
+        ]
+      : [
+          "Use a Hero Image or Magazine layout — photo-dominant with bold text overlay",
+          "Use Bold Typography or Minimal layout — no mockups, oversized text, icons, whitespace",
+          "Use Card Grid or Angular layout — geometric, structured, multiple info sections",
+          "Use Split or Product Hero layout — half image half text, or centered product",
+        ];
 
     const promises = Array.from({ length: postCount }, (_, i) =>
       model.generateContent([
         { text: systemPrompt },
-        { text: `Generate a social media post for: ${prompt}\n\n${layoutHints[i % layoutHints.length]}\n\nPost ${i + 1}/${postCount} — MUST be visually distinct from others. Different layout, different copy angle.` },
+        { text: `Generate a social media post for: ${prompt}\n\n${layoutHints[i % layoutHints.length]}\n\nPost ${i + 1}/${postCount} — MUST be visually distinct. Different layout, different copy angle.` },
       ]).then(r => cleanCode(r.response.text()))
         .catch(err => {
           console.error(`Generation ${i + 1} failed:`, err);
