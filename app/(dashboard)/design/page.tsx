@@ -494,7 +494,7 @@ export default function DesignPage() {
 
       {/* Main Content */}
       <main
-        className="flex-1 overflow-y-auto flex flex-col p-6"
+        className="flex-1 overflow-y-auto p-6"
         onClick={(e) => {
           if ((e.target as HTMLElement).closest?.('[data-toolbar-portal]')) return;
           if ((e.target as HTMLElement).closest?.('[data-contextual-toolbar]')) return;

@@ -51,7 +51,7 @@ export default function PostGrid({
   return (
     <div
       className={`
-        mx-auto transition-all duration-500
+        w-full mx-auto transition-all duration-500
         ${viewMode === 'list' ? 'flex flex-col items-center space-y-12' : 'gap-6'}
         ${editMode ? 'edit-mode' : ''}
       `}
