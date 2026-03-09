@@ -6,38 +6,41 @@ import { api } from "@/convex/_generated/api";
 import { useState, useEffect, useCallback } from "react";
 import { Check, Sparkles, Zap, Crown, Loader2, LogOut, X, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/lib/i18n/context";
+import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
+import type { TranslationKey } from "@/lib/i18n/types";
 
 const PLANS = [
   {
     id: "starter" as const,
-    name: "Starter",
+    nameKey: "pricing.starter" as TranslationKey,
     monthly: { price: 40, ads: 100 },
     yearly: { price: 384, ads: 1200, monthlyEquiv: 32 },
-    description: "Perfect for small businesses getting started",
-    features: [
-      "AI-generated ads",
-      "All post templates",
-      "PNG & ZIP export",
-      "All aspect ratios",
-      "Brand customization",
-    ],
+    descKey: "pricing.starterDesc" as TranslationKey,
+    featureKeys: [
+      "pricing.aiGeneratedAds",
+      "pricing.allTemplates",
+      "pricing.pngZipExport",
+      "pricing.allAspectRatios",
+      "pricing.brandCustomization",
+    ] as TranslationKey[],
     icon: Zap,
     popular: false,
   },
   {
     id: "pro" as const,
-    name: "Pro",
+    nameKey: "pricing.pro" as TranslationKey,
     monthly: { price: 100, ads: 250 },
     yearly: { price: 960, ads: 3000, monthlyEquiv: 80 },
-    description: "For growing brands that need more volume",
-    features: [
-      "AI-generated ads",
-      "All post templates",
-      "PNG & ZIP export",
-      "All aspect ratios",
-      "Brand customization",
-      "Priority generation",
-    ],
+    descKey: "pricing.proDesc" as TranslationKey,
+    featureKeys: [
+      "pricing.aiGeneratedAds",
+      "pricing.allTemplates",
+      "pricing.pngZipExport",
+      "pricing.allAspectRatios",
+      "pricing.brandCustomization",
+      "pricing.priorityGeneration",
+    ] as TranslationKey[],
     icon: Crown,
     popular: true,
   },
@@ -50,7 +53,7 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
+    <div className="fixed top-6 end-6 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
       <div className="flex items-center gap-3 bg-red-950/90 border border-red-800/50 text-red-200 px-5 py-3.5 rounded-xl shadow-2xl backdrop-blur-sm max-w-sm">
         <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
         <p className="text-sm font-medium flex-1">{message}</p>
@@ -72,6 +75,7 @@ export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [toast, setToast] = useState<string | null>(null);
   const dismissToast = useCallback(() => setToast(null), []);
+  const { t, locale } = useLocale();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -91,13 +95,13 @@ export default function PricingPage() {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-3">Please log in</h1>
-          <p className="text-neutral-400 mb-6">You need to be logged in to view pricing plans.</p>
+          <h1 className="text-2xl font-bold mb-3">{t("pricing.pleaseLogIn")}</h1>
+          <p className="text-neutral-400 mb-6">{t("pricing.needLogin")}</p>
           <Link
             href="/login"
             className="bg-white text-black px-6 py-3 rounded-xl font-medium hover:bg-neutral-200 transition"
           >
-            Go to Login
+            {t("pricing.goToLogin")}
           </Link>
         </div>
       </div>
@@ -139,14 +143,14 @@ export default function PricingPage() {
       const data = await res.json();
 
       if (!data.checkoutUrl) {
-        setToast(data.error || "Failed to create payment");
+        setToast(data.error || t("pricing.error"));
         return;
       }
 
       window.location.href = data.checkoutUrl;
     } catch (err) {
       console.error("Payment error:", err);
-      setToast("Something went wrong. Please try again.");
+      setToast(t("pricing.error"));
     } finally {
       setLoadingPlan(null);
     }
@@ -158,7 +162,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {toast && <Toast message={toast} onClose={dismissToast} />}
 
-      {/* Nav bar — same structure as marketing page, dark theme */}
+      {/* Nav bar */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl">
         <div className="bg-neutral-900/80 backdrop-blur-xl border border-neutral-700/50 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/30">
           <div className="flex items-center gap-6">
@@ -169,15 +173,16 @@ export default function PricingPage() {
               <span className="font-black text-lg tracking-tight text-white">oDesigns</span>
             </div>
             <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-neutral-400">
-              <span className="text-white">Pricing</span>
+              <span className="text-white">{t("nav.pricing")}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/workspaces"
               className="px-5 py-2 rounded-full bg-white text-black font-bold text-sm hover:scale-105 transition-all active:scale-95"
             >
-              Dashboard
+              {t("nav.dashboard")}
             </Link>
             <div className="flex items-center gap-2">
               {user?.image ? (
@@ -190,7 +195,7 @@ export default function PricingPage() {
               <button
                 onClick={() => void signOut()}
                 className="p-2 rounded-full hover:bg-neutral-800 transition-colors text-neutral-500 hover:text-white"
-                title="Sign out"
+                title={t("nav.signOut")}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -203,10 +208,10 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Choose your plan
+            {t("pricing.title")}
           </h1>
           <p className="text-neutral-400 text-lg max-w-xl mx-auto">
-            Generate stunning AI-powered social media ads for your brand.
+            {t("pricing.subtitle")}
           </p>
 
           {/* Current usage banner */}
@@ -214,9 +219,9 @@ export default function PricingPage() {
             <div className="mt-8 inline-flex items-center gap-3 bg-neutral-900 border border-neutral-800 rounded-xl px-6 py-3">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span className="text-sm text-neutral-300">
-                Current plan: <span className="text-white font-medium capitalize">{currentPlan}</span>
+                {t("pricing.currentPlan")} <span className="text-white font-medium capitalize">{currentPlan}</span>
                 {" · "}
-                {usage.postsUsed}/{usage.postsLimit} ads used
+                {usage.postsUsed}/{usage.postsLimit} {t("pricing.adsUsed")}
               </span>
             </div>
           )}
@@ -232,7 +237,7 @@ export default function PricingPage() {
                 : "bg-neutral-800 text-neutral-400 hover:text-white"
             }`}
           >
-            Monthly
+            {t("pricing.monthly")}
           </button>
           <button
             onClick={() => setBillingPeriod("yearly")}
@@ -242,13 +247,13 @@ export default function PricingPage() {
                 : "bg-neutral-800 text-neutral-400 hover:text-white"
             }`}
           >
-            Yearly
+            {t("pricing.yearly")}
             <span className={`text-xs px-2 py-0.5 rounded-full ${
               billingPeriod === "yearly"
                 ? "bg-emerald-600 text-white"
                 : "bg-emerald-900/50 text-emerald-400"
             }`}>
-              Save 20%
+              {t("pricing.save20")}
             </span>
           </button>
         </div>
@@ -258,10 +263,10 @@ export default function PricingPage() {
           <div className="mb-12 text-center">
             <div className="inline-flex items-center gap-3 bg-emerald-950/50 border border-emerald-800/50 rounded-xl px-6 py-4">
               <Sparkles className="w-5 h-5 text-emerald-400" />
-              <div className="text-left">
-                <p className="text-emerald-300 font-medium text-sm">Free Trial</p>
+              <div className="text-start">
+                <p className="text-emerald-300 font-medium text-sm">{t("pricing.freeTrial")}</p>
                 <p className="text-emerald-200/60 text-xs">
-                  {usage?.postsUsed}/{usage?.postsLimit} generations used. Upgrade for more.
+                  {usage?.postsUsed}/{usage?.postsLimit} {t("pricing.trialUsage")}
                 </p>
               </div>
             </div>
@@ -287,7 +292,7 @@ export default function PricingPage() {
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-black text-xs font-semibold px-4 py-1 rounded-full">
-                    Most Popular
+                    {t("pricing.mostPopular")}
                   </div>
                 )}
 
@@ -295,38 +300,38 @@ export default function PricingPage() {
                   <div className={`p-2 rounded-lg ${plan.popular ? "bg-white/10" : "bg-neutral-800"}`}>
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-xl font-semibold">{plan.name}</h3>
+                  <h3 className="text-xl font-semibold">{t(plan.nameKey)}</h3>
                 </div>
 
                 <div className="mb-2">
                   {billingPeriod === "yearly" ? (
                     <>
-                      <span className="text-4xl font-bold">${pricing.price}</span>
-                      <span className="text-neutral-400 ml-1">/ year</span>
+                      <span className="text-4xl font-bold">${pricing.price.toLocaleString(locale)}</span>
+                      <span className="text-neutral-400 ms-1">{t("pricing.perYear")}</span>
                       <p className="text-sm text-neutral-500 mt-1">
-                        ${"monthlyEquiv" in pricing ? pricing.monthlyEquiv : Math.round(pricing.price / 12)}/mo
+                        ${"monthlyEquiv" in pricing ? pricing.monthlyEquiv : Math.round(pricing.price / 12)}{t("pricing.perMo")}
                       </p>
                     </>
                   ) : (
                     <>
-                      <span className="text-4xl font-bold">${pricing.price}</span>
-                      <span className="text-neutral-400 ml-1">/ month</span>
+                      <span className="text-4xl font-bold">${pricing.price.toLocaleString(locale)}</span>
+                      <span className="text-neutral-400 ms-1">{t("pricing.perMonth")}</span>
                     </>
                   )}
                 </div>
-                <p className="text-neutral-400 text-sm mb-8">{plan.description}</p>
+                <p className="text-neutral-400 text-sm mb-8">{t(plan.descKey)}</p>
 
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span className="text-white font-medium">
-                      {adsCount.toLocaleString()} AI-generated ads{billingPeriod === "yearly" ? "/yr" : "/mo"}
+                      {adsCount.toLocaleString(locale)} {t("pricing.aiGeneratedAds")}{billingPeriod === "yearly" ? t("pricing.perYr") : t("pricing.perMo")}
                     </span>
                   </li>
-                  {plan.features.slice(1).map((feature) => (
-                    <li key={feature} className="flex items-center gap-3 text-sm">
+                  {plan.featureKeys.slice(1).map((featureKey) => (
+                    <li key={featureKey} className="flex items-center gap-3 text-sm">
                       <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span className="text-neutral-300">{feature}</span>
+                      <span className="text-neutral-300">{t(featureKey)}</span>
                     </li>
                   ))}
                 </ul>
@@ -345,9 +350,9 @@ export default function PricingPage() {
                   {loadingPlan === plan.id ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : isCurrentPlan ? (
-                    "Current Plan"
+                    t("pricing.getCurrentPlan")
                   ) : (
-                    "Get Started"
+                    t("pricing.getStarted")
                   )}
                 </button>
               </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Cairo } from "next/font/google";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { cookies } from "next/headers";
 import "./globals.css";
 import Providers from "./components/Providers";
 
@@ -25,14 +26,18 @@ export const metadata: Metadata = {
   description: "AI-powered social media post generator",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const locale = (cookieStore.get("locale")?.value as "en" | "ar") || "en";
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
   return (
     <ConvexAuthNextjsServerProvider>
-      <html lang="en">
+      <html lang={locale} dir={dir}>
         <body
           className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} antialiased`}
         >

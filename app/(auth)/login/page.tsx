@@ -7,12 +7,15 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLocale } from "@/lib/i18n/context";
+import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
 
 export default function LoginPage() {
   const { signIn } = useAuthActions();
   const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
   const [signingIn, setSigningIn] = useState(false);
+  const { t } = useLocale();
 
   // Redirect if already authenticated (wait for loading to finish first)
   useEffect(() => {
@@ -31,14 +34,15 @@ export default function LoginPage() {
       {/* Left Side: Form Container */}
       <div className="w-full md:w-[45%] lg:w-[40%] bg-[#0B0E14] flex flex-col relative z-10 overflow-y-auto">
         {/* Navigation - Top Fixed/Absolute */}
-        <div className="p-6 md:p-10">
+        <div className="p-6 md:p-10 flex items-center justify-between">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-bold text-sm group"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Home
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 rtl:rotate-180 rtl:group-hover:translate-x-1 transition-transform" />
+            {t("login.backToHome")}
           </Link>
+          <LanguageSwitcher />
         </div>
 
         {/* Form Centering Wrapper */}
@@ -48,8 +52,8 @@ export default function LoginPage() {
               <span className="text-slate-900 font-black text-lg">oD</span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-black mb-3 tracking-tight text-white">Welcome back</h1>
-            <p className="text-slate-400 font-medium mb-10">Log in or join for free to continue browsing</p>
+            <h1 className="text-4xl md:text-5xl font-black mb-3 tracking-tight text-white">{t("login.welcomeBack")}</h1>
+            <p className="text-slate-400 font-medium mb-10">{t("login.subtitle")}</p>
 
             <div className="space-y-3">
               <button
@@ -79,13 +83,13 @@ export default function LoginPage() {
                     />
                   </svg>
                 )}
-                {signingIn ? "Signing in..." : "Continue with Google"}
+                {signingIn ? t("login.signingIn") : t("login.continueGoogle")}
               </button>
             </div>
 
             <p className="mt-10 text-center text-slate-500 text-[11px] font-bold leading-relaxed">
-              By continuing, you agree to oDesigns Studio&apos;s <br />
-              <a href="#" className="text-white hover:underline underline-offset-4">Terms of Service</a> and <a href="#" className="text-white hover:underline underline-offset-4">Privacy Policy</a>.
+              {t("login.terms")} <br />
+              <a href="#" className="text-white hover:underline underline-offset-4">{t("login.termsOfService")}</a> {t("login.and")} <a href="#" className="text-white hover:underline underline-offset-4">{t("login.privacyPolicy")}</a>.
             </p>
           </div>
         </div>

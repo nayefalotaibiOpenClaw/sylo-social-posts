@@ -5,6 +5,7 @@ import { Folder, Pencil, Trash2, Globe, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { Id } from "@/convex/_generated/dataModel";
 import WorkspaceStats from "./WorkspaceStats";
+import { useLocale } from "@/lib/i18n/context";
 
 interface Workspace {
   _id: Id<"workspaces">;
@@ -26,24 +27,26 @@ interface WorkspaceCardProps {
 export default function WorkspaceCard({
   ws, deleteConfirm, setDeleteConfirm, onEdit, onDelete,
 }: WorkspaceCardProps) {
+  const { t } = useLocale();
+
   return (
     <div className="group bg-white border border-slate-200/80 rounded-2xl p-5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-100 transition-all relative">
       {/* Delete Confirmation */}
       {deleteConfirm === ws._id && (
         <div className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center z-10 p-4">
-          <p className="text-sm font-bold mb-4 text-center text-slate-900">Delete &ldquo;{ws.name}&rdquo;?<br /><span className="text-slate-400 font-medium">This will remove all collections & posts.</span></p>
+          <p className="text-sm font-bold mb-4 text-center text-slate-900">{t("workspaceCard.deleteConfirm", { name: ws.name })}<br /><span className="text-slate-400 font-medium">{t("workspaceCard.deleteWarning")}</span></p>
           <div className="flex gap-2">
             <button
               onClick={() => setDeleteConfirm(null)}
               className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold hover:bg-slate-50 text-slate-600"
             >
-              Cancel
+              {t("workspaceCard.cancel")}
             </button>
             <button
               onClick={() => onDelete(ws._id)}
               className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-500"
             >
-              Delete
+              {t("workspaceCard.delete")}
             </button>
           </div>
         </div>
@@ -57,14 +60,14 @@ export default function WorkspaceCard({
           <button
             onClick={() => onEdit(ws)}
             className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
-            title="Edit"
+            title={t("workspaceCard.edit")}
           >
             <Pencil className="w-3.5 h-3.5 text-slate-400" />
           </button>
           <button
             onClick={() => setDeleteConfirm(ws._id)}
             className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"
-            title="Delete"
+            title={t("workspaceCard.delete")}
           >
             <Trash2 className="w-3.5 h-3.5 text-slate-400 hover:text-red-500" />
           </button>
@@ -84,7 +87,7 @@ export default function WorkspaceCard({
           )}
           <span className="flex items-center gap-1">
             <Globe className="w-3 h-3" />
-            {ws.defaultLanguage === "ar" ? "Arabic" : "English"}
+            {ws.defaultLanguage === "ar" ? t("workspaceCard.arabic") : t("workspaceCard.english")}
           </span>
         </div>
       </Link>

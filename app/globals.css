@@ -25,6 +25,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* RTL: Use Cairo font for Arabic */
+[dir="rtl"] body {
+  font-family: var(--font-cairo), 'Cairo', sans-serif;
+}
+
 /* PostWrapper: force child posts to fill the container */
 .post-wrapper > * {
   width: 100% !important;

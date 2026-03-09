@@ -38,6 +38,10 @@ import BeautyCosmeticsPost from "@/features/posts/templates/showcase/BeautyCosme
 import { type Theme, defaultTheme, ThemeCtx } from "@/contexts/ThemeContext";
 import { EditContext, AspectRatioContext } from "@/contexts/EditContext";
 
+// i18n
+import { useLocale } from "@/lib/i18n/context";
+import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
+
 const themes: Theme[] = [
   defaultTheme, // Green
   { // Blue
@@ -92,6 +96,7 @@ const PostPreview = ({ children, theme, size = 300, aspect = "1:1" }: { children
       <AspectRatioContext.Provider value={cfg.ratio}>
         <ThemeCtx.Provider value={theme}>
           <div
+            dir="ltr"
             className="rounded-2xl overflow-hidden shadow-xl pointer-events-none select-none"
             style={{ width: w, height: h }}
           >
@@ -106,12 +111,6 @@ const PostPreview = ({ children, theme, size = 300, aspect = "1:1" }: { children
 };
 
 type TabKey = "social" | "appstore" | "ads";
-
-const tabs: { key: TabKey; label: string }[] = [
-  { key: "social", label: "Social Media" },
-  { key: "appstore", label: "App Store" },
-  { key: "ads", label: "Ads" },
-];
 
 // Social media posts — 1:1 square (showcase + existing mix)
 const socialPosts = [
@@ -197,6 +196,13 @@ export default function LandingPage() {
   const { signOut } = useAuthActions();
   const [activeTab, setActiveTab] = useState<TabKey>("social");
   const currentTab = tabPostsMap[activeTab];
+  const { t } = useLocale();
+
+  const tabs: { key: TabKey; label: string }[] = [
+    { key: "social", label: t("landing.tabSocial") },
+    { key: "appstore", label: t("landing.tabAppStore") },
+    { key: "ads", label: t("landing.tabAds") },
+  ];
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 overflow-x-hidden">
@@ -205,47 +211,50 @@ export default function LandingPage() {
         <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-slate-200/50">
           <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
-              <Link href="/pricing" className="hover:text-slate-900">Pricing</Link>
+              <Link href="/pricing" className="hover:text-slate-900">{t("nav.pricing")}</Link>
               {!isLoading && !isAuthenticated && (
-                <Link href="/login" className="hover:text-slate-900">Log in</Link>
+                <Link href="/login" className="hover:text-slate-900">{t("nav.login")}</Link>
               )}
             </div>
           </div>
-          {isLoading ? (
-            <div className="w-24 h-9 bg-slate-100 rounded-full animate-pulse" />
-          ) : isAuthenticated ? (
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            {isLoading ? (
+              <div className="w-24 h-9 bg-slate-100 rounded-full animate-pulse" />
+            ) : isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/workspaces"
+                  className="px-5 py-2 rounded-full bg-slate-900 text-white font-bold text-sm hover:scale-105 transition-all active:scale-95"
+                >
+                  {t("nav.dashboard")}
+                </Link>
+                <div className="flex items-center gap-2">
+                  {user?.image ? (
+                    <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
+                  ) : (
+                    <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
+                      <span className="text-slate-600 font-bold text-xs">{user?.name?.[0] ?? "?"}</span>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => void signOut()}
+                    className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-900"
+                    title={t("nav.signOut")}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
               <Link
-                href="/workspaces"
+                href="/login"
                 className="px-5 py-2 rounded-full bg-slate-900 text-white font-bold text-sm hover:scale-105 transition-all active:scale-95"
               >
-                Dashboard
+                {t("nav.joinFree")}
               </Link>
-              <div className="flex items-center gap-2">
-                {user?.image ? (
-                  <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
-                ) : (
-                  <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
-                    <span className="text-slate-600 font-bold text-xs">{user?.name?.[0] ?? "?"}</span>
-                  </div>
-                )}
-                <button
-                  onClick={() => void signOut()}
-                  className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-900"
-                  title="Sign out"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="px-5 py-2 rounded-full bg-slate-900 text-white font-bold text-sm hover:scale-105 transition-all active:scale-95"
-            >
-              Join for free
-            </Link>
-          )}
+            )}
+          </div>
         </div>
       </nav>
 
@@ -263,7 +272,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-6xl md:text-8xl font-black tracking-tight mb-8"
           >
-            Find design patterns <br /> in seconds.
+            {t("landing.heroTitle")} <br /> {t("landing.heroTitle2")}
           </motion.h1>
 
           <motion.div
@@ -333,10 +342,9 @@ export default function LandingPage() {
       {/* Feature Section 1: Automation */}
       <section className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-5xl md:text-7xl font-black mb-8">Time saving automation</h2>
+          <h2 className="text-5xl md:text-7xl font-black mb-8">{t("landing.automationTitle")}</h2>
           <p className="text-xl text-slate-500 max-w-3xl mx-auto mb-20 leading-relaxed">
-            Automatically scale screenshots in all required sizes on App Store & Google Play,
-            saving 10+ hours and ensuring consistency.
+            {t("landing.automationDesc")}
           </p>
 
           <div className="relative flex items-end justify-center gap-4 md:gap-8 pt-20">
@@ -354,14 +362,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Feature Section 2: Dark Cards (Screenshot 5 Style) */}
+      {/* Feature Section 2: Dark Cards */}
       <section className="py-24 bg-white px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Global Reach Card */}
           <div className="bg-black rounded-[2.5rem] p-12 text-white flex flex-col justify-between overflow-hidden">
             <div>
-              <h3 className="text-4xl font-black mb-6 leading-tight">Global reach with localization on <br /> App Store & Google Play</h3>
-              <p className="text-slate-400 text-lg mb-12">Localize your screenshots to different languages and regions, to effectively market your app to a global audience</p>
+              <h3 className="text-4xl font-black mb-6 leading-tight">{t("landing.globalTitle")}</h3>
+              <p className="text-slate-400 text-lg mb-12">{t("landing.globalDesc")}</p>
             </div>
             <div className="flex gap-4 items-end mt-12 -mb-20 overflow-hidden">
                {[
@@ -386,8 +394,8 @@ export default function LandingPage() {
           {/* Identity/Font Card */}
           <div className="bg-black rounded-[2.5rem] p-12 text-white flex flex-col justify-between overflow-hidden">
              <div>
-                <h3 className="text-4xl font-black mb-6 leading-tight">Personalize app's identity using Font styling</h3>
-                <p className="text-slate-400 text-lg mb-12">Transform your app's look using AppLaunchpad's screenshot creator font styles like font family, font size, alignment.</p>
+                <h3 className="text-4xl font-black mb-6 leading-tight">{t("landing.fontTitle")}</h3>
+                <p className="text-slate-400 text-lg mb-12">{t("landing.fontDesc")}</p>
              </div>
              <div className="bg-white rounded-2xl p-6 -mb-24 mt-12">
                 <div className="flex gap-6 h-full">
@@ -399,7 +407,7 @@ export default function LandingPage() {
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold uppercase text-slate-400">Font Family</span>
                         <div className="h-10 border border-slate-200 rounded-lg px-3 flex items-center justify-between text-xs font-bold">
-                           Bangers <ChevronRight className="w-3 h-3" />
+                           Bangers <ChevronRight className="w-3 h-3 rtl:rotate-180" />
                         </div>
                       </div>
                    </div>
@@ -412,10 +420,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Library Grid: Popular Collections (Screenshot 9 Style) */}
+      {/* Library Grid: Popular Collections */}
       <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
-           <h2 className="text-4xl font-black mb-12">Popular Collections</h2>
+           <h2 className="text-4xl font-black mb-12">{t("landing.collectionsTitle")}</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
                 "Behavioral UX Patterns", "Tactile", "(Empty) State of the art",
@@ -445,26 +453,26 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-8">
                 <span className="text-slate-900 font-black text-2xl">S</span>
               </div>
-              <h2 className="text-5xl font-black mb-12">Welcome back</h2>
+              <h2 className="text-5xl font-black mb-12">{t("landing.welcomeBack")}</h2>
 
               <div className="w-full max-w-sm space-y-4">
                 <button className="w-full h-14 bg-white text-slate-900 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-slate-100 transition-all">
                    <div className="w-5 h-5 bg-blue-500 rounded" />
-                   Continue with Google
+                   {t("landing.continueGoogle")}
                 </button>
                 <button className="w-full h-14 border border-white/20 rounded-xl font-bold hover:bg-white/5 transition-all">
-                   See other options
+                   {t("landing.seeOther")}
                 </button>
                 <div className="py-4 flex items-center gap-4 text-white/30 text-xs font-bold uppercase tracking-widest">
-                   <div className="flex-1 h-px bg-white/10" /> or <div className="flex-1 h-px bg-white/10" />
+                   <div className="flex-1 h-px bg-white/10" /> {t("landing.or")} <div className="flex-1 h-px bg-white/10" />
                 </div>
                 <input
                   type="email"
-                  placeholder="Enter email address"
+                  placeholder={t("landing.enterEmail")}
                   className="w-full h-14 bg-white/5 border border-white/10 rounded-xl px-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
                 />
                 <button className="w-full h-14 bg-white text-slate-900 rounded-xl font-black text-lg">
-                   Continue
+                   {t("landing.continue")}
                 </button>
               </div>
            </div>
@@ -488,12 +496,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-slate-400 font-bold text-sm">
           <div />
           <div className="flex gap-8">
-            <a href="#" className="hover:text-slate-900">Twitter</a>
-            <a href="#" className="hover:text-slate-900">LinkedIn</a>
-            <a href="#" className="hover:text-slate-900">Terms of Service</a>
-            <a href="#" className="hover:text-slate-900">Privacy Policy</a>
+            <a href="#" className="hover:text-slate-900">{t("landing.twitter")}</a>
+            <a href="#" className="hover:text-slate-900">{t("landing.linkedin")}</a>
+            <a href="#" className="hover:text-slate-900">{t("landing.termsOfService")}</a>
+            <a href="#" className="hover:text-slate-900">{t("landing.privacyPolicy")}</a>
           </div>
-          <p>© 2026 oDesigns Studio. All rights reserved.</p>
+          <p>{t("landing.copyright")}</p>
         </div>
       </footer>
     </div>

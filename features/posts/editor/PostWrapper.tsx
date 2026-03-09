@@ -148,7 +148,7 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
   }, [size.width]);
 
   return (
-    <div ref={containerRef} className="relative group overflow-hidden rounded-xl" style={{ width: '100%', aspectRatio: ar }}>
+    <div ref={containerRef} dir="ltr" className="relative group overflow-hidden rounded-xl" style={{ width: '100%', aspectRatio: ar }}>
       <div
         className="absolute top-0 left-0"
         style={{ width: size.width, height: size.height, transform: `scale(${scale})`, transformOrigin: 'top left' }}

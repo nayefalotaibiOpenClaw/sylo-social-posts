@@ -10,6 +10,8 @@ import { Plus, Folder, Loader2, LogOut } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import WorkspaceCard from "@/features/workspace/components/WorkspaceCard";
 import WorkspaceForm, { type WorkspaceFormData } from "@/features/workspace/components/WorkspaceForm";
+import { useLocale } from "@/lib/i18n/context";
+import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
 
 export default function WorkspacesPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
@@ -24,6 +26,7 @@ export default function WorkspacesPage() {
   const deleteWorkspace = useMutation(api.workspaces.remove);
   const updateWorkspace = useMutation(api.workspaces.update);
   const updateWebsiteInfo = useMutation(api.workspaces.updateWebsiteInfo);
+  const { t } = useLocale();
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<Id<"workspaces"> | null>(null);
@@ -147,7 +150,7 @@ export default function WorkspacesPage() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100">
-      {/* Floating nav — same as marketing page */}
+      {/* Floating nav */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl">
         <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-slate-200/50">
           <div className="flex items-center gap-6">
@@ -158,11 +161,12 @@ export default function WorkspacesPage() {
               <span className="font-black text-lg tracking-tight">oDesigns</span>
             </div>
             <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
-              <span className="text-slate-900">Workspaces</span>
-              <Link href="/pricing" className="hover:text-slate-900">Pricing</Link>
+              <span className="text-slate-900">{t("nav.workspaces")}</span>
+              <Link href="/pricing" className="hover:text-slate-900">{t("nav.pricing")}</Link>
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <div className="flex items-center gap-2">
               {user.image ? (
                 <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
@@ -174,7 +178,7 @@ export default function WorkspacesPage() {
               <button
                 onClick={() => void signOut()}
                 className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-900"
-                title="Sign out"
+                title={t("nav.signOut")}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -187,9 +191,9 @@ export default function WorkspacesPage() {
         {/* Action Bar */}
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h1 className="text-3xl font-black tracking-tight mb-1">Workspaces</h1>
+            <h1 className="text-3xl font-black tracking-tight mb-1">{t("workspaces.title")}</h1>
             <p className="text-slate-400 text-sm font-medium">
-              {workspaces?.length ?? 0} project{workspaces?.length !== 1 ? "s" : ""}
+              {workspaces?.length ?? 0} {(workspaces?.length ?? 0) !== 1 ? t("workspaces.projects") : t("workspaces.project")}
             </p>
           </div>
           <button
@@ -197,7 +201,7 @@ export default function WorkspacesPage() {
             className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full font-bold text-sm hover:scale-105 transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            New Workspace
+            {t("workspaces.newWorkspace")}
           </button>
         </div>
 
@@ -224,13 +228,13 @@ export default function WorkspacesPage() {
             <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Folder className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-bold text-slate-600 mb-2">No workspaces yet</h3>
-            <p className="text-sm text-slate-400 mb-6">Create your first workspace to start designing</p>
+            <h3 className="text-lg font-bold text-slate-600 mb-2">{t("workspaces.noWorkspaces")}</h3>
+            <p className="text-sm text-slate-400 mb-6">{t("workspaces.createFirst")}</p>
             <button
               onClick={() => setShowCreate(true)}
               className="px-6 py-2.5 bg-slate-900 text-white rounded-full font-bold text-sm hover:scale-105 transition-all active:scale-95"
             >
-              Create Workspace
+              {t("workspaces.createWorkspace")}
             </button>
           </div>
         ) : (
@@ -254,7 +258,7 @@ export default function WorkspacesPage() {
               <div className="w-11 h-11 bg-slate-100 rounded-xl flex items-center justify-center">
                 <Plus className="w-5 h-5 text-slate-400" />
               </div>
-              <span className="text-sm font-bold text-slate-400">New Workspace</span>
+              <span className="text-sm font-bold text-slate-400">{t("workspaces.newWorkspace")}</span>
             </button>
           </div>
         )}
