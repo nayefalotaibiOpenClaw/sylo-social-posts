@@ -230,7 +230,7 @@ export const startTrial = mutation({
 
     const trialConfig = getPlanConfig("trial");
     const now = Date.now();
-    const ninetyDays = 90 * 24 * 60 * 60 * 1000;
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
 
     const subId = await ctx.db.insert("subscriptions", {
       userId,
@@ -244,7 +244,7 @@ export const startTrial = mutation({
       amountPaid: 0,
       currency: "USD",
       startsAt: now,
-      expiresAt: now + ninetyDays,
+      expiresAt: now + sevenDays,
       createdAt: now,
     });
 

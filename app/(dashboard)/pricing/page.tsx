@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect, useCallback } from "react";
-import { Check, Sparkles, Zap, Crown, Loader2, X, AlertCircle, ArrowDown, ArrowUp } from "lucide-react";
+import { Check, Sparkles, Zap, Crown, Loader2, X, AlertCircle, ArrowDown, ArrowUp, Gift } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n/context";
 import FloatingNav from "@/app/components/FloatingNav";
@@ -71,7 +71,9 @@ export default function PricingPage() {
   const activeSub = useQuery(api.subscriptions.getActive);
   const createPayment = useMutation(api.payments.createPending);
   const downgradeMut = useMutation(api.subscriptions.downgrade);
+  const startTrialMut = useMutation(api.subscriptions.startTrial);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [startingTrial, setStartingTrial] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [showDowngradeConfirm, setShowDowngradeConfirm] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -207,7 +209,20 @@ export default function PricingPage() {
     }
   };
 
+  const handleStartTrial = async () => {
+    setStartingTrial(true);
+    try {
+      await startTrialMut();
+      alert("Free trial started! You can now generate up to 6 ads.");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setStartingTrial(false);
+    }
+  };
+
   const currentPlan = usage?.plan;
+  const hasAnySub = !!activeSub;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
@@ -269,23 +284,86 @@ export default function PricingPage() {
           </button>
         </div>
 
-        {/* Trial banner */}
-        {currentPlan === "trial" && (
-          <div className="mb-12 text-center">
-            <div className="inline-flex items-center gap-3 bg-emerald-950/50 border border-emerald-800/50 rounded-xl px-6 py-4">
-              <Sparkles className="w-5 h-5 text-emerald-400" />
-              <div className="text-start">
-                <p className="text-emerald-300 font-medium text-sm">{t("pricing.freeTrial")}</p>
-                <p className="text-emerald-200/60 text-xs">
-                  {usage?.postsUsed}/{usage?.postsLimit} {t("pricing.trialUsage")}
+        {/* Plans grid */}
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* Free Trial Card */}
+          <div
+            className={`relative rounded-2xl border p-8 transition-all ${
+              currentPlan === "trial"
+                ? "border-emerald-700/40 bg-emerald-950/20"
+                : "border-neutral-800 bg-neutral-900/40"
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-emerald-900/50">
+                <Gift className="w-5 h-5 text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-semibold">{t("pricing.freeTrial")}</h3>
+            </div>
+
+            <div className="mb-2">
+              <span className="text-4xl font-bold">$0</span>
+              <span className="text-neutral-400 ms-1">/ 7 days</span>
+            </div>
+            <p className="text-neutral-400 text-sm mb-8">Try it out — no credit card required</p>
+
+            <ul className="space-y-3 mb-8">
+              <li className="flex items-center gap-3 text-sm">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="text-white font-medium">6 {t("pricing.aiGeneratedAds")}</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="text-neutral-300">{t("pricing.allTemplates")}</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="text-neutral-300">{t("pricing.pngZipExport")}</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="text-neutral-300">{t("pricing.allAspectRatios")}</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="text-neutral-300">{t("pricing.brandCustomization")}</span>
+              </li>
+            </ul>
+
+            {currentPlan === "trial" ? (
+              <div>
+                <button
+                  disabled
+                  className="w-full py-3 px-6 rounded-xl font-medium text-sm bg-neutral-800 text-neutral-500 cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {t("pricing.getCurrentPlan")}
+                </button>
+                <p className="text-xs text-neutral-500 text-center mt-3">
+                  {usage?.postsUsed}/{usage?.postsLimit} {t("pricing.adsUsed")}
+                  {usage?.daysLeft !== undefined && <> &middot; {usage.daysLeft} days left</>}
                 </p>
               </div>
-            </div>
+            ) : hasAnySub ? (
+              <button
+                disabled
+                className="w-full py-3 px-6 rounded-xl font-medium text-sm bg-neutral-800 text-neutral-500 cursor-not-allowed"
+              >
+                Trial Used
+              </button>
+            ) : (
+              <button
+                onClick={handleStartTrial}
+                disabled={startingTrial}
+                className="w-full py-3 px-6 rounded-xl font-medium text-sm bg-emerald-600 text-white hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"
+              >
+                {startingTrial ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Start Free Trial"
+                )}
+              </button>
+            )}
           </div>
-        )}
-
-        {/* Plans grid */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {PLANS.map((plan) => {
             const isCurrentPlan = currentPlan === plan.id;
             const Icon = plan.icon;
