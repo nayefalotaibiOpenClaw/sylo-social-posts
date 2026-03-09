@@ -45,7 +45,7 @@ export default function LoginPage() {
         <div className="flex-1 flex flex-col justify-center px-8 md:px-12 lg:px-20 pb-20">
           <div className="w-full max-w-sm mx-auto">
             <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-2xl">
-              <span className="text-slate-900 font-black text-2xl">S</span>
+              <span className="text-slate-900 font-black text-lg">oD</span>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-black mb-3 tracking-tight text-white">Welcome back</h1>
@@ -84,7 +84,7 @@ export default function LoginPage() {
             </div>
 
             <p className="mt-10 text-center text-slate-500 text-[11px] font-bold leading-relaxed">
-              By continuing, you agree to Sylo&apos;s <br />
+              By continuing, you agree to oDesigns Studio&apos;s <br />
               <a href="#" className="text-white hover:underline underline-offset-4">Terms of Service</a> and <a href="#" className="text-white hover:underline underline-offset-4">Privacy Policy</a>.
             </p>
           </div>

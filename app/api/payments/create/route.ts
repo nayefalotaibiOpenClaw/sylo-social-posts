@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       products: [
         {
           name: planInfo.name,
-          description: `Sylo ${planInfo.name}`,
+          description: `oDesigns${planInfo.name}`,
           price: planInfo.amount,
           quantity: 1,
         },
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       order: {
         id: orderId,
         reference: orderId,
-        description: `Sylo ${planInfo.name} Subscription`,
+        description: `oDesigns${planInfo.name} Subscription`,
         currency: "USD",
         amount: planInfo.amount,
       },
@@ -76,16 +76,32 @@ export async function POST(req: NextRequest) {
       customerExtraData: JSON.stringify({ userId, plan, orderId, billingPeriod: period }),
     };
 
-    const response = await fetch(`${UPAYMENTS_BASE_URL}/charge`, {
+    const chargeUrl = `${UPAYMENTS_BASE_URL}/charge`;
+    console.log("UPayments request:", chargeUrl, JSON.stringify(body));
+
+    const response = await fetch(chargeUrl, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${UPAYMENTS_API_KEY}`,
         "Content-Type": "application/json",
+        "Accept": "application/json",
       },
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log("UPayments response status:", response.status, "body:", responseText.slice(0, 500));
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error("UPayments returned non-JSON:", responseText.slice(0, 500));
+      return NextResponse.json(
+        { error: "Payment gateway returned invalid response" },
+        { status: 502 }
+      );
+    }
 
     if (!response.ok || !data.status) {
       console.error("UPayments error:", data);

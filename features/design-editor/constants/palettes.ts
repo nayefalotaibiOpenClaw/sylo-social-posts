@@ -1,7 +1,7 @@
 import { Theme, defaultTheme } from "@/contexts/ThemeContext";
 
 export const PALETTES: { name: string; theme: Theme }[] = [
-  { name: "Sylo Green", theme: defaultTheme },
+  { name: "Default Green", theme: defaultTheme },
   { name: "Ocean Blue", theme: { ...defaultTheme, primary: "#1E3A5F", primaryLight: "#EFF6FF", primaryDark: "#0F1D30", accent: "#3B82F6", accentLight: "#60A5FA", accentLime: "#38BDF8", border: "#2D5A8E" } },
   { name: "Royal Purple", theme: { ...defaultTheme, primary: "#3B0764", primaryLight: "#F5F3FF", primaryDark: "#1E0334", accent: "#7C3AED", accentLight: "#A78BFA", accentLime: "#C084FC", border: "#581C87" } },
   { name: "Warm Orange", theme: { ...defaultTheme, primary: "#7C2D12", primaryLight: "#FFF7ED", primaryDark: "#431407", accent: "#EA580C", accentLight: "#FB923C", accentLime: "#FBBF24", border: "#9A3412" } },

@@ -40,6 +40,7 @@ function loadTheme(): Theme {
 }
 
 const ThemeContext = createContext<Theme>(defaultTheme);
+export { ThemeContext as ThemeCtx };
 const ThemeSetContext = createContext<(theme: Theme) => void>(() => {});
 
 export const useTheme = () => useContext(ThemeContext);

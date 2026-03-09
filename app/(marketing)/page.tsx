@@ -1,37 +1,174 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useConvexAuth, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import {
-  Sparkles,
-  Globe,
-  Smartphone,
-  LayoutGrid,
-  Palette,
-  Zap,
-  ArrowRight,
-  CheckCircle2,
-  Layers,
-  Monitor,
-  Search,
   ChevronRight,
   LogOut
 } from "lucide-react";
 
+// Real post components
+import AnalyticsPost from "@/features/posts/templates/sylo/AnalyticsPost";
+import LoyaltyPost from "@/features/posts/templates/sylo/LoyaltyPost";
+import InventoryPost from "@/features/posts/templates/sylo/InventoryPost";
+import CloudPOSPost from "@/features/posts/templates/sylo/CloudPOSPost";
+import DashboardOverviewPost from "@/features/posts/templates/sylo/DashboardOverviewPost";
+import OnlineOrderingPost from "@/features/posts/templates/sylo/OnlineOrderingPost";
+import SmartMenuPost from "@/features/posts/templates/sylo/SmartMenuPost";
+import SeasonsHeroPost from "@/features/posts/templates/seasons/SeasonsHeroPost";
+import SeasonsGiftPost from "@/features/posts/templates/seasons/SeasonsGiftPost";
+import SeasonsRomancePost from "@/features/posts/templates/seasons/SeasonsRomancePost";
+import SeasonsSubscriptionPost from "@/features/posts/templates/seasons/SeasonsSubscriptionPost";
+
+// Contexts for rendering posts
+import { type Theme, defaultTheme, ThemeCtx } from "@/contexts/ThemeContext";
+import { EditContext, AspectRatioContext } from "@/contexts/EditContext";
+
+const themes: Theme[] = [
+  defaultTheme, // Green
+  { // Blue
+    primary: "#1e3a5f", primaryLight: "#e8f0fe", primaryDark: "#0d1f33",
+    accent: "#3b82f6", accentLight: "#60a5fa", accentLime: "#67e8f9",
+    accentGold: "#fbbf24", accentOrange: "#fb923c", border: "#2a4a6f", font: "var(--font-cairo), 'Cairo', sans-serif",
+  },
+  { // Purple
+    primary: "#3b1f6e", primaryLight: "#f3e8ff", primaryDark: "#1e0f3a",
+    accent: "#8b5cf6", accentLight: "#a78bfa", accentLime: "#c4b5fd",
+    accentGold: "#fbbf24", accentOrange: "#f97316", border: "#4c2d8a", font: "var(--font-cairo), 'Cairo', sans-serif",
+  },
+  { // Rose
+    primary: "#881337", primaryLight: "#fff1f2", primaryDark: "#4c0519",
+    accent: "#e11d48", accentLight: "#fb7185", accentLime: "#fda4af",
+    accentGold: "#fbbf24", accentOrange: "#fb923c", border: "#9f1239", font: "var(--font-cairo), 'Cairo', sans-serif",
+  },
+  { // Teal
+    primary: "#134e4a", primaryLight: "#f0fdfa", primaryDark: "#042f2e",
+    accent: "#14b8a6", accentLight: "#2dd4bf", accentLime: "#5eead4",
+    accentGold: "#fbbf24", accentOrange: "#fb923c", border: "#1a5c57", font: "var(--font-cairo), 'Cairo', sans-serif",
+  },
+  { // Amber/warm
+    primary: "#78350f", primaryLight: "#fffbeb", primaryDark: "#451a03",
+    accent: "#d97706", accentLight: "#fbbf24", accentLime: "#fde68a",
+    accentGold: "#fbbf24", accentOrange: "#f97316", border: "#92400e", font: "var(--font-cairo), 'Cairo', sans-serif",
+  },
+  { // Navy
+    primary: "#1e1b4b", primaryLight: "#eef2ff", primaryDark: "#0c0a26",
+    accent: "#6366f1", accentLight: "#818cf8", accentLime: "#a5b4fc",
+    accentGold: "#fbbf24", accentOrange: "#fb923c", border: "#312e81", font: "var(--font-cairo), 'Cairo', sans-serif",
+  },
+];
+
+import type { AspectRatioType } from "@/contexts/EditContext";
+
+// Aspect ratio configs: inner render size and outer display dimensions
+const ratioConfigs: Record<string, { innerW: number; innerH: number; displayW: (s: number) => number; displayH: (s: number) => number; ratio: AspectRatioType }> = {
+  "1:1":  { innerW: 600, innerH: 600, displayW: s => s, displayH: s => s, ratio: "1:1" },
+  "9:16": { innerW: 600, innerH: 1067, displayW: s => s * 0.6, displayH: s => s * 1.067, ratio: "9:16" },
+  "16:9": { innerW: 1067, innerH: 600, displayW: s => s * 1.2, displayH: s => s * 0.675, ratio: "16:9" },
+};
+
+const PostPreview = ({ children, theme, size = 300, aspect = "1:1" }: { children: React.ReactNode; theme: Theme; size?: number; aspect?: string }) => {
+  const cfg = ratioConfigs[aspect] || ratioConfigs["1:1"];
+  const w = cfg.displayW(size);
+  const h = cfg.displayH(size);
+  const scale = w / cfg.innerW;
+
+  return (
+    <EditContext.Provider value={false}>
+      <AspectRatioContext.Provider value={cfg.ratio}>
+        <ThemeCtx.Provider value={theme}>
+          <div
+            className="rounded-2xl overflow-hidden shadow-xl pointer-events-none select-none"
+            style={{ width: w, height: h }}
+          >
+            <div style={{ width: cfg.innerW, height: cfg.innerH, transform: `scale(${scale})`, transformOrigin: "top left" }}>
+              {children}
+            </div>
+          </div>
+        </ThemeCtx.Provider>
+      </AspectRatioContext.Provider>
+    </EditContext.Provider>
+  );
+};
+
+type TabKey = "social" | "appstore" | "ads";
+
+const tabs: { key: TabKey; label: string }[] = [
+  { key: "social", label: "Social Media" },
+  { key: "appstore", label: "App Store" },
+  { key: "ads", label: "Ads" },
+];
+
+// Social media posts — 1:1 square
+const socialPosts = [
+  { component: <AnalyticsPost />, theme: themes[0], label: "Analytics" },
+  { component: <SeasonsHeroPost />, theme: themes[3], label: "Brand Hero" },
+  { component: <LoyaltyPost />, theme: themes[1], label: "Loyalty" },
+  { component: <CloudPOSPost />, theme: themes[4], label: "Cloud POS" },
+  { component: <InventoryPost />, theme: themes[2], label: "Inventory" },
+  { component: <SeasonsGiftPost />, theme: themes[5], label: "Gift Sets" },
+  { component: <SmartMenuPost />, theme: themes[6], label: "Smart Menu" },
+  { component: <OnlineOrderingPost />, theme: themes[1], label: "Online Store" },
+  { component: <DashboardOverviewPost />, theme: themes[0], label: "Dashboard" },
+  { component: <SeasonsSubscriptionPost />, theme: themes[4], label: "Subscriptions" },
+  { component: <SeasonsRomancePost />, theme: themes[3], label: "Romance" },
+];
+
+// App Store Preview — 9:16 tall
+const appStorePosts = [
+  { component: <OnlineOrderingPost />, theme: themes[0], label: "Online Store" },
+  { component: <SmartMenuPost />, theme: themes[1], label: "Smart Menu" },
+  { component: <CloudPOSPost />, theme: themes[2], label: "Cloud POS" },
+  { component: <SeasonsHeroPost />, theme: themes[3], label: "Brand Hero" },
+  { component: <DashboardOverviewPost />, theme: themes[4], label: "Dashboard" },
+  { component: <SeasonsGiftPost />, theme: themes[5], label: "Gift Sets" },
+  { component: <SeasonsRomancePost />, theme: themes[6], label: "Romance" },
+  { component: <AnalyticsPost />, theme: themes[0], label: "Analytics" },
+];
+
+// Ads — 16:9 landscape
+const adsPosts = [
+  { component: <DashboardOverviewPost />, theme: themes[6], label: "Dashboard" },
+  { component: <AnalyticsPost />, theme: themes[1], label: "Analytics" },
+  { component: <LoyaltyPost />, theme: themes[0], label: "Loyalty" },
+  { component: <SeasonsHeroPost />, theme: themes[4], label: "Brand Hero" },
+  { component: <InventoryPost />, theme: themes[3], label: "Inventory" },
+  { component: <CloudPOSPost />, theme: themes[5], label: "Cloud POS" },
+  { component: <SeasonsSubscriptionPost />, theme: themes[2], label: "Subscriptions" },
+  { component: <SmartMenuPost />, theme: themes[1], label: "Smart Menu" },
+];
+
+const tabPostsMap: Record<TabKey, { posts: typeof socialPosts; aspect: string; size: number; minW: string }> = {
+  social:   { posts: socialPosts,   aspect: "1:1",  size: 280, minW: "280px" },
+  appstore: { posts: appStorePosts, aspect: "9:16", size: 280, minW: "168px" },
+  ads:      { posts: adsPosts,      aspect: "16:9", size: 280, minW: "336px" },
+};
+
+// Collage posts for bottom CTA section
+const collagePostItems = [
+  { component: <LoyaltyPost />, theme: themes[2] },
+  { component: <AnalyticsPost />, theme: themes[1] },
+  { component: <SeasonsGiftPost />, theme: themes[4] },
+  { component: <InventoryPost />, theme: themes[0] },
+  { component: <CloudPOSPost />, theme: themes[6] },
+  { component: <SeasonsHeroPost />, theme: themes[3] },
+];
+
 const FloatingLogo = ({ delay, children, top, left, right }: { delay: number; children: React.ReactNode; top?: string; left?: string; right?: string }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.5 }}
-    animate={{ 
+    animate={{
       opacity: [0.4, 0.8, 0.4],
       scale: [1, 1.1, 1],
       y: [0, -10, 0]
     }}
-    transition={{ 
-      duration: 4, 
-      delay, 
+    transition={{
+      duration: 4,
+      delay,
       repeat: Infinity,
       ease: "easeInOut"
     }}
@@ -44,34 +181,12 @@ const FloatingLogo = ({ delay, children, top, left, right }: { delay: number; ch
   </motion.div>
 );
 
-const AppMockup = ({ color, title, delay = 0 }: { color: string; title: string; delay?: number }) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ delay }}
-    viewport={{ once: true }}
-    className="w-full aspect-[9/19] bg-slate-900 rounded-[2rem] border-[6px] border-slate-800 shadow-2xl relative overflow-hidden group"
-  >
-    <div className={`absolute inset-0 bg-gradient-to-b ${color} opacity-80`} />
-    <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
-      <div className="space-y-2">
-        <div className="w-8 h-1 bg-white/30 rounded-full mx-auto" />
-        <h4 className="text-xl font-black mt-4">{title}</h4>
-      </div>
-      <div className="space-y-4">
-        <div className="w-full h-32 bg-white/10 rounded-xl backdrop-blur-md" />
-        <div className="w-full h-10 bg-white rounded-lg flex items-center justify-center">
-          <span className="text-slate-900 text-[10px] font-bold uppercase tracking-wider">Get Started</span>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-);
-
 export default function LandingPage() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const user = useQuery(api.users.currentUser);
   const { signOut } = useAuthActions();
+  const [activeTab, setActiveTab] = useState<TabKey>("social");
+  const currentTab = tabPostsMap[activeTab];
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 overflow-x-hidden">
@@ -81,12 +196,12 @@ export default function LandingPage() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                <span className="text-white font-black text-sm">S</span>
+                <span className="text-white font-black text-[10px]">oD</span>
               </div>
-              <span className="font-black text-lg tracking-tight">Sylo</span>
+              <span className="font-black text-lg tracking-tight">oDesigns</span>
             </div>
             <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
-              <a href="#" className="hover:text-slate-900">Pricing</a>
+              <Link href="/pricing" className="hover:text-slate-900">Pricing</Link>
               {!isLoading && !isAuthenticated && (
                 <Link href="/login" className="hover:text-slate-900">Log in</Link>
               )}
@@ -139,7 +254,7 @@ export default function LandingPage() {
         <FloatingLogo top="40%" right="12%" delay={1.5}><div className="w-full h-full bg-emerald-500 rounded-md" /></FloatingLogo>
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-6xl md:text-8xl font-black tracking-tight mb-8"
@@ -147,51 +262,68 @@ export default function LandingPage() {
             Find design patterns <br /> in seconds.
           </motion.h1>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="flex items-center justify-center gap-2 mb-16"
           >
             <div className="bg-slate-100 p-1 rounded-full flex gap-1">
-              <button className="px-6 py-2 rounded-full bg-white shadow-sm font-bold text-sm">Screens</button>
-              <button className="px-6 py-2 rounded-full text-slate-500 font-bold text-sm hover:text-slate-900">UI Elements</button>
-              <button className="px-6 py-2 rounded-full text-slate-500 font-bold text-sm hover:text-slate-900">Flows</button>
-              <button className="px-6 py-2 rounded-full text-slate-500 font-bold text-sm hover:text-slate-900 hidden sm:block">Text in Screenshot</button>
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
+                    activeTab === tab.key
+                      ? "bg-white shadow-sm text-slate-900"
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </motion.div>
         </div>
 
-        {/* Dense Mockup Row */}
-        <div className="w-full overflow-hidden mt-12">
-          <motion.div 
-            initial={{ x: 0 }}
-            animate={{ x: "-10%" }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="flex gap-6 px-6"
+        {/* Real Posts Carousel */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="w-full overflow-hidden mt-12"
           >
-            {[
-              { color: "from-blue-500 to-indigo-600", title: "Wallet" },
-              { color: "from-orange-400 to-red-500", title: "Welcome" },
-              { color: "from-slate-800 to-slate-900", title: "Account Setup" },
-              { color: "from-purple-500 to-indigo-800", title: "Home" },
-              { color: "from-emerald-400 to-teal-600", title: "Subscribe" },
-              { color: "from-pink-500 to-rose-600", title: "Social" },
-              { color: "from-amber-400 to-orange-600", title: "Orders" },
-            ].map((mock, i) => (
-              <div key={i} className="min-w-[280px]">
-                <AppMockup {...mock} delay={i * 0.1} />
-                <div className="mt-4 flex items-center justify-between px-2">
-                   <span className="font-bold text-sm">{mock.title}</span>
-                   <div className="flex gap-1">
+            <motion.div
+              initial={{ x: 0 }}
+              animate={{ x: "-15%" }}
+              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+              className="flex gap-6 px-6"
+            >
+              {currentTab.posts.map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  viewport={{ once: true }}
+                  style={{ minWidth: currentTab.minW }}
+                >
+                  <PostPreview theme={item.theme} size={currentTab.size} aspect={currentTab.aspect}>{item.component}</PostPreview>
+                  <div className="mt-4 flex items-center justify-between px-2">
+                    <span className="font-bold text-sm">{item.label}</span>
+                    <div className="flex gap-1">
                       <div className="w-2 h-2 rounded-full bg-slate-200" />
                       <div className="w-2 h-2 rounded-full bg-slate-200" />
-                   </div>
-                </div>
-              </div>
-            ))}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </motion.div>
-        </div>
+        </AnimatePresence>
       </section>
 
       {/* Feature Section 1: Automation */}
@@ -199,10 +331,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-5xl md:text-7xl font-black mb-8">Time saving automation</h2>
           <p className="text-xl text-slate-500 max-w-3xl mx-auto mb-20 leading-relaxed">
-            Automatically scale screenshots in all required sizes on App Store & Google Play, 
+            Automatically scale screenshots in all required sizes on App Store & Google Play,
             saving 10+ hours and ensuring consistency.
           </p>
-          
+
           <div className="relative flex items-end justify-center gap-4 md:gap-8 pt-20">
              {/* Device Stack Mockup */}
              <div className="w-[30%] aspect-video bg-slate-900 rounded-xl border-4 border-slate-800 shadow-2xl relative z-0 scale-125">
@@ -302,7 +434,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trust / Action Split View (Screenshot 4 Style) */}
+      {/* Trust / Action Split View */}
       <section className="py-24 bg-white px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-stretch rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.05)] border border-slate-100">
            <div className="flex-1 bg-slate-900 p-12 md:p-20 text-white flex flex-col justify-center items-center text-center">
@@ -310,7 +442,7 @@ export default function LandingPage() {
                 <span className="text-slate-900 font-black text-2xl">S</span>
               </div>
               <h2 className="text-5xl font-black mb-12">Welcome back</h2>
-              
+
               <div className="w-full max-w-sm space-y-4">
                 <button className="w-full h-14 bg-white text-slate-900 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-slate-100 transition-all">
                    <div className="w-5 h-5 bg-blue-500 rounded" />
@@ -322,8 +454,8 @@ export default function LandingPage() {
                 <div className="py-4 flex items-center gap-4 text-white/30 text-xs font-bold uppercase tracking-widest">
                    <div className="flex-1 h-px bg-white/10" /> or <div className="flex-1 h-px bg-white/10" />
                 </div>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   placeholder="Enter email address"
                   className="w-full h-14 bg-white/5 border border-white/10 rounded-xl px-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
                 />
@@ -332,17 +464,15 @@ export default function LandingPage() {
                 </button>
               </div>
            </div>
-           
-           <div className="flex-1 bg-slate-50 relative overflow-hidden hidden md:block">
-              {/* Dense screen collage representation */}
-              <div className="absolute inset-0 grid grid-cols-2 gap-4 p-8 rotate-12 scale-125 origin-center opacity-40">
-                 {[...Array(8)].map((_, i) => (
-                    <div key={i} className="aspect-[9/16] bg-white rounded-2xl shadow-2xl border border-slate-100 p-4">
-                       <div className="w-full h-1/2 bg-slate-100 rounded-lg mb-4" />
-                       <div className="w-3/4 h-2 bg-slate-100 rounded mb-2" />
-                       <div className="w-full h-2 bg-slate-100 rounded" />
-                    </div>
-                 ))}
+
+           <div className="flex-1 bg-slate-50 relative overflow-hidden hidden md:block min-h-[500px]">
+              {/* Real post collage */}
+              <div className="absolute inset-0 grid grid-cols-2 gap-3 p-6 rotate-12 scale-125 origin-center">
+                {collagePostItems.map((item, i) => (
+                  <div key={i} className="aspect-square">
+                    <PostPreview theme={item.theme} size={220}>{item.component}</PostPreview>
+                  </div>
+                ))}
               </div>
               <div className="absolute inset-0 bg-gradient-to-l from-slate-50 via-transparent to-transparent" />
            </div>
@@ -354,9 +484,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-slate-400 font-bold text-sm">
           <div className="flex items-center gap-2 text-slate-900">
             <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-xs">S</span>
+              <span className="text-white font-black text-[10px]">oD</span>
             </div>
-            <span className="font-black">Sylo Social.</span>
+            <span className="font-black">oDesigns Studio.</span>
           </div>
           <div className="flex gap-8">
             <a href="#" className="hover:text-slate-900">Twitter</a>
@@ -364,7 +494,7 @@ export default function LandingPage() {
             <a href="#" className="hover:text-slate-900">Terms of Service</a>
             <a href="#" className="hover:text-slate-900">Privacy Policy</a>
           </div>
-          <p>© 2024 Sylo. All rights reserved.</p>
+          <p>© 2026 oDesigns Studio. All rights reserved.</p>
         </div>
       </footer>
     </div>

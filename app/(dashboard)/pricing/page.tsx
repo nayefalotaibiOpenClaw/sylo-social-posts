@@ -1,9 +1,10 @@
 "use client";
 
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useEffect } from "react";
-import { Check, Sparkles, Zap, Crown, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Check, Sparkles, Zap, Crown, Loader2, LogOut, X, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 const PLANS = [
@@ -42,13 +43,35 @@ const PLANS = [
   },
 ];
 
+function Toast({ message, onClose }: { message: string; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 5000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
+      <div className="flex items-center gap-3 bg-red-950/90 border border-red-800/50 text-red-200 px-5 py-3.5 rounded-xl shadow-2xl backdrop-blur-sm max-w-sm">
+        <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+        <p className="text-sm font-medium flex-1">{message}</p>
+        <button onClick={onClose} className="text-red-400 hover:text-red-200 transition shrink-0">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function PricingPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const { signOut } = useAuthActions();
   const user = useQuery(api.users.currentUser);
   const usage = useQuery(api.subscriptions.getUsage);
   const createPayment = useMutation(api.payments.createPending);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [toast, setToast] = useState<string | null>(null);
+  const dismissToast = useCallback(() => setToast(null), []);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -116,14 +139,14 @@ export default function PricingPage() {
       const data = await res.json();
 
       if (!data.checkoutUrl) {
-        alert(data.error || "Failed to create payment");
+        setToast(data.error || "Failed to create payment");
         return;
       }
 
       window.location.href = data.checkoutUrl;
     } catch (err) {
       console.error("Payment error:", err);
-      alert("Something went wrong. Please try again.");
+      setToast("Something went wrong. Please try again.");
     } finally {
       setLoadingPlan(null);
     }
@@ -133,15 +156,52 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
-      <div className="max-w-5xl mx-auto px-6 py-16">
+      {toast && <Toast message={toast} onClose={dismissToast} />}
+
+      {/* Nav bar — same structure as marketing page, dark theme */}
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl">
+        <div className="bg-neutral-900/80 backdrop-blur-xl border border-neutral-700/50 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/30">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-black font-black text-[10px]">oD</span>
+              </div>
+              <span className="font-black text-lg tracking-tight text-white">oDesigns</span>
+            </div>
+            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-neutral-400">
+              <span className="text-white">Pricing</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/workspaces"
+              className="px-5 py-2 rounded-full bg-white text-black font-bold text-sm hover:scale-105 transition-all active:scale-95"
+            >
+              Dashboard
+            </Link>
+            <div className="flex items-center gap-2">
+              {user?.image ? (
+                <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
+              ) : user && (
+                <div className="w-8 h-8 bg-neutral-700 rounded-full flex items-center justify-center">
+                  <span className="text-neutral-200 font-bold text-xs">{(user.name || user.email || "U")[0].toUpperCase()}</span>
+                </div>
+              )}
+              <button
+                onClick={() => void signOut()}
+                className="p-2 rounded-full hover:bg-neutral-800 transition-colors text-neutral-500 hover:text-white"
+                title="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-5xl mx-auto px-6 pt-24 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
-          <Link
-            href="/workspaces"
-            className="text-sm text-neutral-400 hover:text-white transition mb-8 inline-block"
-          >
-            &larr; Back to workspaces
-          </Link>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
             Choose your plan
           </h1>

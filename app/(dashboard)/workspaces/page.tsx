@@ -1,17 +1,19 @@
 "use client";
 
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Folder, ArrowLeft, Loader2 } from "lucide-react";
+import { Plus, Folder, Loader2, LogOut } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import WorkspaceCard from "@/features/workspace/components/WorkspaceCard";
 import WorkspaceForm, { type WorkspaceFormData } from "@/features/workspace/components/WorkspaceForm";
 
 export default function WorkspacesPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const { signOut } = useAuthActions();
   const router = useRouter();
   const user = useQuery(api.users.currentUser);
   const workspaces = useQuery(
@@ -137,51 +139,62 @@ export default function WorkspacesPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-slate-300 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-white font-sans">
-      {/* Header */}
-      <header className="border-b border-white/5">
-        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center">
-                <span className="text-slate-900 font-black text-lg">S</span>
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100">
+      {/* Floating nav — same as marketing page */}
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl">
+        <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-slate-200/50">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+                <span className="text-white font-black text-[10px]">oD</span>
               </div>
-              <div>
-                <h1 className="text-lg font-black tracking-tight">Workspaces</h1>
-                <p className="text-xs text-slate-500 font-medium">Manage your projects</p>
-              </div>
+              <span className="font-black text-lg tracking-tight">oDesigns</span>
+            </div>
+            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
+              <span className="text-slate-900">Workspaces</span>
+              <Link href="/pricing" className="hover:text-slate-900">Pricing</Link>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {user.image && (
-              <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
-            )}
-            <span className="text-sm font-bold text-slate-400">{user.name}</span>
+            <div className="flex items-center gap-2">
+              {user.image ? (
+                <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
+              ) : (
+                <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
+                  <span className="text-slate-600 font-bold text-xs">{user.name?.[0] ?? "?"}</span>
+                </div>
+              )}
+              <button
+                onClick={() => void signOut()}
+                className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-900"
+                title="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-10">
+      <div className="max-w-5xl mx-auto px-6 pt-28 pb-16">
         {/* Action Bar */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-10">
           <div>
+            <h1 className="text-3xl font-black tracking-tight mb-1">Workspaces</h1>
             <p className="text-slate-400 text-sm font-medium">
-              {workspaces?.length ?? 0} workspace{workspaces?.length !== 1 ? "s" : ""}
+              {workspaces?.length ?? 0} project{workspaces?.length !== 1 ? "s" : ""}
             </p>
           </div>
           <button
             onClick={() => { resetForm(); setShowCreate(true); }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-900 rounded-xl font-bold text-sm hover:scale-105 transition-all active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full font-bold text-sm hover:scale-105 transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             New Workspace
@@ -204,24 +217,24 @@ export default function WorkspacesPage() {
         {/* Workspace Grid */}
         {!workspaces ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-slate-500 animate-spin" />
+            <Loader2 className="w-6 h-6 text-slate-300 animate-spin" />
           </div>
         ) : workspaces.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Folder className="w-8 h-8 text-slate-500" />
+            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Folder className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-bold text-slate-400 mb-2">No workspaces yet</h3>
-            <p className="text-sm text-slate-500 mb-6">Create your first workspace to start designing</p>
+            <h3 className="text-lg font-bold text-slate-600 mb-2">No workspaces yet</h3>
+            <p className="text-sm text-slate-400 mb-6">Create your first workspace to start designing</p>
             <button
               onClick={() => setShowCreate(true)}
-              className="px-6 py-2.5 bg-white text-slate-900 rounded-xl font-bold text-sm hover:scale-105 transition-all active:scale-95"
+              className="px-6 py-2.5 bg-slate-900 text-white rounded-full font-bold text-sm hover:scale-105 transition-all active:scale-95"
             >
               Create Workspace
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {workspaces.map((ws) => (
               <WorkspaceCard
                 key={ws._id}
@@ -236,12 +249,12 @@ export default function WorkspacesPage() {
             {/* New Workspace Card */}
             <button
               onClick={() => { resetForm(); setShowCreate(true); }}
-              className="border-2 border-dashed border-white/10 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover:border-white/20 hover:bg-white/[0.02] transition-all min-h-[200px]"
+              className="border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover:border-slate-300 hover:bg-slate-50 transition-all min-h-[200px]"
             >
-              <div className="w-11 h-11 bg-white/5 rounded-xl flex items-center justify-center">
-                <Plus className="w-5 h-5 text-slate-500" />
+              <div className="w-11 h-11 bg-slate-100 rounded-xl flex items-center justify-center">
+                <Plus className="w-5 h-5 text-slate-400" />
               </div>
-              <span className="text-sm font-bold text-slate-500">New Workspace</span>
+              <span className="text-sm font-bold text-slate-400">New Workspace</span>
             </button>
           </div>
         )}
