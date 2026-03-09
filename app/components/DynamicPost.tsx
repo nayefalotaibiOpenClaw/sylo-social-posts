@@ -8,9 +8,14 @@ import { useAspectRatio, useEditMode } from "./EditContext";
 import { useTheme } from "./ThemeContext";
 import { IPhoneMockup, PostHeader, PostFooter, FloatingCard, IPadMockup, DesktopMockup } from "./shared";
 import * as LucideIcons from "lucide-react";
+import { OverrideProvider, PostConfigOverrides } from "./OverrideContext";
+import { SelectedElementProvider } from "./SelectedElementContext";
+import ContextualToolbar from "./ContextualToolbar";
 
 interface DynamicPostProps {
   code: string;
+  overrides?: PostConfigOverrides;
+  onOverridesChange?: (overrides: PostConfigOverrides) => void;
 }
 
 // NOTE: This component intentionally uses dynamic code evaluation (new Function)
@@ -18,7 +23,7 @@ interface DynamicPostProps {
 // API route which calls Google Gemini - not from untrusted user input.
 // This is the standard approach for live code playgrounds (like CodeSandbox, MDX, etc.)
 
-export default function DynamicPost({ code }: DynamicPostProps) {
+export default function DynamicPost({ code, overrides, onOverridesChange }: DynamicPostProps) {
   const Component = useMemo(() => {
     try {
       // Remove import statements and strip all 'export' keywords
@@ -45,7 +50,7 @@ export default function DynamicPost({ code }: DynamicPostProps) {
 
       // Create a function that returns the component with all dependencies injected
       // This is safe because the code originates from our server-side AI API route
-      const fn = new Function(
+      const createComponent = new Function(
         "React",
         "EditableText",
         "DraggableWrapper",
@@ -66,7 +71,7 @@ export default function DynamicPost({ code }: DynamicPostProps) {
         `
       );
 
-      return fn(
+      return createComponent(
         React,
         EditableText,
         DraggableWrapper,
@@ -92,6 +97,28 @@ export default function DynamicPost({ code }: DynamicPostProps) {
       <div className="relative w-full max-w-[600px] aspect-square flex items-center justify-center bg-red-50 text-red-500 p-8 text-center text-sm font-bold">
         Failed to render post. Check console for errors.
       </div>
+    );
+  }
+
+  // Wrap with editing providers when post is selected (onOverridesChange provided)
+  // Overrides provide instant visual feedback; baked into code on deselect
+  if (overrides && onOverridesChange) {
+    return (
+      <OverrideProvider overrides={overrides} onChange={onOverridesChange}>
+        <SelectedElementProvider>
+          <Component />
+          <ContextualToolbar />
+        </SelectedElementProvider>
+      </OverrideProvider>
+    );
+  }
+
+  // Read-only overrides: keep styles visible until Convex code updates (prevents flash)
+  if (overrides && overrides.elements && Object.keys(overrides.elements).length > 0) {
+    return (
+      <OverrideProvider overrides={overrides} onChange={() => {}}>
+        <Component />
+      </OverrideProvider>
     );
   }
 

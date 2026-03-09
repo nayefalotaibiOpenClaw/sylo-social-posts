@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { useConvexAuth, useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import PostPropertiesPanel from "@/app/components/PostPropertiesPanel";
 
 import Sidebar, { type SidebarTab } from "@/features/design-editor/components/Sidebar";
 import SettingsPanel from "@/features/design-editor/components/SettingsPanel";
@@ -48,6 +49,7 @@ export default function DesignPage() {
   const removePost = useMutation(api.posts.remove);
   const createPost = useMutation(api.posts.create);
   const createCollection = useMutation(api.collections.create);
+  const getStorageUrl = useMutation(api.assets.getStorageUrl);
 
   // Workspace & branding data for generate context
   const workspace = useQuery(
@@ -98,6 +100,7 @@ export default function DesignPage() {
   const [generateCount, setGenerateCount] = useState(2);
   const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3>(1);
   const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [fetchingWebsite, setFetchingWebsite] = useState(false);
   const [websiteScreenshot, setWebsiteScreenshot] = useState<string | null>(null);
   const websiteScreenshotRef = useRef<HTMLInputElement>(null);
@@ -467,9 +470,11 @@ export default function DesignPage() {
       <main
         className="flex-1 overflow-y-auto p-6"
         onClick={(e) => {
-          if (!editMode) return;
           if ((e.target as HTMLElement).closest?.('[data-toolbar-portal]')) return;
-          setSelectedId(null);
+          if ((e.target as HTMLElement).closest?.('[data-contextual-toolbar]')) return;
+          if ((e.target as HTMLElement).closest?.('[data-post-card]')) return;
+          if (selectedPostId) setSelectedPostId(null);
+          if (editMode) setSelectedId(null);
         }}
       >
         {collections !== undefined && collections.length === 0 ? (
@@ -520,6 +525,8 @@ export default function DesignPage() {
               onToggleCodeView={toggleCodeView}
               onUpdatePostCode={updatePostCode}
               onRemovePost={removePost}
+              selectedPostId={selectedPostId}
+              onSelectPost={setSelectedPostId}
             />
           </SetSelectedIdContext.Provider>
           </SelectedIdContext.Provider>
@@ -527,6 +534,38 @@ export default function DesignPage() {
           </EditContext.Provider>
         )}
       </main>
+
+      {/* Properties side panel */}
+      {selectedPostId && (() => {
+        const selectedPost = posts?.find(p => p._id === selectedPostId);
+        if (!selectedPost || codeViewPosts.has(selectedPostId)) return null;
+        return (
+          <div
+            className="w-72 shrink-0 bg-white border-l border-gray-200 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="p-3 border-b border-gray-100">
+              <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wide">Properties</h3>
+            </div>
+            <PostPropertiesPanel
+              code={selectedPost.componentCode}
+              onCodeChange={(newCode) => updatePostCode({ id: selectedPost._id, componentCode: newCode })}
+              onUploadImage={async (file) => {
+                try {
+                  const uploadUrl = await generateUploadUrl();
+                  const res = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": file.type }, body: file });
+                  const { storageId } = await res.json();
+                  const url = await getStorageUrl({ storageId });
+                  return url ?? null;
+                } catch {
+                  return null;
+                }
+              }}
+            />
+          </div>
+        );
+      })()}
 
       {/* Floating download bar */}
       {selectMode && selectedPosts.length > 0 && (

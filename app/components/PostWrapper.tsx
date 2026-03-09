@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Download, Loader2, Video } from "lucide-react";
 import { toPng, toCanvas } from "html-to-image";
 
@@ -37,6 +38,24 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
   const [recording, setRecording] = useState(false);
   const [recordProgress, setRecordProgress] = useState(0);
   const [scale, setScale] = useState(1);
+  const [toolbarTarget, setToolbarTarget] = useState<HTMLElement | null>(null);
+
+  // Find the toolbar portal target in the parent post card
+  useEffect(() => {
+    const find = () => {
+      const el = containerRef.current;
+      if (!el) return false;
+      const postCard = el.closest("[data-post-card]");
+      if (!postCard) return false;
+      const target = postCard.querySelector("[data-toolbar-right]");
+      if (target) { setToolbarTarget(target as HTMLElement); return true; }
+      return false;
+    };
+    if (!find()) {
+      // Retry once after paint in case DOM isn't ready yet
+      requestAnimationFrame(() => find());
+    }
+  }, []);
 
   const handleDownload = async () => {
     if (!ref.current) return;
@@ -147,6 +166,27 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
     return () => observer.disconnect();
   }, [size.width]);
 
+  const actionButtons = (
+    <>
+      <button
+        onClick={handleDownloadVideo}
+        disabled={recording || loading}
+        className="text-gray-500 p-1 rounded hover:bg-gray-100 hover:text-gray-700 transition-all disabled:opacity-50"
+        title="Download as MP4 Video"
+      >
+        <Video size={14} />
+      </button>
+      <button
+        onClick={handleDownload}
+        disabled={loading || recording}
+        className="text-gray-500 p-1 rounded hover:bg-gray-100 hover:text-gray-700 transition-all disabled:opacity-50"
+        title="Download as PNG"
+      >
+        {loading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+      </button>
+    </>
+  );
+
   return (
     <div ref={containerRef} className="relative group overflow-hidden rounded-xl" style={{ width: '100%', aspectRatio: ar }}>
       <div
@@ -172,24 +212,7 @@ export default function PostWrapper({ children, filename = "post", aspectRatio =
         </div>
       )}
 
-      <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 flex gap-2 transition-all">
-        <button
-          onClick={handleDownloadVideo}
-          disabled={recording || loading}
-          className="bg-white/90 backdrop-blur-sm text-gray-700 p-2.5 rounded-xl shadow-lg border border-gray-200 hover:bg-white hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-          title="Download as MP4 Video"
-        >
-          <Video size={18} />
-        </button>
-        <button
-          onClick={handleDownload}
-          disabled={loading || recording}
-          className="bg-white/90 backdrop-blur-sm text-gray-700 p-2.5 rounded-xl shadow-lg border border-gray-200 hover:bg-white hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-          title="Download as PNG"
-        >
-          {loading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-        </button>
-      </div>
+      {toolbarTarget ? createPortal(actionButtons, toolbarTarget) : null}
     </div>
   );
 }

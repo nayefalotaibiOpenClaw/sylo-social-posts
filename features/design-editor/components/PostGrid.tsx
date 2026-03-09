@@ -33,6 +33,8 @@ interface PostGridProps {
   onToggleCodeView: (id: string) => void;
   onUpdatePostCode: (args: { id: Id<"posts">; componentCode: string }) => void;
   onRemovePost: (args: { id: Id<"posts"> }) => void;
+  selectedPostId: string | null;
+  onSelectPost: (id: string | null) => void;
 }
 
 export default function PostGrid({
@@ -44,6 +46,7 @@ export default function PostGrid({
   onDragEnter, onDragEnd,
   onTogglePostSelection, onToggleCodeView,
   onUpdatePostCode, onRemovePost,
+  selectedPostId, onSelectPost,
 }: PostGridProps) {
   return (
     <div
@@ -67,10 +70,12 @@ export default function PostGrid({
 
         const selectionIndex = selectedPosts.indexOf(id);
         const isSelected = selectionIndex !== -1;
+        const isPostSelected = selectedPostId === id;
 
         return (
           <div
             key={id}
+            data-post-card
             ref={(el) => { if (el) postRefs.current.set(id, el); else postRefs.current.delete(id); }}
             draggable={reorderMode}
             onDragStart={reorderMode ? (e) => {
@@ -88,14 +93,44 @@ export default function PostGrid({
             onDragEnd={reorderMode ? () => {
               onDragEnd();
             } : undefined}
-            onClick={selectMode ? (e) => { e.stopPropagation(); onTogglePostSelection(id); } : undefined}
-            className="relative group"
+            onClick={selectMode ? (e) => { e.stopPropagation(); onTogglePostSelection(id); } : !reorderMode ? (e) => {
+              e.stopPropagation();
+              onSelectPost(isPostSelected ? null : id);
+            } : undefined}
+            className={`relative group ${isPostSelected ? 'ring-2 ring-blue-500 rounded-xl' : ''}`}
             style={{
               opacity: draggingId === id ? 0.4 : 1,
-              transition: 'opacity 0.2s',
-              cursor: reorderMode ? 'grab' : selectMode ? 'pointer' : undefined,
+              transition: 'opacity 0.2s, box-shadow 0.2s',
+              cursor: reorderMode ? 'grab' : selectMode ? 'pointer' : 'pointer',
             }}
           >
+            {/* Post toolbar - above the post */}
+            <div className="flex items-center justify-between mb-1 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity h-7">
+              <div className="flex gap-1">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggleCodeView(id); }}
+                  className="text-gray-500 p-1 rounded hover:bg-gray-100 hover:text-gray-700 transition-all"
+                  title={codeViewPosts.has(id) ? 'Show Preview' : 'Show Code'}
+                >
+                  {codeViewPosts.has(id) ? <Eye size={14} /> : <Code size={14} />}
+                </button>
+                {post && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm('Delete this post?')) {
+                        onRemovePost({ id: post._id });
+                      }
+                    }}
+                    className="text-red-400 p-1 rounded hover:bg-red-50 hover:text-red-500 transition-all"
+                    title="Delete post"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-1" data-toolbar-right />
+            </div>
             {codeViewPosts.has(id) ? (
               <div className="relative w-full rounded-xl overflow-hidden border border-gray-200 bg-[#1e1e1e]" style={{ aspectRatio: aspectRatio.replace(':', ' / ') }}>
                 <textarea
@@ -116,29 +151,6 @@ export default function PostGrid({
                 <DynamicPost code={code} />
               </PostWrapper>
             )}
-            {/* Code toggle & delete buttons - visible on hover */}
-            <div className="absolute top-2 left-2 z-30 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => onToggleCodeView(id)}
-                className="bg-white/90 backdrop-blur-sm text-gray-600 p-1.5 rounded-md shadow-sm border border-gray-200 hover:bg-white hover:scale-105 active:scale-95 transition-all"
-                title={codeViewPosts.has(id) ? 'Show Preview' : 'Show Code'}
-              >
-                {codeViewPosts.has(id) ? <Eye size={12} /> : <Code size={12} />}
-              </button>
-              {post && (
-                <button
-                  onClick={() => {
-                    if (confirm('Delete this post?')) {
-                      onRemovePost({ id: post._id });
-                    }
-                  }}
-                  className="bg-white/90 backdrop-blur-sm text-red-400 p-1.5 rounded-md shadow-sm border border-gray-200 hover:bg-red-50 hover:text-red-500 hover:scale-105 active:scale-95 transition-all"
-                  title="Delete post"
-                >
-                  <Trash2 size={12} />
-                </button>
-              )}
-            </div>
             {reorderMode && <div className="absolute inset-0 z-10 border-2 border-dashed border-transparent hover:border-[#1B4332]/30 transition-colors" />}
             {selectMode && (
               <div className={`absolute inset-0 z-20 rounded-xl transition-all ${isSelected ? 'ring-4 ring-blue-500 bg-blue-500/10' : 'hover:bg-black/5'}`}>
