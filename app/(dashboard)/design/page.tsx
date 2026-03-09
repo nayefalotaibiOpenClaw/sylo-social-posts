@@ -393,7 +393,7 @@ export default function DesignPage() {
 
   // Redirect unauthenticated users
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && process.env.NODE_ENV !== "development") {
       window.location.href = "/login";
     }
   }, [authLoading, isAuthenticated]);
@@ -494,7 +494,7 @@ export default function DesignPage() {
 
       {/* Main Content */}
       <main
-        className="flex-1 overflow-y-auto p-6"
+        className="flex-1 overflow-y-auto p-3 md:p-6 pb-20 md:pb-6"
         onClick={(e) => {
           if ((e.target as HTMLElement).closest?.('[data-toolbar-portal]')) return;
           if ((e.target as HTMLElement).closest?.('[data-contextual-toolbar]')) return;
@@ -505,31 +505,31 @@ export default function DesignPage() {
       >
         {/* Subscription banners */}
         {usage?.isExpired && (
-          <div className="mb-4 flex items-center justify-between bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-            <div className="flex items-center gap-2">
+          <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-red-50 border border-red-200 rounded-lg px-3 md:px-4 py-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
               <span className="text-red-600 text-sm font-medium">Your {usage.plan} plan has expired.</span>
-              <span className="text-red-500 text-sm">Renew to continue generating posts.</span>
+              <span className="text-red-500 text-xs sm:text-sm">Renew to continue generating posts.</span>
             </div>
-            <Link href="/pricing" className="text-sm bg-red-600 text-white px-4 py-1.5 rounded-lg hover:bg-red-700 transition font-medium">
+            <Link href="/pricing" className="text-sm bg-red-600 text-white px-4 py-1.5 rounded-lg hover:bg-red-700 transition font-medium shrink-0">
               Renew Plan
             </Link>
           </div>
         )}
         {usage?.isExpiringSoon && !usage?.isExpired && (
-          <div className="mb-4 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-            <div className="flex items-center gap-2">
+          <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 md:px-4 py-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
               <span className="text-amber-700 text-sm font-medium">Your plan expires in {usage.daysLeft} day{usage.daysLeft !== 1 ? 's' : ''}.</span>
-              <span className="text-amber-600 text-sm">{usage.postsUsed}/{usage.postsLimit} posts used.</span>
+              <span className="text-amber-600 text-xs sm:text-sm">{usage.postsUsed}/{usage.postsLimit} posts used.</span>
             </div>
-            <Link href="/pricing" className="text-sm bg-amber-600 text-white px-4 py-1.5 rounded-lg hover:bg-amber-700 transition font-medium">
+            <Link href="/pricing" className="text-sm bg-amber-600 text-white px-4 py-1.5 rounded-lg hover:bg-amber-700 transition font-medium shrink-0">
               Renew Now
             </Link>
           </div>
         )}
         {usage?.status === "none" && (
-          <div className="mb-4 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+          <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 md:px-4 py-3">
             <span className="text-blue-700 text-sm font-medium">No active plan. Subscribe to start generating AI posts.</span>
-            <Link href="/pricing" className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition font-medium">
+            <Link href="/pricing" className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition font-medium shrink-0">
               View Plans
             </Link>
           </div>
@@ -599,7 +599,7 @@ export default function DesignPage() {
         if (!selectedPost || codeViewPosts.has(selectedPostId)) return null;
         return (
           <div
-            className="w-72 shrink-0 bg-white border-l border-gray-200 overflow-y-auto"
+            className="hidden md:block w-72 shrink-0 bg-white border-l border-gray-200 overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >

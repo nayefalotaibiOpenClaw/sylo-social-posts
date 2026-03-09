@@ -52,7 +52,7 @@ export default function PostGrid({
     <div
       className={`
         w-full mx-auto transition-all duration-500
-        ${viewMode === 'list' ? 'flex flex-col items-center space-y-12' : 'gap-6'}
+        ${viewMode === 'list' ? 'flex flex-col items-center space-y-12' : 'gap-3 md:gap-6 post-grid-responsive'}
         ${editMode ? 'edit-mode' : ''}
       `}
       style={viewMode === 'grid' ? {

@@ -32,7 +32,7 @@ export default function BillingPage() {
   const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && process.env.NODE_ENV !== "development") {
       window.location.href = "/login";
     }
   }, [authLoading, isAuthenticated]);

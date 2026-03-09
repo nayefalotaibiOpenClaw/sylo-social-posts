@@ -12,7 +12,7 @@ interface DownloadBarProps {
 
 export default function DownloadBar({ selectedCount, downloading, onClear, onDownload }: DownloadBarProps) {
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 px-6 py-3 flex items-center gap-4">
+    <div className="fixed bottom-16 md:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4">
       <span className="text-sm font-bold text-gray-700">{selectedCount} selected</span>
       <button
         onClick={onClear}

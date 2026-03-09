@@ -39,7 +39,7 @@ export default function WorkspacesPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && process.env.NODE_ENV !== "development") {
       router.push("/login");
     }
   }, [authLoading, isAuthenticated, router]);
@@ -137,7 +137,7 @@ export default function WorkspacesPage() {
     setShowCreate(true);
   };
 
-  if (authLoading || !user) {
+  if (authLoading || (!user && process.env.NODE_ENV !== "development")) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-slate-300 animate-spin" />
