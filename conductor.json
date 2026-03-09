@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "setup": "WORKSPACE_PATH=\"$(pwd)\" && npm install && echo '✅ Dependencies installed' && if [ -f \"$CONDUCTOR_ROOT_PATH/.env.local\" ]; then cp \"$CONDUCTOR_ROOT_PATH/.env.local\" $WORKSPACE_PATH/.env.local && echo '✅ .env.local copied from main repo'; else echo '⚠️  .env.local not found in main repo'; fi",
+    "run": "npm run dev"
+  },
+  "runScriptMode": "concurrent"
+}

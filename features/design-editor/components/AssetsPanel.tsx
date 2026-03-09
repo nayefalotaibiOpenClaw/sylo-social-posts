@@ -1,0 +1,200 @@
+"use client";
+
+import React from "react";
+import { Upload, Image as ImageIcon, X, Check, Loader2, RefreshCw } from "lucide-react";
+
+const ASSET_TYPES = [
+  { value: "screenshot", label: "Screenshot" },
+  { value: "product", label: "Product" },
+  { value: "background", label: "Background" },
+  { value: "logo", label: "Logo" },
+  { value: "icon", label: "Icon" },
+  { value: "iphone", label: "iPhone" },
+  { value: "ipad", label: "iPad" },
+  { value: "desktop", label: "Desktop" },
+  { value: "android_phone", label: "Android Phone" },
+  { value: "android_tablet", label: "Android Tablet" },
+  { value: "other", label: "Other" },
+] as const;
+
+export type AssetTypeValue = typeof ASSET_TYPES[number]["value"];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AssetRecord = any;
+
+interface AssetsPanelProps {
+  assets: AssetRecord[] | undefined;
+  pendingFiles: File[];
+  setPendingFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  showAssetUploadDialog: boolean;
+  setShowAssetUploadDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  assetTypeSelect: AssetTypeValue;
+  setAssetTypeSelect: React.Dispatch<React.SetStateAction<AssetTypeValue>>;
+  assetScope: "workspace" | "global";
+  setAssetScope: React.Dispatch<React.SetStateAction<"workspace" | "global">>;
+  uploadingAsset: boolean;
+  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAssetUpload: () => void;
+  onRemoveAsset: (id: string) => void;
+  onRetryAnalysis: (asset: AssetRecord) => void;
+}
+
+export default function AssetsPanel({
+  assets,
+  pendingFiles,
+  setPendingFiles,
+  showAssetUploadDialog,
+  setShowAssetUploadDialog,
+  assetTypeSelect,
+  setAssetTypeSelect,
+  assetScope,
+  setAssetScope,
+  uploadingAsset,
+  onFileSelect,
+  onAssetUpload,
+  onRemoveAsset,
+  onRetryAnalysis,
+}: AssetsPanelProps) {
+  return (
+    <div className="space-y-4">
+      <label className="block w-full cursor-pointer">
+        <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] transition-colors">
+          <Upload size={16} />
+          Upload Assets
+        </div>
+        <input type="file" multiple accept="image/*" onChange={onFileSelect} className="hidden" />
+      </label>
+
+      {/* Upload Dialog */}
+      {showAssetUploadDialog && pendingFiles.length > 0 && (
+        <div className="p-3 rounded-lg border border-[#1B4332] bg-[#EAF4EE] space-y-3">
+          <p className="text-xs font-bold text-gray-700">{pendingFiles.length} file{pendingFiles.length > 1 ? 's' : ''} selected</p>
+
+          <div className="grid grid-cols-3 gap-1.5">
+            {pendingFiles.map((file, i) => (
+              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white border border-gray-200">
+                <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Asset Type</label>
+            <select
+              value={assetTypeSelect}
+              onChange={(e) => setAssetTypeSelect(e.target.value as AssetTypeValue)}
+              className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-xs font-bold text-gray-700 bg-white focus:outline-none focus:border-[#1B4332]"
+            >
+              {ASSET_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Scope</label>
+            <div className="flex gap-1.5">
+              {(["workspace", "global"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setAssetScope(s)}
+                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                    assetScope === s
+                      ? 'bg-[#1B4332] text-white'
+                      : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {s === "workspace" ? "This Project" : "All Projects"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setPendingFiles([]); setShowAssetUploadDialog(false); }}
+              className="flex-1 py-2 rounded-lg text-xs font-bold text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onAssetUpload}
+              disabled={uploadingAsset}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] transition-colors disabled:opacity-50"
+            >
+              {uploadingAsset ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+              {uploadingAsset ? 'Uploading...' : 'Upload'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Asset List grouped by type */}
+      {assets && assets.length > 0 ? (
+        (() => {
+          const grouped = assets.reduce((acc: Record<string, typeof assets>, asset: AssetRecord) => {
+            const type = asset.type;
+            if (!acc[type]) acc[type] = [];
+            acc[type].push(asset);
+            return acc;
+          }, {} as Record<string, typeof assets>);
+
+          return Object.entries(grouped).map(([type, items]) => (
+            <div key={type}>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
+                {ASSET_TYPES.find(t => t.value === type)?.label || type} ({items!.length})
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {items!.map((asset: AssetRecord) => (
+                  <div key={asset._id} className="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200" title={asset.description || asset.fileName}>
+                    {asset.url ? (
+                      <img src={asset.url} alt={asset.fileName} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon size={20} className="text-gray-300" />
+                      </div>
+                    )}
+                    {/* Analysis status indicator */}
+                    {asset.analyzingStatus === "pending" && (
+                      <div className="absolute top-1 left-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
+                        <Loader2 size={10} className="animate-spin text-yellow-800" />
+                      </div>
+                    )}
+                    {asset.analyzingStatus === "done" && (
+                      <div className="absolute top-1 left-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                        <Check size={10} className="text-white" />
+                      </div>
+                    )}
+                    {asset.analyzingStatus === "failed" && (
+                      <button
+                        onClick={() => onRetryAnalysis(asset)}
+                        className="absolute top-1 left-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600"
+                        title="Analysis failed — click to retry"
+                      >
+                        <RefreshCw size={10} className="text-white" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onRemoveAsset(asset._id)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={10} />
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-[9px] text-white truncate font-medium">{asset.description || asset.fileName}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ));
+        })()
+      ) : assets && assets.length === 0 ? (
+        <div className="text-center py-6">
+          <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+          <p className="text-xs text-gray-400">No assets yet. Upload images for AI to use.</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}

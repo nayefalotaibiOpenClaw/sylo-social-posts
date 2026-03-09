@@ -7,6 +7,8 @@ import { useUploadSignal, useParentDragging } from "../EditContext";
 interface DesktopMockupProps {
   src: string;
   alt?: string;
+  url?: string;
+  trafficLights?: boolean;
   className?: string;
 }
 
@@ -17,6 +19,8 @@ interface DesktopMockupProps {
 export default function DesktopMockup({
   src,
   alt = "Desktop screenshot",
+  url: _url,
+  trafficLights: _trafficLights,
   className = "",
 }: DesktopMockupProps) {
   const t = useTheme();
