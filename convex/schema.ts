@@ -15,7 +15,7 @@ export default defineSchema({
     emailVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
     // Custom fields:
-    plan: v.optional(v.union(v.literal("free"), v.literal("pro"))),
+    plan: v.optional(v.union(v.literal("trial"), v.literal("starter"), v.literal("pro"))),
     createdAt: v.optional(v.number()),
   })
     .index("email", ["email"]),
@@ -228,6 +228,57 @@ export default defineSchema({
   })
     .index("by_group", ["variantGroupId"])
     .index("by_post", ["postId"]),
+
+  // ─── Subscriptions ──────────────────────────────────
+  subscriptions: defineTable({
+    userId: v.id("users"),
+    plan: v.union(v.literal("trial"), v.literal("starter"), v.literal("pro")),
+    billingPeriod: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
+    status: v.union(
+      v.literal("active"),
+      v.literal("expired"),
+      v.literal("cancelled")
+    ),
+    aiTokensLimit: v.number(),
+    aiTokensUsed: v.number(),
+    postsLimit: v.number(),
+    postsUsed: v.number(),
+    amountPaid: v.number(),
+    currency: v.string(),
+    paymentId: v.optional(v.string()),
+    upaymentOrderId: v.optional(v.string()),
+    startsAt: v.number(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_status", ["userId", "status"])
+    .index("by_payment", ["upaymentOrderId"]),
+
+  // ─── Payments ──────────────────────────────────────
+  payments: defineTable({
+    userId: v.id("users"),
+    orderId: v.string(),
+    plan: v.union(v.literal("starter"), v.literal("pro")),
+    billingPeriod: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
+    amount: v.number(),
+    currency: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("paid"),
+      v.literal("failed"),
+      v.literal("refunded")
+    ),
+    upaymentTransactionId: v.optional(v.string()),
+    upaymentTrackId: v.optional(v.string()),
+    subscriptionId: v.optional(v.id("subscriptions")),
+    metadata: v.optional(v.string()),        // JSON string for extra data
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_order", ["orderId"])
+    .index("by_status", ["userId", "status"]),
 
   // ─── Generations ─────────────────────────────────────
   generations: defineTable({

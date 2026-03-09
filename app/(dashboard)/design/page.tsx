@@ -49,6 +49,7 @@ export default function DesignPage() {
   const removePost = useMutation(api.posts.remove);
   const createPost = useMutation(api.posts.create);
   const createCollection = useMutation(api.collections.create);
+  const incrementUsage = useMutation(api.subscriptions.incrementUsage);
   const getStorageUrl = useMutation(api.assets.getStorageUrl);
 
   // Workspace & branding data for generate context
@@ -173,8 +174,21 @@ export default function DesignPage() {
     e.target.value = "";
   };
 
+  // Subscription status
+  const usage = useQuery(api.subscriptions.getUsage);
+
+  // Pre-generation subscription check
+  const canGenerateCheck = useQuery(api.subscriptions.canGenerate, { postsCount: generateCount });
+
   const handleGenerate = async () => {
     if (!generatePrompt.trim() || generating) return;
+
+    // Check subscription limits before calling the API
+    if (canGenerateCheck && !canGenerateCheck.allowed) {
+      setGenerateError(canGenerateCheck.reason || "Generation not allowed. Please check your subscription.");
+      return;
+    }
+
     setGenerating(true);
     setGenerateError(null);
     try {
@@ -221,6 +235,18 @@ export default function DesignPage() {
       if (!res.ok) throw new Error(data.error || 'Generation failed');
 
       const codes: string[] = data.codes || [data.code];
+
+      // Track AI token usage in subscription
+      if (data.usage) {
+        try {
+          await incrementUsage({
+            tokensUsed: data.usage.totalTokens || 0,
+            postsGenerated: data.usage.postsGenerated || codes.length,
+          });
+        } catch (e) {
+          console.warn("Usage tracking failed (no active subscription?):", e);
+        }
+      }
 
       // Save generated posts to Convex
       if (workspaceId && user) {
@@ -468,7 +494,7 @@ export default function DesignPage() {
 
       {/* Main Content */}
       <main
-        className="flex-1 overflow-y-auto p-6"
+        className="flex-1 overflow-y-auto flex flex-col p-6"
         onClick={(e) => {
           if ((e.target as HTMLElement).closest?.('[data-toolbar-portal]')) return;
           if ((e.target as HTMLElement).closest?.('[data-contextual-toolbar]')) return;
@@ -477,6 +503,38 @@ export default function DesignPage() {
           if (editMode) setSelectedId(null);
         }}
       >
+        {/* Subscription banners */}
+        {usage?.isExpired && (
+          <div className="mb-4 flex items-center justify-between bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-red-600 text-sm font-medium">Your {usage.plan} plan has expired.</span>
+              <span className="text-red-500 text-sm">Renew to continue generating posts.</span>
+            </div>
+            <Link href="/pricing" className="text-sm bg-red-600 text-white px-4 py-1.5 rounded-lg hover:bg-red-700 transition font-medium">
+              Renew Plan
+            </Link>
+          </div>
+        )}
+        {usage?.isExpiringSoon && !usage?.isExpired && (
+          <div className="mb-4 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-amber-700 text-sm font-medium">Your plan expires in {usage.daysLeft} day{usage.daysLeft !== 1 ? 's' : ''}.</span>
+              <span className="text-amber-600 text-sm">{usage.postsUsed}/{usage.postsLimit} posts used.</span>
+            </div>
+            <Link href="/pricing" className="text-sm bg-amber-600 text-white px-4 py-1.5 rounded-lg hover:bg-amber-700 transition font-medium">
+              Renew Now
+            </Link>
+          </div>
+        )}
+        {usage?.status === "none" && (
+          <div className="mb-4 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+            <span className="text-blue-700 text-sm font-medium">No active plan. Subscribe to start generating AI posts.</span>
+            <Link href="/pricing" className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition font-medium">
+              View Plans
+            </Link>
+          </div>
+        )}
+
         {collections !== undefined && collections.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">

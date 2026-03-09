@@ -25,7 +25,7 @@ export const defaultTheme: Theme = {
   accentGold: "#FCD34D",
   accentOrange: "#F4A261",
   border: "#254d3c",
-  font: "'Cairo', sans-serif",
+  font: "var(--font-cairo), 'Cairo', sans-serif",
 };
 
 const STORAGE_KEY = "sylo-theme";

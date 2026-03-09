@@ -7,6 +7,8 @@ import { buildDynamicPrompt } from "@/lib/ai/build-prompt";
 import { cleanCode } from "@/lib/ai/clean-code";
 import type { GenerationContext } from "@/lib/ai/types";
 
+// Note: This route is called from authenticated pages only.
+// Full auth validation happens at the Convex layer when saving generated posts.
 export async function POST(req: NextRequest) {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) {
@@ -35,6 +37,8 @@ export async function POST(req: NextRequest) {
     const shuffledAngles = [...COPY_ANGLES].sort(() => Math.random() - 0.5);
     const shuffledLayouts = [...LAYOUT_BLUEPRINTS].sort(() => Math.random() - 0.5);
 
+    let totalTokensUsed = 0;
+
     if (postCount === 1) {
       const angle = shuffledAngles[0];
       const layout = shuffledLayouts[0];
@@ -52,8 +56,21 @@ ${angle.instruction}
 
 Create something stunning and original. Match the quality of the reference examples.` },
       ]);
+
+      const usage = result.response.usageMetadata;
+      totalTokensUsed = usage?.totalTokenCount ?? 0;
+
       const code = cleanCode(result.response.text());
-      return NextResponse.json({ code, codes: [code] });
+      return NextResponse.json({
+        code,
+        codes: [code],
+        usage: {
+          totalTokens: totalTokensUsed,
+          promptTokens: usage?.promptTokenCount ?? 0,
+          completionTokens: usage?.candidatesTokenCount ?? 0,
+          postsGenerated: 1,
+        },
+      });
     }
 
     const promises = Array.from({ length: postCount }, (_, i) => {
@@ -72,7 +89,11 @@ Decorations: ${layout.decorations}
 ${angle.instruction}
 
 Post ${i + 1}/${postCount} — MUST be visually distinct from other posts. Different layout, different copy angle, different decorations. Match the quality of the reference examples.` },
-      ]).then(r => cleanCode(r.response.text()))
+      ]).then(r => {
+        const usage = r.response.usageMetadata;
+        totalTokensUsed += usage?.totalTokenCount ?? 0;
+        return cleanCode(r.response.text());
+      })
         .catch(err => {
           console.error(`Generation ${i + 1} failed:`, err);
           return null;
@@ -86,10 +107,17 @@ Post ${i + 1}/${postCount} — MUST be visually distinct from other posts. Diffe
       return NextResponse.json({ error: "All generations failed" }, { status: 500 });
     }
 
-    return NextResponse.json({ code: codes[0], codes });
+    return NextResponse.json({
+      code: codes[0],
+      codes,
+      usage: {
+        totalTokens: totalTokensUsed,
+        postsGenerated: codes.length,
+      },
+    });
   } catch (error: unknown) {
     console.error("Generation error:", error);
-    const message = error instanceof Error ? error.message : "Generation failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Generation error details:", error instanceof Error ? error.message : error);
+    return NextResponse.json({ error: "Generation failed" }, { status: 500 });
   }
 }

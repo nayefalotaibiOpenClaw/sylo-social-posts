@@ -1,5 +1,5 @@
 export const FONTS = [
-  { name: "Cairo", value: "'Cairo', sans-serif" },
+  { name: "Cairo", value: "var(--font-cairo), 'Cairo', sans-serif" },
   { name: "Tajawal", value: "'Tajawal', sans-serif" },
   { name: "IBM Plex Sans Arabic", value: "'IBM Plex Sans Arabic', sans-serif" },
   { name: "Noto Sans Arabic", value: "'Noto Sans Arabic', sans-serif" },

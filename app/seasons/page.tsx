@@ -75,7 +75,7 @@ const SEASONS_PALETTE: Theme = {
   accentLight: "#FB7185",
   accentLime: "#FDA4AF",
   border: "#881337",
-  font: "'Cairo', sans-serif"
+  font: "var(--font-cairo), 'Cairo', sans-serif"
 };
 
 export default function SeasonsPage() {
