@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useConvexAuth, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { api } from "../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import {
   Sparkles,
   Globe,

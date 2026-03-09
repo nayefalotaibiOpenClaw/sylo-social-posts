@@ -194,6 +194,7 @@ export default defineSchema({
     sourcePostId: v.optional(v.id("posts")),
     assetsUsed: v.array(v.id("assets")),
     tags: v.optional(v.array(v.string())),
+    configOverrides: v.optional(v.string()),
     status: v.union(v.literal("draft"), v.literal("final")),
     createdAt: v.number(),
     updatedAt: v.number(),

@@ -17,36 +17,58 @@ AI-powered social media post generator and design editor. Built with Next.js 16,
 
 ```
 app/
-├── page.tsx                    # Marketing landing page
-├── login/page.tsx              # Google OAuth login
-├── workspaces/page.tsx         # Workspace CRUD (authenticated)
-├── design/page.tsx             # Main post editor (workspace-aware, Convex)
-├── design/page-hardcoded.tsx   # Legacy hardcoded design page
-├── sylo-posts/page.tsx         # Static Sylo brand post gallery
-├── seasons/page.tsx            # Static Seasons brand post gallery
-├── layout.tsx                  # Root layout (fonts, ConvexAuth provider)
-├── globals.css                 # Tailwind v4 styles
+├── (marketing)/page.tsx         # Marketing landing page (/)
+├── (auth)/login/page.tsx        # Google OAuth login (/login)
+├── (dashboard)/
+│   ├── workspaces/page.tsx      # Workspace CRUD (/workspaces)
+│   └── design/page.tsx          # Main post editor (/design)
+├── sylo-posts/page.tsx          # Static Sylo brand post gallery
+├── seasons/page.tsx             # Static Seasons brand post gallery
+├── layout.tsx                   # Root layout (fonts, ConvexAuth provider)
+├── globals.css                  # Tailwind v4 styles
 ├── api/
-│   ├── generate/route.ts       # AI post generation (Gemini)
-│   └── fetch-website/route.ts  # Website scraping + AI analysis
-├── components/
-│   ├── EditableText.tsx         # Inline-editable text wrapper
-│   ├── EditContext.tsx          # Edit mode + aspect ratio contexts
-│   ├── ThemeContext.tsx         # Theme provider (colors + font)
-│   ├── DraggableWrapper.tsx     # Drag-to-reposition wrapper
-│   ├── DynamicPost.tsx          # Live TSX renderer (sucrase)
-│   ├── PostWrapper.tsx          # Aspect ratio container + download
+│   ├── generate/route.ts        # Thin AI handler → delegates to lib/ai/
+│   └── fetch-website/route.ts   # Thin handler → delegates to lib/website/
+├── components/                  # Re-exports (backward compat for existing imports)
+│   ├── EditableText.tsx         # → features/posts/editor/
+│   ├── EditContext.tsx          # → contexts/EditContext.tsx
+│   ├── ThemeContext.tsx         # → contexts/ThemeContext.tsx
+│   ├── DraggableWrapper.tsx     # → features/posts/editor/
+│   ├── DynamicPost.tsx          # → features/posts/editor/
+│   ├── PostWrapper.tsx          # → features/posts/editor/
 │   ├── Providers.tsx            # ConvexAuth + Theme providers
-│   ├── shared/                  # Reusable post building blocks
-│   │   ├── PostHeader.tsx
-│   │   ├── PostFooter.tsx
-│   │   ├── FloatingCard.tsx
-│   │   ├── IPhoneMockup.tsx
-│   │   ├── IPadMockup.tsx
-│   │   ├── DesktopMockup.tsx
-│   │   └── index.ts
-│   ├── [SyloPost].tsx           # ~38 Sylo brand post components
-│   └── [SeasonsPost].tsx        # ~27 Seasons brand post components
+│   ├── shared/                  # Shared post building blocks
+│   ├── [SyloPost].tsx           # → features/posts/templates/sylo/
+│   └── [SeasonsPost].tsx        # → features/posts/templates/seasons/
+
+features/                        # Feature modules
+├── posts/
+│   ├── templates/
+│   │   ├── sylo/                # ~40 Sylo brand posts + index.ts barrel
+│   │   └── seasons/             # ~27 Seasons brand posts + index.ts barrel
+│   ├── editor/                  # EditableText, DraggableWrapper, DynamicPost, PostWrapper
+│   ├── shared/                  # PostHeader, PostFooter, FloatingCard, device mockups
+│   └── registries/types.ts      # PostRegistryEntry type
+├── design-editor/
+│   ├── components/              # Sidebar, SettingsPanel, ThemePanel, AssetsPanel, GeneratePanel, PostGrid, DownloadBar
+│   └── constants/               # FONTS, PALETTES arrays
+└── workspace/
+    └── components/              # WorkspaceCard, WorkspaceForm, WorkspaceStats
+
+lib/                             # Shared business logic (non-UI)
+├── ai/
+│   ├── prompts/                 # system-prompt, examples, copy-angles, layout-blueprints
+│   ├── build-prompt.ts          # buildDynamicPrompt() + buildExamplesSection()
+│   ├── clean-code.ts            # cleanCode() utility
+│   └── types.ts                 # AssetInfo, WebsiteInfo, GenerationContext
+├── website/
+│   └── extract-text.ts          # extractBodyText() from HTML
+└── export/
+    └── download.ts              # downloadPostsAsZip() shared utility
+
+contexts/                        # React contexts (cross-feature)
+├── EditContext.tsx               # Edit mode, aspect ratio, selected ID
+└── ThemeContext.tsx              # Theme colors + font
 
 convex/
 ├── schema.ts                   # Full DB schema (10 tables)

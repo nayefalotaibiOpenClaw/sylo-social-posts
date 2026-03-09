@@ -3,37 +3,38 @@
 import React, { useState, useCallback, useRef } from "react";
 import { X, Check, Download, Loader2, Settings, Palette } from "lucide-react";
 import { toPng } from "html-to-image";
-import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext } from "../components/EditContext";
-import { useTheme, useSetTheme, Theme, defaultTheme } from "../components/ThemeContext";
+import { downloadPostsAsZip } from "@/lib/export/download";
+import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext } from "@/contexts/EditContext";
+import { useTheme, useSetTheme, Theme, defaultTheme } from "@/contexts/ThemeContext";
 import Link from "next/link";
-import SeasonsHeroPost from "../components/SeasonsHeroPost";
-import SeasonsGiftPost from "../components/SeasonsGiftPost";
-import SeasonsSubscriptionPost from "../components/SeasonsSubscriptionPost";
-import SeasonsNewbornPost from "../components/SeasonsNewbornPost";
-import SeasonsMultiBrandPost from "../components/SeasonsMultiBrandPost";
-import SeasonsExpressPost from "../components/SeasonsExpressPost";
-import SeasonsCustomTrayPost from "../components/SeasonsCustomTrayPost";
-import SeasonsOfferPost from "../components/SeasonsOfferPost";
-import SeasonsCarePost from "../components/SeasonsCarePost";
-import SeasonsRomancePost from "../components/SeasonsRomancePost";
-import SeasonsCakePost from "../components/SeasonsCakePost";
-import SeasonsCorporatePost from "../components/SeasonsCorporatePost";
-import SeasonsChocolatePost from "../components/SeasonsChocolatePost";
-import SeasonsAppExperiencePost from "../components/SeasonsAppExperiencePost";
-import SeasonsGetWellSoonPost from "../components/SeasonsGetWellSoonPost";
-import SeasonsThankYouPost from "../components/SeasonsThankYouPost";
-import SeasonsSubscriptionBenefitPost from "../components/SeasonsSubscriptionBenefitPost";
-import SeasonsGiftCardPost from "../components/SeasonsGiftCardPost";
-import SeasonsWorkshopPost from "../components/SeasonsWorkshopPost";
-import SeasonsModernBouquetPost from "../components/SeasonsModernBouquetPost";
-import SeasonsVaseCollectionPost from "../components/SeasonsVaseCollectionPost";
-import SeasonsLuxuryBoxPost from "../components/SeasonsLuxuryBoxPost";
-import SeasonsElegantArrangementPost from "../components/SeasonsElegantArrangementPost";
-import SeasonsSeasonalPost from "../components/SeasonsSeasonalPost";
-import SeasonsPremiumWhitePost from "../components/SeasonsPremiumWhitePost";
-import SeasonsFlowerBasketPost from "../components/SeasonsFlowerBasketPost";
-import SeasonsBrightVibePost from "../components/SeasonsBrightVibePost";
-import PostWrapper from "../components/PostWrapper";
+import SeasonsHeroPost from "@/app/components/SeasonsHeroPost";
+import SeasonsGiftPost from "@/app/components/SeasonsGiftPost";
+import SeasonsSubscriptionPost from "@/app/components/SeasonsSubscriptionPost";
+import SeasonsNewbornPost from "@/app/components/SeasonsNewbornPost";
+import SeasonsMultiBrandPost from "@/app/components/SeasonsMultiBrandPost";
+import SeasonsExpressPost from "@/app/components/SeasonsExpressPost";
+import SeasonsCustomTrayPost from "@/app/components/SeasonsCustomTrayPost";
+import SeasonsOfferPost from "@/app/components/SeasonsOfferPost";
+import SeasonsCarePost from "@/app/components/SeasonsCarePost";
+import SeasonsRomancePost from "@/app/components/SeasonsRomancePost";
+import SeasonsCakePost from "@/app/components/SeasonsCakePost";
+import SeasonsCorporatePost from "@/app/components/SeasonsCorporatePost";
+import SeasonsChocolatePost from "@/app/components/SeasonsChocolatePost";
+import SeasonsAppExperiencePost from "@/app/components/SeasonsAppExperiencePost";
+import SeasonsGetWellSoonPost from "@/app/components/SeasonsGetWellSoonPost";
+import SeasonsThankYouPost from "@/app/components/SeasonsThankYouPost";
+import SeasonsSubscriptionBenefitPost from "@/app/components/SeasonsSubscriptionBenefitPost";
+import SeasonsGiftCardPost from "@/app/components/SeasonsGiftCardPost";
+import SeasonsWorkshopPost from "@/app/components/SeasonsWorkshopPost";
+import SeasonsModernBouquetPost from "@/app/components/SeasonsModernBouquetPost";
+import SeasonsVaseCollectionPost from "@/app/components/SeasonsVaseCollectionPost";
+import SeasonsLuxuryBoxPost from "@/app/components/SeasonsLuxuryBoxPost";
+import SeasonsElegantArrangementPost from "@/app/components/SeasonsElegantArrangementPost";
+import SeasonsSeasonalPost from "@/app/components/SeasonsSeasonalPost";
+import SeasonsPremiumWhitePost from "@/app/components/SeasonsPremiumWhitePost";
+import SeasonsFlowerBasketPost from "@/app/components/SeasonsFlowerBasketPost";
+import SeasonsBrightVibePost from "@/app/components/SeasonsBrightVibePost";
+import PostWrapper from "@/app/components/PostWrapper";
 
 const SEASONS_POSTS = [
   { id: "seasons-hero", filename: "seasons-hero", component: SeasonsHeroPost },
@@ -97,25 +98,12 @@ export default function SeasonsPage() {
     if (selectedPosts.length === 0) return;
     setDownloading(true);
     try {
-      const JSZip = (await import("jszip")).default;
-      const zip = new JSZip();
-
-      for (const id of selectedPosts) {
-        const container = postRefs.current.get(id);
-        if (!container) continue;
-        const postEl = container.querySelector('.post-wrapper') as HTMLElement;
-        if (!postEl) continue;
-        const dataUrl = await toPng(postEl, { pixelRatio: 2, cacheBust: true });
-        const base64 = dataUrl.split(",")[1];
-        zip.file(`${id}.png`, base64, { base64: true });
-      }
-
-      const blob = await zip.generateAsync({ type: "blob" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.download = `seasons-posts-${selectedPosts.length}.zip`;
-      link.href = url;
-      link.click();
+      await downloadPostsAsZip(
+        postRefs.current,
+        selectedPosts,
+        selectedPosts.map(id => ({ id })),
+        `seasons-posts-${selectedPosts.length}.zip`,
+      );
     } catch (err) {
       console.error(err);
     } finally {

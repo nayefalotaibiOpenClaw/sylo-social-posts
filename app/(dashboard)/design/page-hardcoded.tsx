@@ -3,45 +3,47 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutGrid, List, Sparkles, Palette, ArrowUpDown, Pencil, Settings, Upload, Image as ImageIcon, X, Check, MousePointer2, Download, Loader2, Code, Eye } from "lucide-react";
 import { toPng } from "html-to-image";
-import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext } from "../components/EditContext";
-import { useTheme, useSetTheme, Theme, defaultTheme } from "../components/ThemeContext";
-import DynamicPost from "../components/DynamicPost";
+import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext } from "@/contexts/EditContext";
+import { useTheme, useSetTheme, type Theme } from "@/contexts/ThemeContext";
+import { FONTS } from "@/features/design-editor/constants/fonts";
+import { PALETTES } from "@/features/design-editor/constants/palettes";
+import DynamicPost from "@/app/components/DynamicPost";
 import Link from "next/link";
-import SummerOfferPost from "../components/SummerOffer";
-import RelaxPost from "../components/RelaxPost";
-import OfflineModePost from "../components/OfflineModePost";
-import OnePlatformPost from "../components/OnePlatformPost";
-import KitchenDisplayPost from "../components/KitchenDisplayPost";
-import AnalyticsPost from "../components/AnalyticsPost";
-import OnlineStorePost from "../components/OnlineStorePost";
-import DeliveryIntegrationPost from "../components/DeliveryIntegrationPost";
-import HRAttendancePost from "../components/HRAttendancePost";
-import TaskManagementPost from "../components/TaskManagementPost";
-import LoyaltyPost from "../components/LoyaltyPost";
-import InventoryPost from "../components/InventoryPost";
-import AccountingPost from "../components/AccountingPost";
-import AIInsightsPost from "../components/AIInsightsPost";
-import MultiBranchPost from "../components/MultiBranchPost";
-import MobileDashboardPost from "../components/MobileDashboardPost";
-import StaffManagementPost from "../components/StaffManagementPost";
-import InventoryStockPost from "../components/InventoryStockPost";
-import MenuPerformancePost from "../components/MenuPerformancePost";
-import WasteReductionPost from "../components/WasteReductionPost";
-import QualityControlPost from "../components/QualityControlPost";
-import IntegratedPaymentsPost from "../components/IntegratedPaymentsPost";
-import RegionalScalabilityPost from "../components/RegionalScalabilityPost";
-import CustomerInsightsPost from "../components/CustomerInsightsPost";
-import TableOrderingPost from "../components/TableOrderingPost";
-import MenuManagementPost from "../components/MenuManagementPost";
-import DashboardOverviewPost from "../components/DashboardOverviewPost";
-import ReportsExportPost from "../components/ReportsExportPost";
-import ProfitCenterPost from "../components/ProfitCenterPost";
-import SmartWorkflowsPost from "../components/SmartWorkflowsPost";
-import OnlineOrderingPost from "../components/OnlineOrderingPost";
-import SmartMenuPost from "../components/SmartMenuPost";
-import DualScreenPost from "../components/DualScreenPost";
-import LiveTrackingPost from "../components/LiveTrackingPost";
-import PostWrapper from "../components/PostWrapper";
+import SummerOfferPost from "@/app/components/SummerOffer";
+import RelaxPost from "@/app/components/RelaxPost";
+import OfflineModePost from "@/app/components/OfflineModePost";
+import OnePlatformPost from "@/app/components/OnePlatformPost";
+import KitchenDisplayPost from "@/app/components/KitchenDisplayPost";
+import AnalyticsPost from "@/app/components/AnalyticsPost";
+import OnlineStorePost from "@/app/components/OnlineStorePost";
+import DeliveryIntegrationPost from "@/app/components/DeliveryIntegrationPost";
+import HRAttendancePost from "@/app/components/HRAttendancePost";
+import TaskManagementPost from "@/app/components/TaskManagementPost";
+import LoyaltyPost from "@/app/components/LoyaltyPost";
+import InventoryPost from "@/app/components/InventoryPost";
+import AccountingPost from "@/app/components/AccountingPost";
+import AIInsightsPost from "@/app/components/AIInsightsPost";
+import MultiBranchPost from "@/app/components/MultiBranchPost";
+import MobileDashboardPost from "@/app/components/MobileDashboardPost";
+import StaffManagementPost from "@/app/components/StaffManagementPost";
+import InventoryStockPost from "@/app/components/InventoryStockPost";
+import MenuPerformancePost from "@/app/components/MenuPerformancePost";
+import WasteReductionPost from "@/app/components/WasteReductionPost";
+import QualityControlPost from "@/app/components/QualityControlPost";
+import IntegratedPaymentsPost from "@/app/components/IntegratedPaymentsPost";
+import RegionalScalabilityPost from "@/app/components/RegionalScalabilityPost";
+import CustomerInsightsPost from "@/app/components/CustomerInsightsPost";
+import TableOrderingPost from "@/app/components/TableOrderingPost";
+import MenuManagementPost from "@/app/components/MenuManagementPost";
+import DashboardOverviewPost from "@/app/components/DashboardOverviewPost";
+import ReportsExportPost from "@/app/components/ReportsExportPost";
+import ProfitCenterPost from "@/app/components/ProfitCenterPost";
+import SmartWorkflowsPost from "@/app/components/SmartWorkflowsPost";
+import OnlineOrderingPost from "@/app/components/OnlineOrderingPost";
+import SmartMenuPost from "@/app/components/SmartMenuPost";
+import DualScreenPost from "@/app/components/DualScreenPost";
+import LiveTrackingPost from "@/app/components/LiveTrackingPost";
+import PostWrapper from "@/app/components/PostWrapper";
 
 const POST_REGISTRY: { id: string; filename: string; component: React.ComponentType }[] = [
   { id: "smart-menu", filename: "smart-menu", component: SmartMenuPost },
@@ -85,33 +87,6 @@ const STATIC_IMAGES = [
   "/pos-screen.jpg", "/sylo-logo.jpg", "/mockup.png",
 ];
 
-const FONTS = [
-  { name: "Cairo", value: "'Cairo', sans-serif" },
-  { name: "Tajawal", value: "'Tajawal', sans-serif" },
-  { name: "IBM Plex Sans Arabic", value: "'IBM Plex Sans Arabic', sans-serif" },
-  { name: "Noto Sans Arabic", value: "'Noto Sans Arabic', sans-serif" },
-  { name: "Readex Pro", value: "'Readex Pro', sans-serif" },
-  { name: "Rubik", value: "'Rubik', sans-serif" },
-  { name: "Almarai", value: "'Almarai', sans-serif" },
-  { name: "Changa", value: "'Changa', sans-serif" },
-  { name: "El Messiri", value: "'El Messiri', sans-serif" },
-  { name: "Baloo Bhaijaan 2", value: "'Baloo Bhaijaan 2', sans-serif" },
-  { name: "Inter", value: "'Inter', sans-serif" },
-  { name: "Geist", value: "'Geist', sans-serif" },
-];
-
-const PALETTES: { name: string; theme: Theme }[] = [
-  { name: "Sylo Green", theme: defaultTheme },
-  { name: "Ocean Blue", theme: { ...defaultTheme, primary: "#1E3A5F", primaryLight: "#EFF6FF", primaryDark: "#0F1D30", accent: "#3B82F6", accentLight: "#60A5FA", accentLime: "#38BDF8", border: "#2D5A8E" } },
-  { name: "Royal Purple", theme: { ...defaultTheme, primary: "#3B0764", primaryLight: "#F5F3FF", primaryDark: "#1E0334", accent: "#7C3AED", accentLight: "#A78BFA", accentLime: "#C084FC", border: "#581C87" } },
-  { name: "Warm Orange", theme: { ...defaultTheme, primary: "#7C2D12", primaryLight: "#FFF7ED", primaryDark: "#431407", accent: "#EA580C", accentLight: "#FB923C", accentLime: "#FBBF24", border: "#9A3412" } },
-  { name: "Rose Pink", theme: { ...defaultTheme, primary: "#881337", primaryLight: "#FFF1F2", primaryDark: "#4C0519", accent: "#E11D48", accentLight: "#FB7185", accentLime: "#FDA4AF", border: "#9F1239" } },
-  { name: "Slate Dark", theme: { ...defaultTheme, primary: "#0F172A", primaryLight: "#F8FAFC", primaryDark: "#020617", accent: "#475569", accentLight: "#94A3B8", accentLime: "#CBD5E1", border: "#1E293B" } },
-  { name: "Teal", theme: { ...defaultTheme, primary: "#134E4A", primaryLight: "#F0FDFA", primaryDark: "#042F2E", accent: "#0D9488", accentLight: "#2DD4BF", accentLime: "#5EEAD4", border: "#115E59" } },
-  { name: "Gold & Black", theme: { ...defaultTheme, primary: "#1C1917", primaryLight: "#FFFBEB", primaryDark: "#0C0A09", accent: "#A16207", accentLight: "#CA8A04", accentLime: "#FBBF24", border: "#292524" } },
-  { name: "Crimson Red", theme: { ...defaultTheme, primary: "#450A0A", primaryLight: "#FEF2F2", primaryDark: "#1C0404", accent: "#DC2626", accentLight: "#F87171", accentLime: "#FCA5A5", border: "#7F1D1D" } },
-  { name: "Forest", theme: { ...defaultTheme, primary: "#14532D", primaryLight: "#F0FDF4", primaryDark: "#052E16", accent: "#16A34A", accentLight: "#4ADE80", accentLime: "#86EFAC", border: "#166534" } },
-];
 
 type SidebarTab = 'settings' | 'theme' | 'uploads' | 'generate' | null;
 
