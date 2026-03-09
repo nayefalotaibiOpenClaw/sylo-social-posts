@@ -326,16 +326,48 @@ export default function DesignPage() {
     e.target.value = '';
   };
 
+  // Compress image for mobile — reduce to max 2048px and convert to JPEG
+  const compressImage = async (file: File, maxSize = 2048, quality = 0.85): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const ratio = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { resolve(file); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => blob ? resolve(blob) : resolve(file),
+          "image/jpeg",
+          quality
+        );
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Failed to load image")); };
+      img.src = url;
+    });
+  };
+
   const handleAssetUpload = async () => {
     if (!workspaceId || !user || pendingFiles.length === 0) return;
     setUploadingAsset(true);
     try {
       for (const file of pendingFiles) {
+        // Compress large images to prevent mobile crashes
+        const blob = file.size > 1024 * 1024 ? await compressImage(file) : file;
         const uploadUrl = await generateUploadUrl();
         const result = await fetch(uploadUrl, {
           method: "POST",
-          headers: { "Content-Type": file.type },
-          body: file,
+          headers: { "Content-Type": blob.type || file.type },
+          body: blob,
         });
         const { storageId } = await result.json();
 

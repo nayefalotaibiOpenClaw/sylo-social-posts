@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Upload, Image as ImageIcon, X, Check, Loader2, RefreshCw } from "lucide-react";
 
 const ASSET_TYPES = [
@@ -55,6 +55,16 @@ export default function AssetsPanel({
   onRemoveAsset,
   onRetryAnalysis,
 }: AssetsPanelProps) {
+  // Memoize preview URLs to avoid creating new blob URLs on every render
+  const previewUrls = useMemo(() => {
+    return pendingFiles.map((file) => URL.createObjectURL(file));
+  }, [pendingFiles]);
+
+  // Clean up blob URLs when files change
+  React.useEffect(() => {
+    return () => { previewUrls.forEach((url) => URL.revokeObjectURL(url)); };
+  }, [previewUrls]);
+
   return (
     <div className="space-y-4">
       <label className="block w-full cursor-pointer">
@@ -73,7 +83,7 @@ export default function AssetsPanel({
           <div className="grid grid-cols-3 gap-1.5">
             {pendingFiles.map((file, i) => (
               <div key={i} className="aspect-square rounded-md overflow-hidden bg-white border border-gray-200">
-                <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
+                <img src={previewUrls[i]} alt="" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
