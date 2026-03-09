@@ -1,9 +1,11 @@
 {
+  "nav.home": "الرئيسية",
   "nav.pricing": "الأسعار",
-  "nav.login": "تسجيل الدخول",
-  "nav.dashboard": "لوحة التحكم",
-  "nav.joinFree": "انضم مجاناً",
   "nav.workspaces": "مساحات العمل",
+  "nav.blogs": "المدونة",
+  "nav.contact": "تواصل معنا",
+  "nav.login": "تسجيل الدخول",
+  "nav.joinFree": "انضم مجاناً",
   "nav.signOut": "تسجيل الخروج",
 
   "login.backToHome": "العودة للرئيسية",

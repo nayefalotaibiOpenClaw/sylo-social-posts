@@ -1,9 +1,11 @@
 {
+  "nav.home": "Home",
   "nav.pricing": "Pricing",
-  "nav.login": "Log in",
-  "nav.dashboard": "Dashboard",
-  "nav.joinFree": "Join for free",
   "nav.workspaces": "Workspaces",
+  "nav.blogs": "Blogs",
+  "nav.contact": "Contact",
+  "nav.login": "Log in",
+  "nav.joinFree": "Join for free",
   "nav.signOut": "Sign out",
 
   "login.backToHome": "Back to Home",
@@ -109,8 +111,5 @@
   "landing.linkedin": "LinkedIn",
   "landing.termsOfService": "Terms of Service",
   "landing.privacyPolicy": "Privacy Policy",
-  "landing.copyright": "© 2026 oDesigns Studio. All rights reserved.",
-
-  "lang.en": "EN",
-  "lang.ar": "عربي"
+  "landing.copyright": "© 2026 oDesigns Studio. All rights reserved."
 }

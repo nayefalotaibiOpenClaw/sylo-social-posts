@@ -1,13 +1,12 @@
 "use client";
 
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect, useCallback } from "react";
-import { Check, Sparkles, Zap, Crown, Loader2, LogOut, X, AlertCircle } from "lucide-react";
+import { Check, Sparkles, Zap, Crown, Loader2, X, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n/context";
-import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
+import FloatingNav from "@/app/components/FloatingNav";
 import type { TranslationKey } from "@/lib/i18n/types";
 
 const PLANS = [
@@ -67,7 +66,6 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
 
 export default function PricingPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
-  const { signOut } = useAuthActions();
   const user = useQuery(api.users.currentUser);
   const usage = useQuery(api.subscriptions.getUsage);
   const createPayment = useMutation(api.payments.createPending);
@@ -162,47 +160,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {toast && <Toast message={toast} onClose={dismissToast} />}
 
-      {/* Nav bar */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl">
-        <div className="bg-neutral-900/80 backdrop-blur-xl border border-neutral-700/50 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/30">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-black font-black text-[10px]">oD</span>
-              </div>
-              <span className="font-black text-lg tracking-tight text-white">oDesigns</span>
-            </div>
-            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-neutral-400">
-              <span className="text-white">{t("nav.pricing")}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <Link
-              href="/workspaces"
-              className="px-5 py-2 rounded-full bg-white text-black font-bold text-sm hover:scale-105 transition-all active:scale-95"
-            >
-              {t("nav.dashboard")}
-            </Link>
-            <div className="flex items-center gap-2">
-              {user?.image ? (
-                <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
-              ) : user && (
-                <div className="w-8 h-8 bg-neutral-700 rounded-full flex items-center justify-center">
-                  <span className="text-neutral-200 font-bold text-xs">{(user.name || user.email || "U")[0].toUpperCase()}</span>
-                </div>
-              )}
-              <button
-                onClick={() => void signOut()}
-                className="p-2 rounded-full hover:bg-neutral-800 transition-colors text-neutral-500 hover:text-white"
-                title={t("nav.signOut")}
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <FloatingNav variant="dark" activePage="pricing" />
 
       <div className="max-w-5xl mx-auto px-6 pt-24 pb-16">
         {/* Header */}

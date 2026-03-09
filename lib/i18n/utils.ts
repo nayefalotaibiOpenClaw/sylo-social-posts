@@ -5,7 +5,9 @@ const COOKIE_NAME = "locale";
 export function getLocaleCookie(): Locale | null {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]*)`));
-  return match ? (match[1] as Locale) : null;
+  if (!match) return null;
+  const val = match[1];
+  return val === "en" || val === "ar" ? val : null;
 }
 
 export function setLocaleCookie(locale: Locale) {

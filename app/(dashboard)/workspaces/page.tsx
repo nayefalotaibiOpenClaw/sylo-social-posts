@@ -1,21 +1,18 @@
 "use client";
 
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Plus, Folder, Loader2, LogOut } from "lucide-react";
+import { Plus, Folder, Loader2 } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import WorkspaceCard from "@/features/workspace/components/WorkspaceCard";
 import WorkspaceForm, { type WorkspaceFormData } from "@/features/workspace/components/WorkspaceForm";
 import { useLocale } from "@/lib/i18n/context";
-import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
+import FloatingNav from "@/app/components/FloatingNav";
 
 export default function WorkspacesPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
-  const { signOut } = useAuthActions();
   const router = useRouter();
   const user = useQuery(api.users.currentUser);
   const workspaces = useQuery(
@@ -150,42 +147,7 @@ export default function WorkspacesPage() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100">
-      {/* Floating nav */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl">
-        <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-slate-200/50">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                <span className="text-white font-black text-[10px]">oD</span>
-              </div>
-              <span className="font-black text-lg tracking-tight">oDesigns</span>
-            </div>
-            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
-              <span className="text-slate-900">{t("nav.workspaces")}</span>
-              <Link href="/pricing" className="hover:text-slate-900">{t("nav.pricing")}</Link>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <div className="flex items-center gap-2">
-              {user.image ? (
-                <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
-              ) : (
-                <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
-                  <span className="text-slate-600 font-bold text-xs">{user.name?.[0] ?? "?"}</span>
-                </div>
-              )}
-              <button
-                onClick={() => void signOut()}
-                className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-900"
-                title={t("nav.signOut")}
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <FloatingNav activePage="workspaces" />
 
       <div className="max-w-5xl mx-auto px-6 pt-28 pb-16">
         {/* Action Bar */}

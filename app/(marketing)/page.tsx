@@ -1,15 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useConvexAuth, useQuery } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { api } from "@/convex/_generated/api";
-import {
-  ChevronRight,
-  LogOut
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import FloatingNav from "@/app/components/FloatingNav";
 
 // Real post components - Sylo
 import AnalyticsPost from "@/features/posts/templates/sylo/AnalyticsPost";
@@ -40,7 +34,6 @@ import { EditContext, AspectRatioContext } from "@/contexts/EditContext";
 
 // i18n
 import { useLocale } from "@/lib/i18n/context";
-import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
 
 const themes: Theme[] = [
   defaultTheme, // Green
@@ -191,9 +184,6 @@ const FloatingLogo = ({ delay, children, top, left, right }: { delay: number; ch
 );
 
 export default function LandingPage() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const user = useQuery(api.users.currentUser);
-  const { signOut } = useAuthActions();
   const [activeTab, setActiveTab] = useState<TabKey>("social");
   const currentTab = tabPostsMap[activeTab];
   const { t } = useLocale();
@@ -206,57 +196,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 overflow-x-hidden">
-      {/* Navigation */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl">
-        <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-slate-200/50">
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
-              <Link href="/pricing" className="hover:text-slate-900">{t("nav.pricing")}</Link>
-              {!isLoading && !isAuthenticated && (
-                <Link href="/login" className="hover:text-slate-900">{t("nav.login")}</Link>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            {isLoading ? (
-              <div className="w-24 h-9 bg-slate-100 rounded-full animate-pulse" />
-            ) : isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/workspaces"
-                  className="px-5 py-2 rounded-full bg-slate-900 text-white font-bold text-sm hover:scale-105 transition-all active:scale-95"
-                >
-                  {t("nav.dashboard")}
-                </Link>
-                <div className="flex items-center gap-2">
-                  {user?.image ? (
-                    <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
-                  ) : (
-                    <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
-                      <span className="text-slate-600 font-bold text-xs">{user?.name?.[0] ?? "?"}</span>
-                    </div>
-                  )}
-                  <button
-                    onClick={() => void signOut()}
-                    className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-900"
-                    title={t("nav.signOut")}
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="px-5 py-2 rounded-full bg-slate-900 text-white font-bold text-sm hover:scale-105 transition-all active:scale-95"
-              >
-                {t("nav.joinFree")}
-              </Link>
-            )}
-          </div>
-        </div>
-      </nav>
+      <FloatingNav activePage="home" />
 
       {/* Hero Section */}
       <section className="pt-48 pb-20 px-6 relative">

@@ -17,8 +17,10 @@ interface LocaleContextValue {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
+// Always return "en" on server to match layout.tsx default.
+// On client, read cookie or detect browser language.
 function getInitialLocale(): Locale {
-  if (typeof document === "undefined") return "en"; // SSR fallback
+  if (typeof document === "undefined") return "en";
   const cookie = getLocaleCookie();
   if (cookie) return cookie;
   const detected = detectBrowserLocale();
@@ -27,7 +29,16 @@ function getInitialLocale(): Locale {
 }
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
+  // Initialize to "en" for SSR, then sync to real locale in useEffect to avoid hydration mismatch
+  const [locale, setLocaleState] = useState<Locale>("en");
+  const [hydrated, setHydrated] = useState(false);
+
+  // After hydration, sync to the real locale from cookie/browser
+  useEffect(() => {
+    const real = getInitialLocale();
+    setLocaleState(real);
+    setHydrated(true);
+  }, []);
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);
@@ -36,11 +47,12 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dir = newLocale === "ar" ? "rtl" : "ltr";
   }, []);
 
-  // Sync HTML attributes on mount
+  // Sync HTML attributes whenever locale changes (after hydration)
   useEffect(() => {
+    if (!hydrated) return;
     document.documentElement.lang = locale;
     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
-  }, [locale]);
+  }, [locale, hydrated]);
 
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string>): string => {
