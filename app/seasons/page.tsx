@@ -26,6 +26,16 @@ import SeasonsThankYouPost from "@/app/components/SeasonsThankYouPost";
 import SeasonsSubscriptionBenefitPost from "@/app/components/SeasonsSubscriptionBenefitPost";
 import SeasonsGiftCardPost from "@/app/components/SeasonsGiftCardPost";
 import SeasonsWorkshopPost from "@/app/components/SeasonsWorkshopPost";
+import SeasonsQuotePost from "@/app/components/SeasonsQuotePost";
+import SeasonsProcessPost from "@/app/components/SeasonsProcessPost";
+import SeasonsMoodboardPost from "@/app/components/SeasonsMoodboardPost";
+import SeasonsTestimonialPost from "@/app/components/SeasonsTestimonialPost";
+import SeasonsComparisonPost from "@/app/components/SeasonsComparisonPost";
+import SeasonsLocationPost from "@/app/components/SeasonsLocationPost";
+import SeasonsUniversalPost from "@/app/components/SeasonsUniversalPost";
+import SeasonsMothersDayPost from "@/app/components/SeasonsMothersDayPost";
+import SeasonsValentinesPost from "@/app/components/SeasonsValentinesPost";
+import SeasonsParentsBundlePost from "@/app/components/SeasonsParentsBundlePost";
 import SeasonsModernBouquetPost from "@/app/components/SeasonsModernBouquetPost";
 import SeasonsVaseCollectionPost from "@/app/components/SeasonsVaseCollectionPost";
 import SeasonsLuxuryBoxPost from "@/app/components/SeasonsLuxuryBoxPost";
@@ -63,6 +73,37 @@ const SEASONS_POSTS = [
   { id: "seasons-offer", filename: "seasons-offer", component: SeasonsOfferPost },
   { id: "seasons-card", filename: "seasons-card", component: SeasonsGiftCardPost },
   { id: "seasons-work", filename: "seasons-work", component: SeasonsWorkshopPost },
+  { id: "seasons-quote", filename: "seasons-quote", component: SeasonsQuotePost },
+  { id: "seasons-process", filename: "seasons-process", component: SeasonsProcessPost },
+  { id: "seasons-mood", filename: "seasons-mood", component: SeasonsMoodboardPost },
+  { id: "seasons-testi", filename: "seasons-testi", component: SeasonsTestimonialPost },
+  { id: "seasons-compare", filename: "seasons-compare", component: SeasonsComparisonPost },
+  { id: "seasons-loc", filename: "seasons-loc", component: SeasonsLocationPost },
+  { id: "seasons-uni-1", filename: "seasons-universal-centered", component: () => <SeasonsUniversalPost layout="centered" imagePath="/seasons/1.jpg" /> },
+  { id: "seasons-uni-2", filename: "seasons-universal-split", component: () => <SeasonsUniversalPost layout="split" imagePath="/seasons/2.jpg" hasGlassmorphism={false} /> },
+  { id: "seasons-uni-3", filename: "seasons-universal-minimal", component: () => <SeasonsUniversalPost layout="centered" ornamentType="none" hasGlassmorphism={true} /> },
+  
+  // Mother's Day Series (9 posts)
+  ...([1, 2, 3, 4, 5, 6, 7, 8, 9] as const).map(v => ({
+    id: `seasons-md-${v}`,
+    filename: `seasons-mothers-day-${v}`,
+    component: () => <SeasonsMothersDayPost variant={v} />
+  })),
+
+  // Valentine's Day Series (9 posts)
+  ...([1, 2, 3, 4, 5, 6, 7, 8, 9] as const).map(v => ({
+    id: `seasons-vd-${v}`,
+    filename: `seasons-valentines-${v}`,
+    component: () => <SeasonsValentinesPost variant={v} />
+  })),
+
+  // Parents Bundle Series (9 posts)
+  ...([1, 2, 3, 4, 5, 6, 7, 8, 9] as const).map(v => ({
+    id: `seasons-parents-${v}`,
+    filename: `seasons-parents-bundle-${v}`,
+    component: () => <SeasonsParentsBundlePost variant={v} />
+  })),
+
   { id: "seasons-care", filename: "seasons-care", component: SeasonsCarePost },
 ];
 
