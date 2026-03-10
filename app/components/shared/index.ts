@@ -12,3 +12,4 @@ export { default as RatingStars } from "./RatingStars";
 export { default as ProductLabel } from "./ProductLabel";
 export { default as TestimonialBubble } from "./TestimonialBubble";
 export { default as PromoCode } from "./PromoCode";
+export { default as MockupFrame } from "./MockupFrame";

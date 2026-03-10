@@ -104,7 +104,7 @@ export default function DesignPage() {
   const [generatedPosts, setGeneratedPosts] = useState<{ id: string; code: string }[]>([]);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generateCount, setGenerateCount] = useState(2);
-  const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3>(1);
+  const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3 | 4>(1);
   const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [fetchingWebsite, setFetchingWebsite] = useState(false);
@@ -663,8 +663,8 @@ export default function DesignPage() {
           </DeviceContext.Provider>
         )}
 
-        {/* Bottom toolbar */}
-        <div className="fixed bottom-[52px] md:bottom-0 left-0 right-0 z-[60] bg-white/95 backdrop-blur-sm border-t border-gray-100 px-3 py-1.5 flex items-center justify-center gap-4 md:gap-5">
+        {/* Bottom toolbar — hidden on mobile when a sidebar panel is open */}
+        <div className={`fixed bottom-[52px] md:bottom-0 left-0 right-0 z-[60] bg-white/95 backdrop-blur-sm border-t border-gray-100 px-3 py-1.5 flex items-center justify-center gap-4 md:gap-5 ${activeTab ? 'max-md:hidden' : ''}`}>
           {(['1:1', '3:4', '4:3', '9:16', '16:9'] as const).map((r) => (
             <button key={r} onClick={() => setAspectRatio(r)}
               className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${aspectRatio === r ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-600'}`}

@@ -6,7 +6,7 @@ import EditableText from "./EditableText";
 import DraggableWrapper from "./DraggableWrapper";
 import { useAspectRatio, useEditMode } from "./EditContext";
 import { useTheme } from "./ThemeContext";
-import { IPhoneMockup, PostHeader, PostFooter, FloatingCard, IPadMockup, DesktopMockup, AndroidPhoneMockup, AndroidTabletMockup } from "./shared";
+import { IPhoneMockup, PostHeader, PostFooter, FloatingCard, IPadMockup, DesktopMockup, AndroidPhoneMockup, AndroidTabletMockup, MockupFrame } from "./shared";
 import * as LucideIcons from "lucide-react";
 import { useDeviceType } from "@/contexts/DeviceContext";
 import { OverrideProvider, PostConfigOverrides } from "./OverrideContext";
@@ -67,9 +67,11 @@ export default function DynamicPost({ code, overrides, onOverridesChange }: Dyna
         "AndroidPhoneMockup",
         "AndroidTabletMockup",
         "useDeviceType",
+        "MockupFrame",
         "LucideIcons",
         `
         const { ${Object.keys(LucideIcons).join(", ")} } = LucideIcons;
+        const { useState, useEffect, useRef, useCallback, useMemo: useMemoHook, useContext, Fragment } = React;
         ${jsCode}
         return typeof __Component__ !== 'undefined' ? __Component__ : null;
         `
@@ -91,6 +93,7 @@ export default function DynamicPost({ code, overrides, onOverridesChange }: Dyna
         AndroidPhoneMockup,
         AndroidTabletMockup,
         useDeviceType,
+        MockupFrame,
         LucideIcons,
       );
     } catch (err) {

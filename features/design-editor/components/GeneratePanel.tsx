@@ -20,8 +20,8 @@ interface GeneratePanelProps {
   generateError: string | null;
   generateCount: number;
   setGenerateCount: (v: number) => void;
-  generateVersion: 1 | 2 | 3;
-  setGenerateVersion: (v: 1 | 2 | 3) => void;
+  generateVersion: 1 | 2 | 3 | 4;
+  setGenerateVersion: (v: 1 | 2 | 3 | 4) => void;
   generatedPosts: { id: string; code: string }[];
   setGeneratedPosts: React.Dispatch<React.SetStateAction<{ id: string; code: string }[]>>;
   setLocalOrder: React.Dispatch<React.SetStateAction<string[]>>;
@@ -233,9 +233,14 @@ export default function GeneratePanel({
           </div>
         </div>
         <div className="flex-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Engine</label>
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Style</label>
           <div className="flex gap-1">
-            {([1, 2, 3] as const).map((v) => (
+            {([
+              { v: 1 as const, label: 'Guided' },
+              { v: 2 as const, label: 'Creative' },
+              { v: 3 as const, label: 'Free' },
+              { v: 4 as const, label: 'Wild' },
+            ]).map(({ v, label }) => (
               <button
                 key={v}
                 onClick={() => setGenerateVersion(v)}
@@ -245,7 +250,7 @@ export default function GeneratePanel({
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                V{v}
+                {label}
               </button>
             ))}
           </div>

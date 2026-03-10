@@ -1,26 +1,16 @@
-export const EXAMPLE_DARK_MOCKUP = `// EXAMPLE A: Dark bg + device-aware phone mockup + floating stats
+export const EXAMPLE_DARK_MOCKUP = `// EXAMPLE A: Dark bg + MockupFrame (auto-sized) + floating stats
 import React from 'react';
 import EditableText from './EditableText';
 import DraggableWrapper from './DraggableWrapper';
 import { useAspectRatio } from './EditContext';
 import { useTheme } from './ThemeContext';
-import { useDeviceType } from './DeviceContext';
-import { IPhoneMockup, IPadMockup, DesktopMockup, AndroidPhoneMockup, AndroidTabletMockup, PostHeader, PostFooter, FloatingCard } from './shared';
+import { MockupFrame, PostHeader, PostFooter, FloatingCard } from './shared';
 import { Cloud, Zap, Globe } from 'lucide-react';
 
 export default function CloudPOSPost() {
   const ratio = useAspectRatio();
   const t = useTheme();
   const isTall = ratio === '9:16' || ratio === '3:4';
-  const isWide = ratio === '16:9' || ratio === '4:3';
-  const deviceType = useDeviceType();
-  const DeviceMockup =
-    deviceType === 'android' ? AndroidPhoneMockup :
-    deviceType === 'ipad' ? IPadMockup :
-    deviceType === 'android_tablet' ? AndroidTabletMockup :
-    deviceType === 'desktop' ? DesktopMockup :
-    IPhoneMockup;
-  const isPhoneDevice = deviceType === 'iphone' || deviceType === 'android';
 
   return (
     <div className="relative w-full h-full shadow-2xl overflow-hidden mx-auto font-sans"
@@ -44,11 +34,9 @@ export default function CloudPOSPost() {
         </DraggableWrapper>
 
         <div className="flex-1 min-h-0 flex items-center justify-center relative mt-4">
-          <DraggableWrapper id="mockup" className={\`relative z-20 \${isPhoneDevice ? (isTall ? 'w-[300px] h-[580px]' : 'w-[230px] h-[360px]') : (isTall ? 'w-[340px] h-[230px]' : 'w-[300px] h-[200px]')}\`}>
-            <DeviceMockup src="/pos-screen.jpg" />
-          </DraggableWrapper>
-          <FloatingCard id="stat1" icon={<Zap size={16} style={{ color: t.accentLime }} />} label="السرعة" value="100%" className="absolute -left-4 top-20" rotate={-5} />
-          <FloatingCard id="stat2" icon={<Globe size={16} style={{ color: t.accent }} />} label="وصول عالمي" value="24/7" className="absolute -right-8 bottom-32" rotate={8} />
+          <MockupFrame id="mockup" src="/pos-screen.jpg" />
+          <FloatingCard id="stat1" icon={<Zap size={16} style={{ color: t.accentLime }} />} label="السرعة" value="100%" className="absolute left-0 top-4" rotate={-5} />
+          <FloatingCard id="stat2" icon={<Globe size={16} style={{ color: t.accent }} />} label="وصول عالمي" value="24/7" className="absolute right-0 bottom-4" rotate={8} />
         </div>
 
         <PostFooter id="cloud-pos" label="SYLO POS" text="أدر مطعمك من أي مكان في العالم" variant="dark" />
@@ -121,7 +109,7 @@ export default function SubscriptionPost() {
       <div className="relative z-10 w-full h-full flex flex-col p-8 overflow-hidden">
         <PostHeader id="sub" subtitle="SUBSCRIPTIONS" badge={<><Calendar size={12}/> WEEKLY FRESH</>} variant="light" />
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center relative mt-4">
-          <DraggableWrapper id="mockup" className={\`relative z-20 \${isTall ? 'w-[400px] h-[400px]' : 'w-[280px] h-[280px]'}\`}>
+          <DraggableWrapper id="mockup" className="relative z-20 w-[60%] max-w-[320px] aspect-square">
              <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl border-[12px] border-white ring-1 ring-black/5">
                 <img src="/seasons/3.jpg" className="w-full h-full object-cover" alt="Product" />
              </div>
@@ -195,13 +183,13 @@ export default function CorporatePost() {
   );
 }`;
 
-export const EXAMPLE_DESKTOP_ANALYTICS = `// EXAMPLE E: Light bg + Desktop mockup + analytics focus
+export const EXAMPLE_DESKTOP_ANALYTICS = `// EXAMPLE E: Light bg + MockupFrame (desktop) + analytics focus
 import React from 'react';
 import EditableText from './EditableText';
 import DraggableWrapper from './DraggableWrapper';
 import { useAspectRatio } from './EditContext';
 import { useTheme } from './ThemeContext';
-import { DesktopMockup, PostHeader, PostFooter, FloatingCard } from './shared';
+import { MockupFrame, PostHeader, PostFooter, FloatingCard } from './shared';
 import { BarChart3, TrendingUp, PieChart } from 'lucide-react';
 
 export default function MenuEngineeringPost() {
@@ -226,10 +214,9 @@ export default function MenuEngineeringPost() {
           </h2>
         </DraggableWrapper>
         <div className="flex-1 min-h-0 flex items-center justify-center relative mt-4">
-          <DraggableWrapper id="mockup" className={\`relative z-20 \${isTall ? 'w-full h-[350px]' : 'w-[360px] h-[240px]'}\`}>
-            <DesktopMockup src="/pos-screen.jpg" url="admin.sylo.com/analytics" />
-          <FloatingCard id="stat1" icon={<BarChart3 size={16} />} label="نمو الأرباح" value="+22%" className="absolute -right-4 top-4" rotate={5} />
-          <FloatingCard id="stat2" icon={<PieChart size={16} />} label="الأكثر مبيعًا" value="برجر دبل" className="absolute -left-4 bottom-12" rotate={-5} />
+          <MockupFrame id="mockup" src="/pos-screen.jpg" device="desktop" />
+          <FloatingCard id="stat1" icon={<BarChart3 size={16} />} label="نمو الأرباح" value="+22%" className="absolute right-0 top-4" rotate={5} />
+          <FloatingCard id="stat2" icon={<PieChart size={16} />} label="الأكثر مبيعًا" value="برجر دبل" className="absolute left-0 bottom-4" rotate={-5} />
         </div>
         <PostFooter id="menu-eng" label="SYLO ANALYTICS" text="حلل أداء أصنافك وارفع هوامش ربحك" variant="light" />
       </div>
