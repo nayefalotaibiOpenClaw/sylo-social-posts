@@ -9,8 +9,6 @@ const FACEBOOK_SCOPES = [
   "pages_show_list",
   "pages_read_engagement",
   "pages_manage_posts",
-  "public_profile",
-  "email",
 ];
 
 const INSTAGRAM_SCOPES = [
@@ -39,13 +37,13 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
   if (error) {
     const errorDesc = url.searchParams.get("error_description") || "Unknown error";
     return redirect(
-      `${appUrl}/workspaces?social_error=${encodeURIComponent(errorDesc)}`
+      `${appUrl}/channels?social_error=${encodeURIComponent(errorDesc)}`
     );
   }
 
   if (!code || !stateParam) {
     return redirect(
-      `${appUrl}/workspaces?social_error=Missing+code+or+state`
+      `${appUrl}/channels?social_error=Missing+code+or+state`
     );
   }
 
@@ -80,13 +78,13 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
     state = JSON.parse(atob(statePayload));
   } catch {
     return redirect(
-      `${appUrl}/workspaces?social_error=Invalid+state`
+      `${appUrl}/channels?social_error=Invalid+state`
     );
   }
 
   if (Date.now() - state.ts > 15 * 60 * 1000) {
     return redirect(
-      `${appUrl}/workspaces?social_error=Session+expired`
+      `${appUrl}/channels?social_error=Session+expired`
     );
   }
 
@@ -96,7 +94,7 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
 
   if (!clientId || !clientSecret || !redirectUri) {
     return redirect(
-      `${appUrl}/workspaces?social_error=Meta+OAuth+not+configured`
+      `${appUrl}/channels?social_error=Meta+OAuth+not+configured`
     );
   }
 
@@ -164,7 +162,7 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
 
       const successMsg = `Connected: Instagram @${userData.username || "account"}`;
       return redirect(
-        `${appUrl}/workspaces?social_success=${encodeURIComponent(successMsg)}`
+        `${appUrl}/channels?social_success=${encodeURIComponent(successMsg)}`
       );
     }
 
@@ -262,13 +260,13 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
       : "Connected to Facebook (no pages found)";
 
     return redirect(
-      `${appUrl}/workspaces?social_success=${encodeURIComponent(successMsg)}`
+      `${appUrl}/channels?social_success=${encodeURIComponent(successMsg)}`
     );
   } catch (err) {
     console.error("OAuth callback error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return redirect(
-      `${appUrl}/workspaces?social_error=${encodeURIComponent(message)}`
+      `${appUrl}/channels?social_error=${encodeURIComponent(message)}`
     );
   }
 });

@@ -359,13 +359,34 @@ export default defineSchema({
     errorMessage: v.optional(v.string()),
     retryCount: v.optional(v.number()),
 
+    batchId: v.optional(v.string()),
+    schedulePatternId: v.optional(v.id("schedulePatterns")),
+
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_workspace", ["workspaceId"])
     .index("by_status_scheduled", ["status", "scheduledFor"])
     .index("by_social_account", ["socialAccountId"])
-    .index("by_post", ["postId"]),
+    .index("by_post", ["postId"])
+    .index("by_batch", ["batchId"]),
+
+  // ─── Schedule Patterns ───────────────────────────────
+  schedulePatterns: defineTable({
+    workspaceId: v.id("workspaces"),
+    userId: v.id("users"),
+    name: v.string(),
+    type: v.union(
+      v.literal("daily"),
+      v.literal("every_x_days"),
+      v.literal("weekly"),
+      v.literal("custom"),
+    ),
+    config: v.string(),
+    timezone: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_workspace", ["workspaceId"]),
 
   // ─── Publish History ───────────────────────────────
   publishHistory: defineTable({

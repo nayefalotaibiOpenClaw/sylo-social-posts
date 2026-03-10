@@ -52,6 +52,16 @@ export const listByCollection = query({
   },
 });
 
+export const listByWorkspace = query({
+  args: { workspaceId: v.id("workspaces") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("posts")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect();
+  },
+});
+
 export const get = query({
   args: { id: v.id("posts") },
   handler: async (ctx, args) => {

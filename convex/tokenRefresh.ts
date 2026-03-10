@@ -1,5 +1,51 @@
 import { internalAction } from "./_generated/server";
+import { v } from "convex/values";
 import { internal } from "./_generated/api";
+
+// Refresh a single account's token (used for pre-publish refresh)
+export const refreshSingle = internalAction({
+  args: { accountId: v.id("socialAccounts") },
+  handler: async (ctx, args) => {
+    const account = await ctx.runQuery(internal.socialAccounts.getWithTokens, { id: args.accountId });
+    if (!account || !account.tokenExpiresAt) return;
+
+    if (account.provider === "instagram") {
+      const res = await fetch(
+        `https://graph.instagram.com/v21.0/refresh_access_token?grant_type=ig_refresh_token&access_token=${account.accessToken}`
+      );
+      if (!res.ok) throw new Error(`Instagram token refresh failed: HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+
+      await ctx.runMutation(internal.socialAccounts.updateToken, {
+        id: args.accountId,
+        accessToken: data.access_token,
+        tokenExpiresAt: Date.now() + (data.expires_in || 5184000) * 1000,
+      });
+    } else if (account.provider === "facebook") {
+      const clientId = process.env.META_APP_ID;
+      const clientSecret = process.env.META_APP_SECRET;
+      if (!clientId || !clientSecret) throw new Error("Meta credentials not configured");
+
+      const url = new URL("https://graph.facebook.com/v21.0/oauth/access_token");
+      url.searchParams.set("grant_type", "fb_exchange_token");
+      url.searchParams.set("client_id", clientId);
+      url.searchParams.set("client_secret", clientSecret);
+      url.searchParams.set("fb_exchange_token", account.accessToken);
+
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error(`Facebook token refresh failed: HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+
+      await ctx.runMutation(internal.socialAccounts.updateToken, {
+        id: args.accountId,
+        accessToken: data.access_token,
+        tokenExpiresAt: Date.now() + (data.expires_in || 5184000) * 1000,
+      });
+    }
+  },
+});
 
 // Refresh tokens expiring within 7 days
 export const refreshExpiring = internalAction({

@@ -3,6 +3,10 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { auth } from "./auth";
 
+const META_API_VERSION = "v21.0";
+const META_GRAPH_URL = `https://graph.facebook.com/${META_API_VERSION}`;
+const IG_GRAPH_URL = `https://graph.instagram.com/${META_API_VERSION}`;
+
 // ─── Publish a single image post ─────────────────────────────────────
 export const publishToSocial = action({
   args: {
@@ -28,21 +32,34 @@ export const publishToSocial = action({
     if (!workspace || workspace.userId !== userId) throw new Error("Workspace not found");
 
     // Get the social account with tokens
-    const account = await ctx.runQuery(internal.socialAccounts.getWithTokens, {
+    let account = await ctx.runQuery(internal.socialAccounts.getWithTokens, {
       id: args.socialAccountId,
     });
     if (!account) throw new Error("Social account not found");
     if (account.status !== "active") throw new Error("Social account is not active");
     if (account.workspaceId !== args.workspaceId) throw new Error("Account does not belong to this workspace");
 
-    // Check token expiry
-    if (account.tokenExpiresAt && account.tokenExpiresAt < Date.now()) {
-      throw new Error("Access token has expired. Please reconnect the account.");
+    // Check token expiry — attempt refresh if expiring within 1 hour
+    if (account.tokenExpiresAt) {
+      const oneHourFromNow = Date.now() + 60 * 60 * 1000;
+      if (account.tokenExpiresAt < oneHourFromNow) {
+        try {
+          await ctx.runAction(internal.tokenRefresh.refreshSingle, { accountId: account._id });
+          // Re-fetch the account with refreshed token
+          const refreshed = await ctx.runQuery(internal.socialAccounts.getWithTokens, { id: args.socialAccountId });
+          if (refreshed) account = refreshed;
+        } catch {
+          if (account.tokenExpiresAt < Date.now()) {
+            throw new Error("Access token has expired. Please reconnect the account.");
+          }
+        }
+      }
     }
 
-    // Validate caption length
-    if (args.caption.length > 2200) {
-      throw new Error("Caption exceeds 2200 character limit");
+    // Validate caption length (per-platform)
+    const captionLimit = account.provider === "instagram" ? 2200 : 63206;
+    if (args.caption.length > captionLimit) {
+      throw new Error(`Caption exceeds ${captionLimit} character limit`);
     }
 
     // Get public URL for the media
@@ -112,7 +129,7 @@ async function publishToInstagram(params: {
   additionalUrls?: string[];
 }): Promise<{ postId: string; postUrl?: string }> {
   const { accessToken, igUserId, mediaUrl, caption, contentType, additionalUrls } = params;
-  const baseUrl = "https://graph.instagram.com/v21.0";
+  const baseUrl = IG_GRAPH_URL;
 
   if (contentType === "carousel" && additionalUrls?.length) {
     // Instagram requires 2-10 items for carousels
@@ -137,6 +154,7 @@ async function publishToInstagram(params: {
           access_token: accessToken,
         }),
       });
+      if (!res.ok) throw new Error(`Instagram API HTTP error: ${res.status} ${res.statusText}`);
       const data = await res.json();
       if (data.error) throw new Error(`Instagram API error: ${data.error.message}`);
       childIds.push(data.id);
@@ -153,6 +171,7 @@ async function publishToInstagram(params: {
         access_token: accessToken,
       }),
     });
+    if (!containerRes.ok) throw new Error(`Instagram API HTTP error: ${containerRes.status} ${containerRes.statusText}`);
     const containerData = await containerRes.json();
     if (containerData.error) throw new Error(`Instagram API error: ${containerData.error.message}`);
 
@@ -168,6 +187,7 @@ async function publishToInstagram(params: {
         access_token: accessToken,
       }),
     });
+    if (!publishRes.ok) throw new Error(`Instagram API HTTP error: ${publishRes.status} ${publishRes.statusText}`);
     const publishData = await publishRes.json();
     if (publishData.error) throw new Error(`Instagram API error: ${publishData.error.message}`);
 
@@ -208,6 +228,7 @@ async function publishToInstagram(params: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(mediaPayload),
   });
+  if (!containerRes.ok) throw new Error(`Instagram API HTTP error: ${containerRes.status} ${containerRes.statusText}`);
   const containerData = await containerRes.json();
   if (containerData.error) throw new Error(`Instagram API error: ${containerData.error.message}`);
 
@@ -225,6 +246,7 @@ async function publishToInstagram(params: {
       access_token: accessToken,
     }),
   });
+  if (!publishRes.ok) throw new Error(`Instagram API HTTP error: ${publishRes.status} ${publishRes.statusText}`);
   const publishData = await publishRes.json();
   if (publishData.error) throw new Error(`Instagram API error: ${publishData.error.message}`);
 
@@ -243,6 +265,7 @@ async function waitForContainer(baseUrl: string, containerId: string, accessToke
     const statusRes = await fetch(
       `${baseUrl}/${containerId}?fields=status_code&access_token=${accessToken}`
     );
+    if (!statusRes.ok) throw new Error(`Instagram API HTTP error: ${statusRes.status} ${statusRes.statusText}`);
     const statusData = await statusRes.json();
 
     if (statusData.status_code === "FINISHED") return;
@@ -264,6 +287,7 @@ async function fetchPermalink(
     const res = await fetch(
       `${baseUrl}/${mediaId}?fields=permalink&access_token=${accessToken}`
     );
+    if (!res.ok) throw new Error(`Instagram API HTTP error: ${res.status} ${res.statusText}`);
     const data = await res.json();
     return data.permalink || undefined;
   } catch {
@@ -281,7 +305,7 @@ async function publishToFacebook(params: {
   contentType: string;
 }): Promise<{ postId: string; postUrl?: string }> {
   const { accessToken, pageId, mediaUrl, caption, contentType } = params;
-  const baseUrl = "https://graph.facebook.com/v21.0";
+  const baseUrl = META_GRAPH_URL;
 
   if (contentType === "image") {
     const res = await fetch(`${baseUrl}/${pageId}/photos`, {
@@ -293,6 +317,7 @@ async function publishToFacebook(params: {
         access_token: accessToken,
       }),
     });
+    if (!res.ok) throw new Error(`Facebook API HTTP error: ${res.status} ${res.statusText}`);
     const data = await res.json();
     if (data.error) throw new Error(`Facebook API error: ${data.error.message}`);
 
@@ -312,6 +337,7 @@ async function publishToFacebook(params: {
         access_token: accessToken,
       }),
     });
+    if (!res.ok) throw new Error(`Facebook API HTTP error: ${res.status} ${res.statusText}`);
     const data = await res.json();
     if (data.error) throw new Error(`Facebook API error: ${data.error.message}`);
 
@@ -376,8 +402,8 @@ export const schedule = mutation({
     const workspace = await ctx.db.get(args.workspaceId);
     if (!workspace || workspace.userId !== userId) throw new Error("Workspace not found");
 
-    // Validate caption length
-    if (args.caption.length > 2200) throw new Error("Caption exceeds 2200 character limit");
+    // Validate caption length (use Facebook max since platform is unknown at schedule time)
+    if (args.caption.length > 63206) throw new Error("Caption exceeds 63206 character limit");
 
     // Validate scheduledFor is in the future
     if (args.scheduledFor <= Date.now()) throw new Error("Scheduled time must be in the future");
@@ -390,6 +416,132 @@ export const schedule = mutation({
       createdAt: now,
       updatedAt: now,
     });
+  },
+});
+
+// ─── Bulk Schedule ────────────────────────────────────────────────
+
+export const scheduleBulk = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    batchId: v.string(),
+    schedulePatternId: v.optional(v.id("schedulePatterns")),
+    entries: v.array(v.object({
+      postId: v.id("posts"),
+      socialAccountId: v.id("socialAccounts"),
+      contentType: v.union(
+        v.literal("image"),
+        v.literal("carousel"),
+        v.literal("reel"),
+        v.literal("story"),
+      ),
+      caption: v.string(),
+      hashtags: v.optional(v.array(v.string())),
+      mediaFileIds: v.array(v.id("_storage")),
+      scheduledFor: v.number(),
+      timezone: v.string(),
+    })),
+  },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
+
+    const now = Date.now();
+    const ids = [];
+    for (const entry of args.entries) {
+      const id = await ctx.db.insert("scheduledPosts", {
+        workspaceId: args.workspaceId,
+        userId,
+        ...entry,
+        batchId: args.batchId,
+        schedulePatternId: args.schedulePatternId,
+        status: "scheduled",
+        createdAt: now,
+        updatedAt: now,
+      });
+      ids.push(id);
+    }
+    return ids;
+  },
+});
+
+export const cancelBatch = mutation({
+  args: { batchId: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const posts = await ctx.db
+      .query("scheduledPosts")
+      .withIndex("by_batch", (q) => q.eq("batchId", args.batchId))
+      .collect();
+    let cancelled = 0;
+    for (const post of posts) {
+      if (post.userId !== userId) continue;
+      if (post.status === "scheduled") {
+        await ctx.db.patch(post._id, { status: "cancelled", updatedAt: Date.now() });
+        cancelled++;
+      }
+    }
+    return cancelled;
+  },
+});
+
+export const reschedulePost = mutation({
+  args: {
+    id: v.id("scheduledPosts"),
+    scheduledFor: v.number(),
+    timezone: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const post = await ctx.db.get(args.id);
+    if (!post || post.userId !== userId) throw new Error("Not found");
+    if (post.status !== "scheduled") throw new Error("Can only reschedule scheduled posts");
+    await ctx.db.patch(args.id, {
+      scheduledFor: args.scheduledFor,
+      ...(args.timezone ? { timezone: args.timezone } : {}),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const updateScheduledCaption = mutation({
+  args: {
+    id: v.id("scheduledPosts"),
+    caption: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const post = await ctx.db.get(args.id);
+    if (!post || post.userId !== userId) throw new Error("Not found");
+    if (post.status !== "scheduled") throw new Error("Can only edit scheduled posts");
+    if (args.caption.length > 63206) throw new Error("Caption exceeds 63206 character limit");
+    await ctx.db.patch(args.id, { caption: args.caption, updatedAt: Date.now() });
+  },
+});
+
+export const listScheduledByMonth = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    monthStart: v.number(),
+    monthEnd: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) return [];
+    const all = await ctx.db
+      .query("scheduledPosts")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
+      .collect();
+    return all.filter(
+      (p) => p.scheduledFor >= args.monthStart && p.scheduledFor < args.monthEnd
+    );
   },
 });
 

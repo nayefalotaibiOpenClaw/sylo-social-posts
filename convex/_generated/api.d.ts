@@ -18,6 +18,7 @@ import type * as http from "../http.js";
 import type * as payments from "../payments.js";
 import type * as posts from "../posts.js";
 import type * as publishing from "../publishing.js";
+import type * as schedulePatterns from "../schedulePatterns.js";
 import type * as seedAll from "../seedAll.js";
 import type * as socialAccounts from "../socialAccounts.js";
 import type * as socialAuth from "../socialAuth.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   payments: typeof payments;
   posts: typeof posts;
   publishing: typeof publishing;
+  schedulePatterns: typeof schedulePatterns;
   seedAll: typeof seedAll;
   socialAccounts: typeof socialAccounts;
   socialAuth: typeof socialAuth;
