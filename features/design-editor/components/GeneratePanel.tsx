@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Globe, X, Loader2, RefreshCw, Image as ImageIcon } from "lucide-react";
+import { Sparkles, Globe, X, Loader2, RefreshCw, Image as ImageIcon, LayoutGrid } from "lucide-react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type WorkspaceRecord = any;
@@ -20,12 +20,13 @@ interface GeneratePanelProps {
   generateError: string | null;
   generateCount: number;
   setGenerateCount: (v: number) => void;
-  generateVersion: 1 | 2 | 3 | 4;
-  setGenerateVersion: (v: 1 | 2 | 3 | 4) => void;
+  generateVersion: 1 | 2 | 3 | 4 | 5;
+  setGenerateVersion: (v: 1 | 2 | 3 | 4 | 5) => void;
   generatedPosts: { id: string; code: string }[];
   setGeneratedPosts: React.Dispatch<React.SetStateAction<{ id: string; code: string }[]>>;
   setLocalOrder: React.Dispatch<React.SetStateAction<string[]>>;
   onGenerate: () => void;
+  onGenerateAllLayouts: () => void;
   fetchingWebsite: boolean;
   onRetryWebsiteFetch: () => void;
   websiteScreenshot: string | null;
@@ -41,7 +42,7 @@ export default function GeneratePanel({
   generateCount, setGenerateCount,
   generateVersion, setGenerateVersion,
   generatedPosts, setGeneratedPosts, setLocalOrder,
-  onGenerate,
+  onGenerate, onGenerateAllLayouts,
   fetchingWebsite, onRetryWebsiteFetch,
   websiteScreenshot, setWebsiteScreenshot,
   websiteScreenshotRef, onWebsiteScreenshot,
@@ -236,6 +237,7 @@ export default function GeneratePanel({
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Style</label>
           <div className="flex gap-1">
             {([
+              { v: 5 as const, label: 'Classic' },
               { v: 1 as const, label: 'Guided' },
               { v: 2 as const, label: 'Creative' },
               { v: 3 as const, label: 'Free' },
@@ -256,17 +258,28 @@ export default function GeneratePanel({
           </div>
         </div>
       </div>
-      <button
-        onClick={onGenerate}
-        disabled={generating || !generatePrompt.trim()}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {generating ? (
-          <><Loader2 size={16} className="animate-spin" /> Generating {generateCount} post{generateCount > 1 ? 's' : ''}...</>
-        ) : (
-          <><Sparkles size={16} /> Generate {generateCount} Post{generateCount > 1 ? 's' : ''}</>
-        )}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={onGenerate}
+          disabled={generating || !generatePrompt.trim()}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {generating ? (
+            <><Loader2 size={16} className="animate-spin" /> Generating...</>
+          ) : (
+            <><Sparkles size={16} /> Generate {generateCount}</>
+          )}
+        </button>
+        <button
+          onClick={onGenerateAllLayouts}
+          disabled={generating || !generatePrompt.trim()}
+          className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Generate one post per layout (all 24 layouts)"
+        >
+          <LayoutGrid size={16} />
+          <span className="text-xs">All</span>
+        </button>
+      </div>
       {generateError && (
         <p className="text-xs text-red-500 font-medium">{generateError}</p>
       )}

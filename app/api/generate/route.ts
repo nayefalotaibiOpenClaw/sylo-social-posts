@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { SYSTEM_PROMPT } from "@/lib/ai/prompts/system-prompt";
 import { WILD_SYSTEM_PROMPT } from "@/lib/ai/prompts/system-prompt-wild";
+import { CLASSIC_SYSTEM_PROMPT } from "@/lib/ai/prompts/system-prompt-classic";
 import { COPY_ANGLES } from "@/lib/ai/prompts/copy-angles";
 import { LAYOUT_BLUEPRINTS } from "@/lib/ai/prompts/layout-blueprints";
 import { buildDynamicPrompt } from "@/lib/ai/build-prompt";
@@ -17,13 +18,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { prompt, context, count = 1, version = 1 } = await req.json();
+    const { prompt, context, count = 1, version = 1, allLayouts = false } = await req.json();
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
 
-    const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
-    const engineVersion = Math.min(Math.max(1, Number(version) || 1), 4);
+    // allLayouts mode: generate one post per layout blueprint
+    const postCount = allLayouts
+      ? LAYOUT_BLUEPRINTS.length
+      : Math.min(Math.max(1, Number(count) || 1), 4);
+    const engineVersion = allLayouts ? 1 : Math.min(Math.max(1, Number(version) || 1), 5);
 
     // V4 (Wild) builds per-post system prompts with shuffled assets
     // Other versions share a single system prompt
@@ -58,6 +62,14 @@ export async function POST(req: NextRequest) {
     if (engineVersion === 4) {
       // Built per-post in buildWildSystemPrompt — use placeholder here
       systemPrompt = WILD_SYSTEM_PROMPT;
+    } else if (engineVersion === 5) {
+      // Classic: production-proven prompt from deployed version
+      const dynamicSection = context
+        ? buildDynamicPrompt(context as GenerationContext)
+        : "";
+      systemPrompt = dynamicSection
+        ? `${CLASSIC_SYSTEM_PROMPT}\n\n${dynamicSection}`
+        : CLASSIC_SYSTEM_PROMPT;
     } else {
       const dynamicSection = context
         ? buildDynamicPrompt(context as GenerationContext)
@@ -71,7 +83,10 @@ export async function POST(req: NextRequest) {
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
 
     const shuffledAngles = [...COPY_ANGLES].sort(() => Math.random() - 0.5);
-    const shuffledLayouts = [...LAYOUT_BLUEPRINTS].sort(() => Math.random() - 0.5);
+    // allLayouts: use sequential order so each post gets a unique layout
+    const shuffledLayouts = allLayouts
+      ? [...LAYOUT_BLUEPRINTS]
+      : [...LAYOUT_BLUEPRINTS].sort(() => Math.random() - 0.5);
 
     // Wild mode variation cues — give each post a unique creative direction
     const WILD_MOODS = [
@@ -91,8 +106,9 @@ export async function POST(req: NextRequest) {
     // Build the user prompt based on engine version:
     // V1 = Guided: assigned layout + copy angle
     // V2 = Creative: copy angle hint only, AI picks its own layout
-    // V3 = Freestyle: no layout, no angle, pure AI creativity
-    // V4 = Wild: minimal system prompt, just the topic + be different
+    // V3 = Free: asset-driven, AI reads metadata and builds around each asset
+    // V4 = Wild: minimal system prompt, mood variations, maximum creativity
+    // V5 = Classic: production-proven prompt (same as deployed version)
     function buildUserPrompt(i: number): string {
       const angle = shuffledAngles[i % shuffledAngles.length];
       const layout = shuffledLayouts[i % shuffledLayouts.length];
@@ -148,6 +164,20 @@ You have complete creative freedom for layout, decorations, and visual approach.
         return `Generate a social media post for: ${prompt}${postLabel}
 
 You have complete creative freedom. Choose your own layout, decorations, copy angle, and visual approach. Surprise me with something stunning and original. The only rules are the component structure and theme system from the instructions above.${distinctNote}`;
+      }
+
+      // V5: Classic — exact production prompt behavior (guided with layout + angle)
+      if (engineVersion === 5) {
+        return `Generate a social media post for: ${prompt}${postLabel}
+
+## YOUR CREATIVE DIRECTION
+Layout: "${layout.name}" — ${layout.structure}
+Decorations: ${layout.decorations}
+
+## YOUR COPY ANGLE: ${angle.angle}
+${angle.instruction}
+
+Create something stunning and original. Match the quality of the reference examples.${postCount > 1 ? `\nPost ${i + 1}/${postCount} — MUST be visually distinct from other posts. Different layout, different copy angle, different decorations.` : ''}`;
       }
 
       // V4: Wild — minimal instructions, maximum creativity + mood variation

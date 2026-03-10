@@ -104,7 +104,7 @@ export default function DesignPage() {
   const [generatedPosts, setGeneratedPosts] = useState<{ id: string; code: string }[]>([]);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generateCount, setGenerateCount] = useState(2);
-  const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3 | 4>(1);
+  const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3 | 4 | 5>(5);
   const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [fetchingWebsite, setFetchingWebsite] = useState(false);
@@ -274,6 +274,107 @@ export default function DesignPage() {
             workspaceId,
             userId: user._id,
             title: `${generatePrompt.slice(0, 80)} (${i + 1}/${codes.length})`,
+            componentCode: codes[i],
+            language: workspace?.defaultLanguage || "ar",
+            device: "none",
+            order: (posts ? posts.length : 0) + i,
+          });
+        }
+      } else {
+        for (const code of codes) {
+          const newId = `generated-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          setGeneratedPosts(prev => [{ id: newId, code }, ...prev]);
+          setLocalOrder(prev => [newId, ...prev]);
+        }
+      }
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : 'Generation failed');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleGenerateAllLayouts = async () => {
+    if (!generatePrompt.trim() || generating) return;
+    if (canGenerateCheck && !canGenerateCheck.allowed) {
+      setGenerateError(canGenerateCheck.reason || "Generation not allowed.");
+      return;
+    }
+    setGenerating(true);
+    setGenerateError(null);
+    try {
+      const context = {
+        brandName: branding?.brandName || workspace?.name,
+        tagline: branding?.tagline,
+        website: workspace?.website,
+        industry: workspace?.industry,
+        language: workspace?.defaultLanguage || 'ar' as const,
+        logoUrl: assets?.find(a => a.type === 'logo')?.url || undefined,
+        websiteInfo: workspace?.websiteInfo ? (() => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wi = workspace.websiteInfo as any;
+          return {
+            companyName: wi.companyName || wi.title || "",
+            description: wi.description || "",
+            industry: wi.industry || "",
+            features: wi.features || [],
+            targetAudience: wi.targetAudience,
+            tone: wi.tone,
+            contact: wi.contact,
+            content: wi.rawContent || wi.content || "",
+          };
+        })() : undefined,
+        assets: (assets || [])
+          .filter(a => a.url)
+          .map(a => ({
+            id: a._id,
+            url: a.url || '',
+            type: a.type,
+            label: a.label || a.fileName,
+            description: a.description,
+            aiAnalysis: a.aiAnalysis,
+          })),
+      };
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: generatePrompt, context, allLayouts: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Generation failed');
+
+      const codes: string[] = data.codes || [data.code];
+
+      if (data.usage) {
+        try {
+          await incrementUsage({
+            tokensUsed: data.usage.totalTokens || 0,
+            postsGenerated: data.usage.postsGenerated || codes.length,
+          });
+        } catch (e) {
+          console.warn("Usage tracking failed:", e);
+        }
+      }
+
+      if (workspaceId && user) {
+        let collectionId = activeCollectionId;
+        if (!collectionId) {
+          collectionId = await createCollection({
+            workspaceId,
+            userId: user._id,
+            name: "All Layouts",
+            mode: "social_grid",
+            language: workspace?.defaultLanguage || "ar",
+            aspectRatio: "1:1",
+          });
+        }
+        for (let i = 0; i < codes.length; i++) {
+          await createPost({
+            collectionId,
+            workspaceId,
+            userId: user._id,
+            title: `${generatePrompt.slice(0, 60)} — Layout ${i + 1}/${codes.length}`,
             componentCode: codes[i],
             language: workspace?.defaultLanguage || "ar",
             device: "none",
@@ -545,6 +646,7 @@ export default function DesignPage() {
             generatedPosts={generatedPosts} setGeneratedPosts={setGeneratedPosts}
             setLocalOrder={setLocalOrder}
             onGenerate={handleGenerate}
+            onGenerateAllLayouts={handleGenerateAllLayouts}
             fetchingWebsite={fetchingWebsite} onRetryWebsiteFetch={handleRetryWebsiteFetch}
             websiteScreenshot={websiteScreenshot} setWebsiteScreenshot={setWebsiteScreenshot}
             websiteScreenshotRef={websiteScreenshotRef} onWebsiteScreenshot={handleWebsiteScreenshot}
