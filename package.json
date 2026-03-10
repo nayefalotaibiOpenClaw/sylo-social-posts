@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:unit": "vitest run tests/subscriptions.test.ts",
     "test:api": "vitest run tests/integration.test.ts --timeout=30000",
+    "test:social": "vitest run tests/social-publishing.test.ts",
+    "test:social-api": "vitest run tests/social-integration.test.ts --timeout=30000",
     "test:watch": "vitest"
   },
   "dependencies": {

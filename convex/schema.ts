@@ -280,6 +280,125 @@ export default defineSchema({
     .index("by_order", ["orderId"])
     .index("by_status", ["userId", "status"]),
 
+  // ─── Social Accounts ────────────────────────────────
+  socialAccounts: defineTable({
+    userId: v.id("users"),
+    workspaceId: v.id("workspaces"),
+    provider: v.union(
+      v.literal("facebook"),
+      v.literal("instagram"),
+      v.literal("tiktok"),
+      v.literal("twitter"),
+    ),
+    providerUserId: v.string(),
+    providerPageId: v.optional(v.string()),
+    providerAccountId: v.optional(v.string()),
+    providerAccountName: v.string(),
+    providerAccountImage: v.optional(v.string()),
+
+    accessToken: v.string(),
+    refreshToken: v.optional(v.string()),
+    tokenExpiresAt: v.optional(v.number()),
+
+    scopes: v.array(v.string()),
+    canPublishPosts: v.boolean(),
+    canPublishStories: v.boolean(),
+    canPublishReels: v.boolean(),
+    canReadInsights: v.boolean(),
+
+    status: v.union(
+      v.literal("active"),
+      v.literal("expired"),
+      v.literal("revoked"),
+    ),
+    connectedAt: v.number(),
+    lastUsedAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_workspace", ["workspaceId"])
+    .index("by_workspace_provider", ["workspaceId", "provider"])
+    .index("by_provider_account", ["provider", "providerAccountId"]),
+
+  // ─── Scheduled Posts ───────────────────────────────
+  scheduledPosts: defineTable({
+    workspaceId: v.id("workspaces"),
+    userId: v.id("users"),
+    postId: v.id("posts"),
+    socialAccountId: v.id("socialAccounts"),
+
+    contentType: v.union(
+      v.literal("image"),
+      v.literal("carousel"),
+      v.literal("reel"),
+      v.literal("story"),
+    ),
+    caption: v.string(),
+    hashtags: v.optional(v.array(v.string())),
+    mediaFileIds: v.array(v.id("_storage")),
+    mediaUrls: v.optional(v.array(v.string())),
+
+    scheduledFor: v.number(),
+    timezone: v.string(),
+
+    status: v.union(
+      v.literal("scheduled"),
+      v.literal("publishing"),
+      v.literal("published"),
+      v.literal("failed"),
+      v.literal("cancelled"),
+    ),
+    publishedAt: v.optional(v.number()),
+    providerPostId: v.optional(v.string()),
+    providerPostUrl: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+    retryCount: v.optional(v.number()),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_status_scheduled", ["status", "scheduledFor"])
+    .index("by_social_account", ["socialAccountId"])
+    .index("by_post", ["postId"]),
+
+  // ─── Publish History ───────────────────────────────
+  publishHistory: defineTable({
+    workspaceId: v.id("workspaces"),
+    userId: v.id("users"),
+    socialAccountId: v.id("socialAccounts"),
+    scheduledPostId: v.optional(v.id("scheduledPosts")),
+    postId: v.optional(v.id("posts")),
+
+    provider: v.union(
+      v.literal("facebook"),
+      v.literal("instagram"),
+      v.literal("tiktok"),
+      v.literal("twitter"),
+    ),
+    contentType: v.string(),
+    providerPostId: v.string(),
+    providerPostUrl: v.optional(v.string()),
+
+    status: v.union(
+      v.literal("published"),
+      v.literal("deleted"),
+      v.literal("failed"),
+    ),
+    publishedAt: v.number(),
+
+    metrics: v.optional(v.object({
+      likes: v.optional(v.number()),
+      comments: v.optional(v.number()),
+      shares: v.optional(v.number()),
+      reach: v.optional(v.number()),
+      impressions: v.optional(v.number()),
+      fetchedAt: v.number(),
+    })),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_social_account", ["socialAccountId"])
+    .index("by_provider_post", ["provider", "providerPostId"]),
+
   // ─── Generations ─────────────────────────────────────
   generations: defineTable({
     workspaceId: v.id("workspaces"),

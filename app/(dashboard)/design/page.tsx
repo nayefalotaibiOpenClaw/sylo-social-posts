@@ -21,6 +21,7 @@ import AssetsPanel, { type AssetTypeValue } from "@/features/design-editor/compo
 import GeneratePanel from "@/features/design-editor/components/GeneratePanel";
 import PostGrid from "@/features/design-editor/components/PostGrid";
 import DownloadBar from "@/features/design-editor/components/DownloadBar";
+import PublishPanel from "@/features/design-editor/components/PublishPanel";
 
 export default function DesignPage() {
   const searchParams = useSearchParams();
@@ -525,6 +526,14 @@ export default function DesignPage() {
             fetchingWebsite={fetchingWebsite} onRetryWebsiteFetch={handleRetryWebsiteFetch}
             websiteScreenshot={websiteScreenshot} setWebsiteScreenshot={setWebsiteScreenshot}
             websiteScreenshotRef={websiteScreenshotRef} onWebsiteScreenshot={handleWebsiteScreenshot}
+          />
+        )}
+        {activeTab === 'publish' && user && (
+          <PublishPanel
+            workspaceId={workspaceId!}
+            userId={user._id}
+            posts={posts}
+            postRefs={postRefs}
           />
         )}
       </Sidebar>

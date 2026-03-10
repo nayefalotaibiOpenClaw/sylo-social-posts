@@ -1,16 +1,17 @@
 "use client";
 
 import React from "react";
-import { Settings, Palette, Upload, Sparkles, X } from "lucide-react";
+import { Settings, Palette, Upload, Sparkles, Send, X } from "lucide-react";
 import Link from "next/link";
 
-export type SidebarTab = 'settings' | 'theme' | 'assets' | 'generate' | null;
+export type SidebarTab = 'settings' | 'theme' | 'assets' | 'generate' | 'publish' | null;
 
 const SIDEBAR_ITEMS: { id: SidebarTab; icon: React.ComponentType<{ size?: number }>; label: string }[] = [
   { id: 'settings', icon: Settings, label: 'Settings' },
   { id: 'theme', icon: Palette, label: 'Theme' },
   { id: 'assets', icon: Upload, label: 'Assets' },
   { id: 'generate', icon: Sparkles, label: 'Generate' },
+  { id: 'publish', icon: Send, label: 'Publish' },
 ];
 
 interface SidebarProps {
