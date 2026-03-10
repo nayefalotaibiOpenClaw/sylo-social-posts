@@ -17,7 +17,8 @@ import EditableText from './EditableText';
 import DraggableWrapper from './DraggableWrapper';
 import { useAspectRatio } from './EditContext';
 import { useTheme } from './ThemeContext';
-import { IPhoneMockup, IPadMockup, DesktopMockup, PostHeader, PostFooter, FloatingCard } from './shared';
+import { useDeviceType } from './DeviceContext';
+import { IPhoneMockup, IPadMockup, DesktopMockup, AndroidPhoneMockup, AndroidTabletMockup, PostHeader, PostFooter, FloatingCard } from './shared';
 // Import only the lucide-react icons you use:
 // import { Heart, Star, ... } from 'lucide-react';
 \`\`\`
@@ -47,7 +48,9 @@ const isTall = ratio === '9:16' || ratio === '3:4';
 - **<PostFooter>** — Props: id, label (BRAND NAME), text, icon (JSX), variant ("dark"|"light")
 - **<FloatingCard>** — Props: id, icon, label, value, className (use absolute positioning), rotate (number), borderColor, animation ("float"|"float-slow"|"none")
 - **<IPhoneMockup>** — Props: src (image URL), alt, notch ("pill"|"notch"). Wrap in: className={isTall ? 'w-[200px] h-[400px]' : 'w-[180px] h-[340px]'}
+- **<AndroidPhoneMockup>** — Props: src, alt. Same sizing as IPhoneMockup.
 - **<IPadMockup>** — Props: src, alt, orientation. Landscape: isTall ? 'w-[320px] h-[230px]' : 'w-[280px] h-[200px]'
+- **<AndroidTabletMockup>** — Props: src, alt, orientation. Same sizing as IPadMockup.
 - **<DesktopMockup>** — Props: src, alt, url, trafficLights. Size: isTall ? 'w-[340px] h-[230px]' : 'w-[300px] h-[200px]'
 - **<EditableText>** — Props: as ("h2"|"p"|"span"|"h3"), className, style. Wrap ALL visible text.
 - **<DraggableWrapper>** — Props: id (unique), className, variant ("mockup"), dir ("rtl" for Arabic). Wrap ALL sections.
@@ -60,6 +63,27 @@ const isTall = ratio === '9:16' || ratio === '3:4';
 - **product** → \`<img className="w-64 h-64 object-contain drop-shadow-2xl" />\`
 - **logo** → Pass to PostHeader via logoUrl prop
 - NEVER put background images in device mockups.
+
+## DEVICE-AWARE MOCKUPS (MANDATORY when using device mockups)
+\`\`\`tsx
+const deviceType = useDeviceType(); // "iphone" | "android" | "ipad" | "android_tablet" | "desktop"
+// Map deviceType to the correct mockup component:
+const DeviceMockup =
+  deviceType === 'android' ? AndroidPhoneMockup :
+  deviceType === 'ipad' ? IPadMockup :
+  deviceType === 'android_tablet' ? AndroidTabletMockup :
+  deviceType === 'desktop' ? DesktopMockup :
+  IPhoneMockup; // default: iphone
+// Detect if device is phone-shaped (tall) or wide for sizing:
+const isPhoneDevice = deviceType === 'iphone' || deviceType === 'android';
+const isTabletDevice = deviceType === 'ipad' || deviceType === 'android_tablet';
+// Size the wrapper based on device type:
+// Phone:   isTall ? 'w-[300px] h-[580px]' : 'w-[230px] h-[360px]'
+// Tablet:  isTall ? 'w-[320px] h-[230px]' : 'w-[280px] h-[200px]'
+// Desktop: isTall ? 'w-[340px] h-[230px]' : 'w-[300px] h-[200px]'
+// Then use: <DeviceMockup src={url} />
+\`\`\`
+ALWAYS use this pattern. NEVER hardcode IPhoneMockup or IPadMockup directly.
 
 ## DECORATION TOOLKIT (pick 1-3 per post, combine creatively)
 \`\`\`tsx

@@ -3,7 +3,7 @@
 import React, { useContext, useCallback, useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useMotionValue, useDragControls, type MotionValue, type DragControls } from 'framer-motion';
-import { EditContext, useSelectedId, useSetSelectedId, ParentSelectedContext, ParentDraggingContext, UploadSignalContext } from './EditContext';
+import { EditContext, useSelectedId, useSetSelectedId, useAspectRatio, ParentSelectedContext, ParentDraggingContext, UploadSignalContext } from './EditContext';
 import { Move, RotateCcw, ImagePlus } from 'lucide-react';
 
 /* ── Toolbar variants ──
@@ -133,17 +133,18 @@ function ToolbarPortal({ toolbarPos, variant, position, transforms, onSetPositio
 const STORAGE_KEY = "sylo-drag-positions";
 const TRANSFORM_KEY = "sylo-transforms";
 
-function loadPosition(id: string): { x: number; y: number } {
+function loadPosition(id: string, ratio: string): { x: number; y: number } {
   try {
     const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    return data[id] || { x: 0, y: 0 };
+    const qualifiedKey = `${id}::${ratio}`;
+    return data[qualifiedKey] || data[id] || { x: 0, y: 0 };
   } catch { return { x: 0, y: 0 }; }
 }
 
-function savePosition(id: string, xVal: number, yVal: number) {
+function savePosition(id: string, ratio: string, xVal: number, yVal: number) {
   try {
     const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    data[id] = { x: xVal, y: yVal };
+    data[`${id}::${ratio}`] = { x: xVal, y: yVal };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch {}
 }
@@ -154,17 +155,18 @@ interface Transforms {
   rotateZ: number;
 }
 
-function loadTransforms(id: string): Transforms {
+function loadTransforms(id: string, ratio: string): Transforms {
   try {
     const data = JSON.parse(localStorage.getItem(TRANSFORM_KEY) || "{}");
-    return data[id] || { rotateX: 0, rotateY: 0, rotateZ: 0 };
+    const qualifiedKey = `${id}::${ratio}`;
+    return data[qualifiedKey] || data[id] || { rotateX: 0, rotateY: 0, rotateZ: 0 };
   } catch { return { rotateX: 0, rotateY: 0, rotateZ: 0 }; }
 }
 
-function saveTransforms(id: string, transforms: Transforms) {
+function saveTransforms(id: string, ratio: string, transforms: Transforms) {
   try {
     const data = JSON.parse(localStorage.getItem(TRANSFORM_KEY) || "{}");
-    data[id] = transforms;
+    data[`${id}::${ratio}`] = transforms;
     localStorage.setItem(TRANSFORM_KEY, JSON.stringify(data));
   } catch {}
 }
@@ -181,6 +183,7 @@ interface DraggableWrapperProps {
 
 export default function DraggableWrapper({ children, className = "", id, dir, style, variant = "text" }: DraggableWrapperProps) {
   const isEditMode = useContext(EditContext);
+  const ratio = useAspectRatio();
   const selectedId = useSelectedId();
   const setSelectedId = useSetSelectedId();
   const isSelected = isEditMode && selectedId === id;
@@ -197,18 +200,22 @@ export default function DraggableWrapper({ children, className = "", id, dir, st
   const [toolbarPos, setToolbarPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   useEffect(() => {
-    const saved = loadPosition(id);
-    const savedTransforms = loadTransforms(id);
+    const saved = loadPosition(id, ratio);
+    const savedTransforms = loadTransforms(id, ratio);
     if (saved.x !== 0 || saved.y !== 0) {
       x.set(saved.x);
       y.set(saved.y);
       setHasCustomPosition(true);
+    } else {
+      x.set(0);
+      y.set(0);
+      setHasCustomPosition(false);
     }
     if (savedTransforms.rotateX !== 0 || savedTransforms.rotateY !== 0 || savedTransforms.rotateZ !== 0) {
       setHasCustomPosition(true);
     }
     setTransforms(savedTransforms);
-  }, [id, x, y]);
+  }, [id, ratio, x, y]);
 
   useEffect(() => {
     if (!isSelected || !wrapperRef.current) {
@@ -232,10 +239,10 @@ export default function DraggableWrapper({ children, className = "", id, dir, st
   const handleDragStart = useCallback(() => setIsDragging(true), []);
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
-    savePosition(id, x.get(), y.get());
+    savePosition(id, ratio, x.get(), y.get());
     if (x.get() !== 0 || y.get() !== 0) setHasCustomPosition(true);
     setPosVersion(v => v + 1);
-  }, [id, x, y]);
+  }, [id, ratio, x, y]);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!isEditMode) return;
@@ -246,30 +253,30 @@ export default function DraggableWrapper({ children, className = "", id, dir, st
   const setPosition = useCallback((axis: 'x' | 'y', value: number) => {
     if (axis === 'x') x.set(value);
     else y.set(value);
-    savePosition(id, x.get(), y.get());
+    savePosition(id, ratio, x.get(), y.get());
     setHasCustomPosition(x.get() !== 0 || y.get() !== 0);
     setPosVersion(v => v + 1);
-  }, [id, x, y]);
+  }, [id, ratio, x, y]);
 
   const updateTransform = useCallback((key: keyof Transforms, value: number) => {
     setTransforms(prev => {
       const next = { ...prev, [key]: value };
-      saveTransforms(id, next);
+      saveTransforms(id, ratio, next);
       return next;
     });
     setHasCustomPosition(true);
-  }, [id]);
+  }, [id, ratio]);
 
   const resetAll = useCallback(() => {
     x.set(0);
     y.set(0);
-    savePosition(id, 0, 0);
+    savePosition(id, ratio, 0, 0);
     const zero = { rotateX: 0, rotateY: 0, rotateZ: 0 };
     setTransforms(zero);
-    saveTransforms(id, zero);
+    saveTransforms(id, ratio, zero);
     setHasCustomPosition(false);
     setPosVersion(v => v + 1);
-  }, [id, x, y]);
+  }, [id, ratio, x, y]);
 
   const hasTransform = transforms.rotateX !== 0 || transforms.rotateY !== 0 || transforms.rotateZ !== 0;
 

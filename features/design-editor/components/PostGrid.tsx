@@ -32,6 +32,7 @@ interface PostGridProps {
   onTogglePostSelection: (id: string) => void;
   onToggleCodeView: (id: string) => void;
   onUpdatePostCode: (args: { id: Id<"posts">; componentCode: string }) => void;
+  onUpdatePostCodeForRatio?: (args: { id: Id<"posts">; ratio: string; componentCode: string }) => void;
   onRemovePost: (args: { id: Id<"posts"> }) => void;
   selectedPostId: string | null;
   onSelectPost: (id: string | null) => void;
@@ -45,7 +46,7 @@ export default function PostGrid({
   postRefs, dragItem, setDraggingId,
   onDragEnter, onDragEnd,
   onTogglePostSelection, onToggleCodeView,
-  onUpdatePostCode, onRemovePost,
+  onUpdatePostCode, onUpdatePostCodeForRatio, onRemovePost,
   selectedPostId, onSelectPost,
 }: PostGridProps) {
   return (
@@ -65,7 +66,9 @@ export default function PostGrid({
         const generatedPost = generatedPosts.find(gp => gp.id === id);
         if (!post && !generatedPost) return null;
 
-        const code = post?.componentCode ?? generatedPost?.code;
+        const code = post
+          ? (aspectRatio !== '1:1' && post.ratioOverrides?.["r" + aspectRatio.replace(":", "_") as keyof typeof post.ratioOverrides]) || post.componentCode
+          : generatedPost?.code;
         if (!code) return null;
 
         const selectionIndex = selectedPosts.indexOf(id);
@@ -137,7 +140,11 @@ export default function PostGrid({
                   value={code}
                   onChange={(e) => {
                     if (post) {
-                      onUpdatePostCode({ id: post._id, componentCode: e.target.value });
+                      if (onUpdatePostCodeForRatio) {
+                        onUpdatePostCodeForRatio({ id: post._id, ratio: aspectRatio, componentCode: e.target.value });
+                      } else {
+                        onUpdatePostCode({ id: post._id, componentCode: e.target.value });
+                      }
                     } else if (generatedPost) {
                       setGeneratedPosts(prev => prev.map(p => p.id === id ? { ...p, code: e.target.value } : p));
                     }

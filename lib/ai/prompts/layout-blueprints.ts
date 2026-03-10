@@ -1,7 +1,7 @@
 export const LAYOUT_BLUEPRINTS = [
   {
     name: "Device Showcase",
-    structure: "Dark gradient bg → dot/grid pattern overlay → 2 glow circles → PostHeader → headline (text-5xl with accent color second line) → centered device mockup (isTall responsive) → 2 FloatingCards at opposite corners → PostFooter",
+    structure: "Dark gradient bg → dot/grid pattern overlay → 2 glow circles → PostHeader → headline (text-5xl with accent color second line) → centered device-aware mockup via useDeviceType() (isTall responsive) → 2 FloatingCards at opposite corners → PostFooter",
     decorations: "radial-gradient dots OR linear-gradient grid, 2 blur glow circles (accentLime + accent), gradient bg (primary → primaryDark)",
   },
   {

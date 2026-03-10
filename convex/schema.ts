@@ -179,6 +179,12 @@ export default defineSchema({
     userId: v.id("users"),
     title: v.string(),
     componentCode: v.string(),
+    ratioOverrides: v.optional(v.object({
+      r3_4: v.optional(v.string()),
+      r4_3: v.optional(v.string()),
+      r9_16: v.optional(v.string()),
+      r16_9: v.optional(v.string()),
+    })),
     language: v.union(v.literal("en"), v.literal("ar")),
     device: v.union(
       v.literal("iphone"),

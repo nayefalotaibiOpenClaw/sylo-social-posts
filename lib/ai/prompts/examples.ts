@@ -1,16 +1,25 @@
-export const EXAMPLE_DARK_MOCKUP = `// EXAMPLE A: Dark bg + iPhone mockup + floating stats
+export const EXAMPLE_DARK_MOCKUP = `// EXAMPLE A: Dark bg + device-aware phone mockup + floating stats
 import React from 'react';
 import EditableText from './EditableText';
 import DraggableWrapper from './DraggableWrapper';
 import { useAspectRatio } from './EditContext';
 import { useTheme } from './ThemeContext';
-import { IPhoneMockup, PostHeader, PostFooter, FloatingCard } from './shared';
+import { useDeviceType } from './DeviceContext';
+import { IPhoneMockup, IPadMockup, DesktopMockup, AndroidPhoneMockup, AndroidTabletMockup, PostHeader, PostFooter, FloatingCard } from './shared';
 import { Cloud, Zap, Globe } from 'lucide-react';
 
 export default function CloudPOSPost() {
   const ratio = useAspectRatio();
   const t = useTheme();
   const isTall = ratio === '9:16' || ratio === '3:4';
+  const deviceType = useDeviceType();
+  const DeviceMockup =
+    deviceType === 'android' ? AndroidPhoneMockup :
+    deviceType === 'ipad' ? IPadMockup :
+    deviceType === 'android_tablet' ? AndroidTabletMockup :
+    deviceType === 'desktop' ? DesktopMockup :
+    IPhoneMockup;
+  const isPhoneDevice = deviceType === 'iphone' || deviceType === 'android';
 
   return (
     <div className="relative w-full h-full shadow-2xl overflow-hidden mx-auto font-sans"
@@ -34,8 +43,8 @@ export default function CloudPOSPost() {
         </DraggableWrapper>
 
         <div className="flex-1 flex items-center justify-center relative mt-4">
-          <DraggableWrapper id="mockup" className={\`relative z-20 \${isTall ? 'w-[300px] h-[580px]' : 'w-[230px] h-[360px]'}\`}>
-            <IPhoneMockup src="/pos-screen.jpg" />
+          <DraggableWrapper id="mockup" className={\`relative z-20 \${isPhoneDevice ? (isTall ? 'w-[300px] h-[580px]' : 'w-[230px] h-[360px]') : (isTall ? 'w-[340px] h-[230px]' : 'w-[300px] h-[200px]')}\`}>
+            <DeviceMockup src="/pos-screen.jpg" />
           </DraggableWrapper>
           <FloatingCard id="stat1" icon={<Zap size={16} style={{ color: t.accentLime }} />} label="السرعة" value="100%" className="absolute -left-4 top-20" rotate={-5} />
           <FloatingCard id="stat2" icon={<Globe size={16} style={{ color: t.accent }} />} label="وصول عالمي" value="24/7" className="absolute -right-8 bottom-32" rotate={8} />

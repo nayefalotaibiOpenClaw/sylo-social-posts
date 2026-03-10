@@ -24,6 +24,8 @@ interface SettingsPanelProps {
   activeCollectionId: Id<"collections"> | null;
   workspaceId: Id<"workspaces">;
   postCount: number;
+  deviceType: "iphone" | "android" | "ipad" | "android_tablet" | "desktop";
+  setDeviceType: (v: "iphone" | "android" | "ipad" | "android_tablet" | "desktop") => void;
 }
 
 export default function SettingsPanel({
@@ -36,6 +38,7 @@ export default function SettingsPanel({
   viewMode, setViewMode,
   collections, activeCollectionId,
   workspaceId, postCount,
+  deviceType, setDeviceType,
 }: SettingsPanelProps) {
   return (
     <div className="space-y-6">
@@ -92,6 +95,25 @@ export default function SettingsPanel({
               }`}
             >
               {ratio}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Device</label>
+        <div className="flex gap-1 flex-wrap">
+          {(['iphone', 'android', 'ipad', 'android_tablet', 'desktop'] as const).map((device) => (
+            <button
+              key={device}
+              onClick={() => setDeviceType(device)}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                deviceType === device
+                  ? 'bg-[#1B4332] text-white shadow-sm'
+                  : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+              }`}
+            >
+              {device === 'iphone' ? 'iPhone' : device === 'android' ? 'Android' : device === 'ipad' ? 'iPad' : device === 'android_tablet' ? 'Tab' : 'Desktop'}
             </button>
           ))}
         </div>

@@ -1,6 +1,11 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+// Convert ratio string like "16:9" to valid Convex key like "r16_9"
+function ratioToKey(ratio: string): string {
+  return "r" + ratio.replace(":", "_");
+}
+
 export const create = mutation({
   args: {
     collectionId: v.id("collections"),
@@ -128,6 +133,30 @@ export const reorder = mutation({
       if (post.row !== undefined) updates.row = post.row;
       if (post.col !== undefined) updates.col = post.col;
       await ctx.db.patch(post.id, updates);
+    }
+  },
+});
+
+// Update post code for a specific aspect ratio
+export const updateCodeForRatio = mutation({
+  args: {
+    id: v.id("posts"),
+    ratio: v.string(),
+    componentCode: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.id);
+    if (!post) throw new Error("Post not found");
+
+    if (args.ratio === "1:1") {
+      await ctx.db.patch(args.id, { componentCode: args.componentCode, updatedAt: Date.now() });
+    } else {
+      const overrides = post.ratioOverrides || {};
+      const key = ratioToKey(args.ratio);
+      await ctx.db.patch(args.id, {
+        ratioOverrides: { ...overrides, [key]: args.componentCode },
+        updatedAt: Date.now(),
+      });
     }
   },
 });

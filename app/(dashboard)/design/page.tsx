@@ -2,8 +2,9 @@
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Loader2, FolderOpen, Image as ImageIcon } from "lucide-react";
-import { downloadPostsAsZip } from "@/lib/export/download";
+import { downloadPostsAsZip, downloadPostsMultiRatio } from "@/lib/export/download";
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext } from "@/contexts/EditContext";
+import { DeviceContext } from "@/contexts/DeviceContext";
 import { useTheme, useSetTheme, type Theme } from "@/contexts/ThemeContext";
 import DynamicPost from "@/app/components/DynamicPost";
 import PostWrapper from "@/app/components/PostWrapper";
@@ -46,6 +47,7 @@ export default function DesignPage() {
   );
 
   const updatePostCode = useMutation(api.posts.updateCode);
+  const updatePostCodeForRatio = useMutation(api.posts.updateCodeForRatio);
   const reorderPosts = useMutation(api.posts.reorder);
   const removePost = useMutation(api.posts.remove);
   const createPost = useMutation(api.posts.create);
@@ -77,6 +79,7 @@ export default function DesignPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [editMode, setEditMode] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<AspectRatioType>('1:1');
+  const [deviceType, setDeviceType] = useState<"iphone" | "android" | "ipad" | "android_tablet" | "desktop">("iphone");
   const [gridCols, setGridCols] = useState(3);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const handleSetSelectedId = useCallback((id: string | null) => setSelectedId(id), []);
@@ -86,6 +89,7 @@ export default function DesignPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<string | undefined>();
   const postRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [activeTab, setActiveTab] = useState<SidebarTab>(null);
   const [uploadingAsset, setUploadingAsset] = useState(false);
@@ -408,26 +412,43 @@ export default function DesignPage() {
     );
   }, []);
 
-  const handleDownloadSelected = useCallback(async () => {
+  const handleDownloadSelected = useCallback(async (ratios: string[]) => {
     if (selectedPosts.length === 0) return;
     setDownloading(true);
+    setDownloadProgress(undefined);
+    const savedRatio = aspectRatio;
     try {
       const postEntries = selectedPosts.map(id => {
         const post = posts?.find(p => p._id === id);
         return { id, filename: post?.title || id };
       });
-      await downloadPostsAsZip(
-        postRefs.current,
-        selectedPosts,
-        postEntries,
-        `posts-${selectedPosts.length}.zip`,
-      );
+      if (ratios.length === 1 && ratios[0] === aspectRatio) {
+        // Single ratio, current view — use simple download
+        await downloadPostsAsZip(
+          postRefs.current,
+          selectedPosts,
+          postEntries,
+          `posts-${selectedPosts.length}.zip`,
+        );
+      } else {
+        // Multi-ratio download
+        await downloadPostsMultiRatio(
+          postRefs.current,
+          selectedPosts,
+          postEntries,
+          ratios,
+          (r) => setAspectRatio(r as AspectRatioType),
+          (label) => setDownloadProgress(label),
+        );
+      }
     } catch (err) {
       console.error("Failed to download posts:", err);
     } finally {
+      setAspectRatio(savedRatio);
       setDownloading(false);
+      setDownloadProgress(undefined);
     }
-  }, [selectedPosts, posts]);
+  }, [selectedPosts, posts, aspectRatio]);
 
   // Redirect unauthenticated users
   useEffect(() => {
@@ -487,6 +508,7 @@ export default function DesignPage() {
             viewMode={viewMode} setViewMode={setViewMode}
             collections={collections} activeCollectionId={activeCollectionId}
             workspaceId={workspaceId} postCount={posts?.length ?? 0}
+            deviceType={deviceType} setDeviceType={setDeviceType}
           />
         )}
         {activeTab === 'theme' && (
@@ -540,7 +562,7 @@ export default function DesignPage() {
 
       {/* Main Content */}
       <main
-        className="flex-1 overflow-y-auto p-3 md:p-6 pb-20 md:pb-6"
+        className="flex-1 overflow-y-auto p-3 md:p-6 pb-14"
         onClick={(e) => {
           if ((e.target as HTMLElement).closest?.('[data-toolbar-portal]')) return;
           if ((e.target as HTMLElement).closest?.('[data-contextual-toolbar]')) return;
@@ -602,6 +624,7 @@ export default function DesignPage() {
             </div>
           </div>
         ) : (
+          <DeviceContext.Provider value={deviceType}>
           <EditContext.Provider value={editMode}>
           <AspectRatioContext.Provider value={aspectRatio}>
           <SelectedIdContext.Provider value={selectedId}>
@@ -628,6 +651,7 @@ export default function DesignPage() {
               onTogglePostSelection={togglePostSelection}
               onToggleCodeView={toggleCodeView}
               onUpdatePostCode={updatePostCode}
+              onUpdatePostCodeForRatio={updatePostCodeForRatio}
               onRemovePost={removePost}
               selectedPostId={selectedPostId}
               onSelectPost={setSelectedPostId}
@@ -636,7 +660,33 @@ export default function DesignPage() {
           </SelectedIdContext.Provider>
           </AspectRatioContext.Provider>
           </EditContext.Provider>
+          </DeviceContext.Provider>
         )}
+
+        {/* Bottom toolbar */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-100 px-3 py-1.5 flex items-center justify-center gap-4 md:gap-5">
+          {(['1:1', '3:4', '4:3', '9:16', '16:9'] as const).map((r) => (
+            <button key={r} onClick={() => setAspectRatio(r)}
+              className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${aspectRatio === r ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-600'}`}
+            >{r}</button>
+          ))}
+          <div className="w-px h-4 bg-gray-200" />
+          {(['iphone', 'android', 'ipad', 'android_tablet', 'desktop'] as const).map((d) => (
+            <button key={d} onClick={() => setDeviceType(d)}
+              className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${deviceType === d ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-600'}`}
+            >{d === 'iphone' ? 'iPhone' : d === 'android' ? 'Android' : d === 'ipad' ? 'iPad' : d === 'android_tablet' ? 'Tab' : 'Desktop'}</button>
+          ))}
+          <div className="w-px h-4 bg-gray-200" />
+          {[1, 2, 3, 4].map((n) => (
+            <button key={n} onClick={() => setGridCols(n)}
+              className={`w-6 h-6 rounded text-[11px] font-bold transition-all ${gridCols === n ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-600'}`}
+            >{n}</button>
+          ))}
+          <div className="w-px h-4 bg-gray-200" />
+          <button onClick={() => { setReorderMode(!reorderMode); if (!reorderMode) { setEditMode(false); setSelectMode(false); } }}
+            className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${reorderMode ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-600'}`}
+          >Reorder</button>
+        </div>
       </main>
 
       {/* Properties side panel */}
@@ -653,8 +703,8 @@ export default function DesignPage() {
               <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wide">Properties</h3>
             </div>
             <PostPropertiesPanel
-              code={selectedPost.componentCode}
-              onCodeChange={(newCode) => updatePostCode({ id: selectedPost._id, componentCode: newCode })}
+              code={(aspectRatio !== '1:1' && selectedPost.ratioOverrides?.["r" + aspectRatio.replace(":", "_") as keyof typeof selectedPost.ratioOverrides]) || selectedPost.componentCode}
+              onCodeChange={(newCode) => updatePostCodeForRatio({ id: selectedPost._id, ratio: aspectRatio, componentCode: newCode })}
               onUploadImage={async (file) => {
                 try {
                   const uploadUrl = await generateUploadUrl();
@@ -676,6 +726,8 @@ export default function DesignPage() {
         <DownloadBar
           selectedCount={selectedPosts.length}
           downloading={downloading}
+          downloadProgress={downloadProgress}
+          currentRatio={aspectRatio}
           onClear={() => setSelectedPosts([])}
           onDownload={handleDownloadSelected}
         />
