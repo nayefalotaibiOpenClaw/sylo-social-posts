@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Upload, Sparkles, Send, X, Building2, LayoutGrid, LinkIcon, Check } from "lucide-react";
+import { Upload, Send, X, Building2, LayoutGrid, LinkIcon, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export type SidebarTab = 'brand' | 'design' | 'theme' | 'assets' | 'generate' | 'publish' | 'channels' | null;
@@ -11,7 +11,7 @@ export const SIDEBAR_ITEMS: { id: SidebarTab; icon: React.ComponentType<{ size?:
   { id: 'design', icon: LayoutGrid, label: 'Design', fullPage: true },
   // theme tab removed — included in Brand page
   { id: 'assets', icon: Upload, label: 'Assets', fullPage: true },
-  { id: 'generate', icon: Sparkles, label: 'Generate', fullPage: true },
+  // generate is now a sub-tab inside Design page
   { id: 'publish', icon: Send, label: 'Publish', fullPage: true },
   { id: 'channels', icon: LinkIcon, label: 'Channels', fullPage: true },
 ];
@@ -32,7 +32,7 @@ interface SidebarProps {
 
 export default function Sidebar({ activeTab, onTabClick, children, workspaces, currentWorkspaceId, currentWorkspaceName }: SidebarProps) {
   const activeItem = SIDEBAR_ITEMS.find(i => i.id === activeTab);
-  const panelOpen = activeTab !== null && !activeItem?.fullPage;
+  const panelOpen = activeTab !== null && activeTab !== 'generate' && !activeItem?.fullPage;
   const [hoveredTab, setHoveredTab] = useState<SidebarTab>(null);
   const [showWorkspaces, setShowWorkspaces] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -109,7 +109,7 @@ export default function Sidebar({ activeTab, onTabClick, children, workspaces, c
                 onMouseEnter={() => setHoveredTab(id)}
                 onMouseLeave={() => setHoveredTab(null)}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${
-                  activeTab === id || (id === 'design' && activeTab === null)
+                  activeTab === id || (id === 'design' && (activeTab === null || activeTab === 'generate'))
                     ? 'bg-gray-200/70 text-gray-900'
                     : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
                 }`}

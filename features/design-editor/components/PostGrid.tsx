@@ -1,11 +1,13 @@
 "use client";
 
-import React, { memo, useCallback, useRef } from "react";
-import { Code, Eye, Trash2 } from "lucide-react";
+import React, { memo, useCallback, useRef, useState } from "react";
+import { Code, Eye, Trash2, Scaling, Loader2, Check } from "lucide-react";
 import { AspectRatioType } from "@/contexts/EditContext";
 import DynamicPost from "@/app/components/DynamicPost";
 import PostWrapper from "@/app/components/PostWrapper";
 import { Id } from "@/convex/_generated/dataModel";
+
+const ALL_RATIOS: AspectRatioType[] = ['1:1', '9:16', '3:4', '4:3', '16:9'];
 
 const MemoizedPostContent = memo(function MemoizedPostContent({ code, aspectRatio, filename }: { code: string; aspectRatio: AspectRatioType; filename: string }) {
   return (
@@ -44,6 +46,7 @@ interface PostGridProps {
   onRemovePost: (args: { id: Id<"posts"> }) => void;
   selectedPostId: string | null;
   onSelectPost: (id: string | null) => void;
+  onAdaptRatio?: (postId: Id<"posts">, baseCode: string, targetRatio: AspectRatioType) => Promise<void>;
 }
 
 export default function PostGrid({
@@ -56,10 +59,38 @@ export default function PostGrid({
   onTogglePostSelection, onToggleCodeView,
   onUpdatePostCode, onUpdatePostCodeForRatio, onRemovePost,
   selectedPostId, onSelectPost,
+  onAdaptRatio,
 }: PostGridProps) {
   // Store modes in refs so handlers never need to be recreated
   const modeRef = useRef({ reorderMode, selectMode, selectedPostId });
   modeRef.current = { reorderMode, selectMode, selectedPostId };
+
+  // Resize dropdown state
+  const [resizeOpenId, setResizeOpenId] = useState<string | null>(null);
+  const [adaptingMap, setAdaptingMap] = useState<Record<string, Set<string>>>({});
+
+  const handleAdapt = useCallback(async (postId: string, baseCode: string, ratio: AspectRatioType) => {
+    if (!onAdaptRatio) return;
+    setAdaptingMap(prev => {
+      const set = new Set(prev[postId] || []);
+      set.add(ratio);
+      return { ...prev, [postId]: set };
+    });
+    try {
+      await onAdaptRatio(postId as Id<"posts">, baseCode, ratio);
+    } catch (err) {
+      console.error(`Adapt ${ratio} failed:`, err);
+    } finally {
+      setAdaptingMap(prev => {
+        const set = new Set(prev[postId] || []);
+        set.delete(ratio);
+        const next = { ...prev };
+        if (set.size === 0) delete next[postId];
+        else next[postId] = set;
+        return next;
+      });
+    }
+  }, [onAdaptRatio]);
 
   const handleCardClick = useCallback((e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -122,6 +153,16 @@ export default function PostGrid({
         const isSelected = selectionIndex !== -1;
         const isPostSelected = selectedPostId === id;
 
+        // Which ratios already have overrides for this post
+        const existingRatios = new Set<string>(['1:1']);
+        if (post?.ratioOverrides) {
+          for (const key of Object.keys(post.ratioOverrides)) {
+            if (post.ratioOverrides[key]) {
+              existingRatios.add(key.replace('r', '').replace('_', ':'));
+            }
+          }
+        }
+
         return (
           <div
             key={id}
@@ -147,6 +188,59 @@ export default function PostGrid({
                 >
                   {codeViewPosts.has(id) ? <Eye size={14} /> : <Code size={14} />}
                 </button>
+                {/* Resize — adapt to other ratios */}
+                {post && onAdaptRatio && (
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setResizeOpenId(resizeOpenId === id ? null : id);
+                      }}
+                      className={`p-1 rounded transition-all ${
+                        resizeOpenId === id
+                          ? 'text-[#1B4332] bg-green-50'
+                          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                      }`}
+                      title="Resize — adapt to other sizes"
+                    >
+                      <Scaling size={14} />
+                    </button>
+                    {resizeOpenId === id && (
+                      <div
+                        className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1.5 z-30 min-w-[140px]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <p className="px-3 pb-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider">Adapt to</p>
+                        {ALL_RATIOS.filter(r => r !== '1:1').map((r) => {
+                          const hasIt = existingRatios.has(r);
+                          const isAdapting = adaptingMap[id]?.has(r);
+                          return (
+                            <button
+                              key={r}
+                              onClick={() => {
+                                if (!isAdapting && !hasIt) {
+                                  handleAdapt(id, post.componentCode, r);
+                                }
+                              }}
+                              disabled={isAdapting}
+                              className={`w-full flex items-center justify-between px-3 py-1.5 text-xs transition-colors ${
+                                hasIt
+                                  ? 'text-green-600 bg-green-50/50'
+                                  : isAdapting
+                                    ? 'text-gray-400'
+                                    : 'text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              <span className="font-semibold">{r}</span>
+                              {isAdapting && <Loader2 size={12} className="animate-spin text-gray-400" />}
+                              {hasIt && !isAdapting && <Check size={12} className="text-green-500" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {post && (
                   <button
                     onClick={(e) => {

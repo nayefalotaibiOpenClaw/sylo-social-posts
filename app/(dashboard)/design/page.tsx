@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Columns2, X, Sparkles } from "lucide-react";
+import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles } from "lucide-react";
 import MobileNavMenu from "@/features/design-editor/components/MobileNavMenu";
 import { downloadPostsAsZip, downloadPostsMultiRatio } from "@/lib/export/download";
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext } from "@/contexts/EditContext";
 import { DeviceContext } from "@/contexts/DeviceContext";
 import { useTheme, useSetTheme, type Theme } from "@/contexts/ThemeContext";
-import DynamicPost from "@/app/components/DynamicPost";
-import PostWrapper from "@/app/components/PostWrapper";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useConvexAuth, useQuery, useMutation, useAction } from "convex/react";
@@ -432,7 +430,7 @@ export default function DesignPage() {
             aspectRatio: "1:1",
           });
         }
-        await createPostBatch({
+        const newPostIds = await createPostBatch({
           collectionId,
           workspaceId,
           userId: user._id,
@@ -443,6 +441,16 @@ export default function DesignPage() {
             device: "none" as const,
           })),
         });
+
+        // Adapt to additional ratios in background
+        const extraRatios = targetRatios.filter(r => r !== '1:1');
+        if (extraRatios.length > 0 && newPostIds.length > 0) {
+          setAdaptingRatios(true);
+          Promise.all(
+            newPostIds.map((id, i) => adaptPostToRatios(id, codes[i], targetRatios))
+          ).catch(err => console.error('Ratio adaptation failed:', err))
+            .finally(() => setAdaptingRatios(false));
+        }
       } else {
         const newEntries = codes.map((code, i) => ({
           id: `generated-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
@@ -480,6 +488,18 @@ export default function DesignPage() {
       await updatePostCodeForRatio({ id: postId, ratio, componentCode: code });
     }
   };
+
+  // Adapt a single post to a single ratio (called from PostGrid resize button)
+  const handleAdaptSingleRatio = useCallback(async (postId: Id<"posts">, baseCode: string, targetRatio: AspectRatioType) => {
+    const res = await fetch('/api/adapt-ratio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: baseCode, targetRatio }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Adapt to ${targetRatio} failed`);
+    await updatePostCodeForRatio({ id: postId, ratio: targetRatio, componentCode: data.code });
+  }, [updatePostCodeForRatio]);
 
   // ── Crawl handlers ──
   const handleCrawlDiscover = async (url: string) => {
@@ -1034,197 +1054,53 @@ export default function DesignPage() {
         />
       )}
 
-      {/* Generate full page — shows posts + floating chat input */}
-      {activeTab === 'generate' && (
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Floating Nav */}
-          <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-            <nav className="max-w-4xl mx-auto bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
-              <MobileNavMenu activeTab={activeTab} onTabClick={handleTabClick} workspaces={workspaces?.map(w => ({ _id: w._id, name: w.name }))} currentWorkspaceId={workspaceId ?? undefined} currentWorkspaceName={workspace?.name} />
-              <div className="w-px h-5 bg-slate-200 md:hidden" />
-              <span className="text-sm font-black text-slate-900">Generate</span>
-              <div className="w-px h-5 bg-slate-200" />
-              {posts && <span className="text-xs font-medium text-slate-400">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>}
-              <div className="flex-1" />
-            </nav>
-          </div>
-          {/* Posts area */}
-          <div className="flex-1 relative overflow-hidden">
-          <main className="h-full overflow-y-auto p-3 md:p-6 pb-40">
-            <DeviceContext.Provider value={deviceType}>
-            <EditContext.Provider value={editMode}>
-            <AspectRatioContext.Provider value={aspectRatio}>
-            <SelectedIdContext.Provider value={selectedId}>
-            <SetSelectedIdContext.Provider value={setSelectedId}>
-            <PostGrid
-              allPostIds={allPostIds}
-              posts={posts}
-              generatedPosts={generatedPosts}
-              setGeneratedPosts={setGeneratedPosts}
-              viewMode={viewMode}
-              gridCols={gridCols}
-              editMode={editMode}
-              aspectRatio={aspectRatio}
-              reorderMode={reorderMode}
-              selectMode={selectMode}
-              selectedPosts={selectedPosts}
-              draggingId={draggingId}
-              codeViewPosts={codeViewPosts}
-              postRefs={postRefs}
-              dragItem={dragItem}
-              setDraggingId={setDraggingId}
-              onDragEnter={handleDragEnter}
-              onDragEnd={handleDragEnd}
-              onTogglePostSelection={togglePostSelection}
-              onToggleCodeView={toggleCodeView}
-              onUpdatePostCode={updatePostCode}
-              onUpdatePostCodeForRatio={updatePostCodeForRatio}
-              onRemovePost={removePost}
-              selectedPostId={selectedPostId}
-              onSelectPost={setSelectedPostId}
-            />
-            </SetSelectedIdContext.Provider>
-            </SelectedIdContext.Provider>
-            </AspectRatioContext.Provider>
-            </EditContext.Provider>
-            </DeviceContext.Provider>
-          </main>
-
-          {/* Floating chat input */}
-          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] md:w-full max-w-3xl px-0 md:px-4 z-[60]">
-            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
-              <textarea
-                value={generatePrompt}
-                onChange={(e) => setGeneratePrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && generatePrompt.trim() && !generating) {
-                    e.preventDefault();
-                    handleGenerate();
-                  }
-                }}
-                placeholder="Describe the post you want to generate..."
-                rows={2}
-                className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
-              />
-              <div className="flex items-center justify-between px-4 pb-3">
-                {/* Left: attachment */}
-                <label className="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 cursor-pointer transition-colors">
-                  <Paperclip size={16} />
-                  <input ref={websiteScreenshotRef} type="file" accept="image/*" onChange={handleWebsiteScreenshot} className="hidden" />
-                </label>
-
-                {/* Right: options + send */}
-                <div className="flex items-center gap-1">
-                  {/* Post count */}
-                  <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-0.5">
-                    {[1, 2, 3, 4].map((n) => (
-                      <button
-                        key={n}
-                        onClick={() => setGenerateCount(n)}
-                        className={`w-7 h-7 rounded-full text-xs font-bold transition-colors ${
-                          generateCount === n
-                            ? 'bg-white text-slate-900 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Style selector */}
-                  <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-0.5 ml-1">
-                    {([
-                      { v: 5 as const, label: 'C', title: 'Classic' },
-                      { v: 1 as const, label: 'G', title: 'Guided' },
-                      { v: 2 as const, label: 'Cr', title: 'Creative' },
-                      { v: 3 as const, label: 'F', title: 'Free' },
-                      { v: 4 as const, label: 'W', title: 'Wild' },
-                    ]).map(({ v, label, title }) => (
-                      <button
-                        key={v}
-                        onClick={() => setGenerateVersion(v)}
-                        title={title}
-                        className={`w-7 h-7 rounded-full text-[10px] font-bold transition-colors ${
-                          generateVersion === v
-                            ? 'bg-white text-slate-900 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Ratio selector — pick which sizes to generate */}
-                  <div className="flex items-center bg-slate-100 rounded-full p-0.5 ml-1">
-                    {(['1:1', '9:16', '3:4', '4:3', '16:9'] as AspectRatioType[]).map((r) => {
-                      const isSelected = targetRatios.includes(r);
-                      const isBase = r === '1:1';
-                      return (
-                        <button
-                          key={r}
-                          onClick={() => {
-                            if (isBase) return; // 1:1 always selected as base
-                            setTargetRatios(prev =>
-                              prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]
-                            );
-                          }}
-                          title={isBase ? '1:1 (base — always included)' : `${isSelected ? 'Remove' : 'Add'} ${r} variant`}
-                          className={`px-1.5 h-7 rounded-full text-[10px] font-bold transition-colors ${
-                            isSelected
-                              ? 'bg-white text-slate-900 shadow-sm'
-                              : 'text-slate-400 hover:text-slate-600'
-                          } ${isBase ? 'opacity-100' : ''}`}
-                        >
-                          {r}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Send */}
-                  <button
-                    onClick={handleGenerate}
-                    disabled={generating || !generatePrompt.trim()}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ml-1 ${
-                      generating || !generatePrompt.trim()
-                        ? 'bg-slate-200 text-slate-400'
-                        : 'bg-[#1B4332] text-white hover:bg-[#2D6A4F]'
-                    }`}
-                  >
-                    {generating ? <Loader2 size={16} className="animate-spin" /> : <ArrowUp size={16} />}
-                  </button>
-                </div>
-              </div>
-            </div>
-            {adaptingRatios && (
-              <p className="text-xs text-slate-500 font-medium mt-2 text-center flex items-center justify-center gap-1.5">
-                <Loader2 size={12} className="animate-spin" /> Adapting to {targetRatios.filter(r => r !== '1:1').join(', ')}...
-              </p>
-            )}
-            {generateError && (
-              <p className="text-xs text-red-500 font-medium mt-2 text-center">{generateError}</p>
-            )}
-          </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content */}
-      {activeTab !== 'brand' && activeTab !== 'publish' && activeTab !== 'channels' && activeTab !== 'assets' && activeTab !== 'generate' && <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile Nav Header */}
-        <div className="shrink-0 pt-4 pb-2 px-6 md:hidden relative z-[90]">
+      {/* Main Content — Design + Generate merged */}
+      {activeTab !== 'brand' && activeTab !== 'publish' && activeTab !== 'channels' && activeTab !== 'assets' && <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Nav Header with Design/Generate sub-tab switcher */}
+        <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
           <nav className="max-w-4xl mx-auto bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
             <MobileNavMenu activeTab={activeTab} onTabClick={handleTabClick} workspaces={workspaces?.map(w => ({ _id: w._id, name: w.name }))} currentWorkspaceId={workspaceId ?? undefined} currentWorkspaceName={workspace?.name} />
+            <div className="w-px h-5 bg-slate-200 md:hidden" />
+
+            {/* Sub-tab switcher: Design | Generate — active shows label, inactive icon-only */}
+            <div className="flex items-center bg-slate-100 rounded-full p-0.5">
+              <button
+                onClick={() => setActiveTab(null)}
+                title="Design"
+                className={`group flex items-center gap-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
+                  activeTab !== 'generate'
+                    ? 'bg-white text-slate-900 shadow-sm px-3 py-1.5'
+                    : 'text-slate-400 hover:text-slate-600 p-1.5'
+                }`}
+              >
+                <LayoutGrid size={14} />
+                {activeTab !== 'generate' && <span>Design</span>}
+              </button>
+              <button
+                onClick={() => setActiveTab('generate')}
+                title="Generate"
+                className={`group flex items-center gap-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
+                  activeTab === 'generate'
+                    ? 'bg-white text-slate-900 shadow-sm px-3 py-1.5'
+                    : 'text-slate-400 hover:text-slate-600 p-1.5'
+                }`}
+              >
+                <Sparkles size={14} />
+                {activeTab === 'generate' && <span>Generate</span>}
+              </button>
+            </div>
+
             <div className="w-px h-5 bg-slate-200" />
-            <span className="text-sm font-black text-slate-900">Design</span>
-            <div className="flex-1" />
+
             {posts && <span className="text-xs font-medium text-slate-400">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>}
+
+            <div className="flex-1" />
           </nav>
         </div>
+
+        <div className="flex-1 relative overflow-hidden">
         <main
-        className="flex-1 overflow-y-auto p-3 md:p-6 pb-24"
+        className={`h-full overflow-y-auto p-3 md:p-6 ${activeTab === 'generate' ? 'pb-40' : 'pb-24'}`}
         onClick={(e) => {
           if ((e.target as HTMLElement).closest?.('[data-toolbar-portal]')) return;
           if ((e.target as HTMLElement).closest?.('[data-contextual-toolbar]')) return;
@@ -1317,6 +1193,7 @@ export default function DesignPage() {
               onRemovePost={removePost}
               selectedPostId={selectedPostId}
               onSelectPost={setSelectedPostId}
+              onAdaptRatio={handleAdaptSingleRatio}
             />
           </SetSelectedIdContext.Provider>
           </SelectedIdContext.Provider>
@@ -1325,8 +1202,9 @@ export default function DesignPage() {
           </DeviceContext.Provider>
         )}
 
-        {/* Bottom toolbar — floating pill with icon buttons + click dropdowns */}
-        <div ref={toolbarRef} className={`fixed bottom-[64px] md:bottom-4 left-1/2 -translate-x-1/2 z-[60] ${activeTab ? 'max-md:hidden' : ''}`}>
+        {/* Bottom toolbar — only visible in Design mode */}
+        {activeTab !== 'generate' && (
+        <div ref={toolbarRef} className="fixed bottom-[64px] md:bottom-4 left-1/2 -translate-x-1/2 z-[60]">
           <div className="flex items-center bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border border-gray-200/60 px-1.5 py-1.5 gap-0.5">
 
             {/* Cursor / default mode */}
@@ -1431,7 +1309,130 @@ export default function DesignPage() {
             </button>
           </div>
         </div>
+        )}
+
+        {/* Floating chat input — only visible in Generate mode */}
+        {activeTab === 'generate' && (
+          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] md:w-full max-w-3xl px-0 md:px-4 z-[60]">
+            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
+              <textarea
+                value={generatePrompt}
+                onChange={(e) => setGeneratePrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && generatePrompt.trim() && !generating) {
+                    e.preventDefault();
+                    handleGenerate();
+                  }
+                }}
+                placeholder="Describe the post you want to generate..."
+                rows={2}
+                className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
+              />
+              <div className="flex items-center justify-between px-4 pb-3">
+                {/* Left: attachment */}
+                <label className="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 cursor-pointer transition-colors">
+                  <Paperclip size={16} />
+                  <input ref={websiteScreenshotRef} type="file" accept="image/*" onChange={handleWebsiteScreenshot} className="hidden" />
+                </label>
+
+                {/* Right: options + send */}
+                <div className="flex items-center gap-1">
+                  {/* Post count */}
+                  <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-0.5">
+                    {[1, 2, 3, 4].map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setGenerateCount(n)}
+                        className={`w-7 h-7 rounded-full text-xs font-bold transition-colors ${
+                          generateCount === n
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-400 hover:text-slate-600'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Style selector */}
+                  <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-0.5 ml-1">
+                    {([
+                      { v: 5 as const, label: 'C', title: 'Classic' },
+                      { v: 1 as const, label: 'G', title: 'Guided' },
+                      { v: 2 as const, label: 'Cr', title: 'Creative' },
+                      { v: 3 as const, label: 'F', title: 'Free' },
+                      { v: 4 as const, label: 'W', title: 'Wild' },
+                    ]).map(({ v, label, title }) => (
+                      <button
+                        key={v}
+                        onClick={() => setGenerateVersion(v)}
+                        title={title}
+                        className={`w-7 h-7 rounded-full text-[10px] font-bold transition-colors ${
+                          generateVersion === v
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-400 hover:text-slate-600'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Ratio selector */}
+                  <div className="flex items-center bg-slate-100 rounded-full p-0.5 ml-1">
+                    {(['1:1', '9:16', '3:4', '4:3', '16:9'] as AspectRatioType[]).map((r) => {
+                      const isSelected = targetRatios.includes(r);
+                      const isBase = r === '1:1';
+                      return (
+                        <button
+                          key={r}
+                          onClick={() => {
+                            if (isBase) return;
+                            setTargetRatios(prev =>
+                              prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]
+                            );
+                          }}
+                          title={isBase ? '1:1 (base — always included)' : `${isSelected ? 'Remove' : 'Add'} ${r} variant`}
+                          className={`px-1.5 h-7 rounded-full text-[10px] font-bold transition-colors ${
+                            isSelected
+                              ? 'bg-white text-slate-900 shadow-sm'
+                              : 'text-slate-400 hover:text-slate-600'
+                          } ${isBase ? 'opacity-100' : ''}`}
+                        >
+                          {r}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Send */}
+                  <button
+                    onClick={handleGenerate}
+                    disabled={generating || !generatePrompt.trim()}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ml-1 ${
+                      generating || !generatePrompt.trim()
+                        ? 'bg-slate-200 text-slate-400'
+                        : 'bg-[#1B4332] text-white hover:bg-[#2D6A4F]'
+                    }`}
+                  >
+                    {generating ? <Loader2 size={16} className="animate-spin" /> : <ArrowUp size={16} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+            {adaptingRatios && (
+              <p className="text-xs text-slate-500 font-medium mt-2 text-center flex items-center justify-center gap-1.5">
+                <Loader2 size={12} className="animate-spin" /> Adapting to {targetRatios.filter(r => r !== '1:1').join(', ')}...
+              </p>
+            )}
+            {generateError && (
+              <p className="text-xs text-red-500 font-medium mt-2 text-center">{generateError}</p>
+            )}
+          </div>
+        )}
+
       </main>
+      </div>
       </div>}
 
       {/* Properties side panel — commented out for now
