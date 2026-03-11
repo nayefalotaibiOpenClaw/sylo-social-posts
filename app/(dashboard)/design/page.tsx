@@ -364,7 +364,7 @@ export default function DesignPage() {
         setLocalOrder(prev => [...newEntries.map(e => e.id), ...prev]);
       }
     } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : 'Generation failed');
+      setGenerateError(err instanceof Error ? err.message : 'Something went wrong. Please try again or contact support.');
     } finally {
       setGenerating(false);
     }
@@ -489,7 +489,7 @@ export default function DesignPage() {
         setLocalOrder(prev => [...newEntries.map(e => e.id), ...prev]);
       }
     } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : 'Generation failed');
+      setGenerateError(err instanceof Error ? err.message : 'Something went wrong. Please try again or contact support.');
     } finally {
       setGenerating(false);
     }
