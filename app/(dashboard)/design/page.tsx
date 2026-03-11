@@ -257,7 +257,7 @@ export default function DesignPage() {
         website: workspace?.website,
         industry: workspace?.industry,
         language: workspace?.defaultLanguage || 'ar' as const,
-        logoUrl: assets?.find(a => a.type === 'logo')?.url || undefined,
+        logoUrl: logoUrl || undefined,
         websiteInfo: workspace?.websiteInfo ? (() => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const wi = workspace.websiteInfo as any;
@@ -387,7 +387,7 @@ export default function DesignPage() {
         website: workspace?.website,
         industry: workspace?.industry,
         language: workspace?.defaultLanguage || 'ar' as const,
-        logoUrl: assets?.find(a => a.type === 'logo')?.url || undefined,
+        logoUrl: logoUrl || undefined,
         websiteInfo: workspace?.websiteInfo ? (() => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const wi = workspace.websiteInfo as any;
