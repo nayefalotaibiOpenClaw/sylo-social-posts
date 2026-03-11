@@ -140,6 +140,7 @@ export default function DesignPage() {
   const [generating, setGenerating] = useState(false);
   const [generatedPosts, setGeneratedPosts] = useState<{ id: string; code: string }[]>([]);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [usageWarning, setUsageWarning] = useState<string | null>(null);
   const [generateCount, setGenerateCount] = useState(2);
   const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3 | 4 | 5>(5);
   const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
@@ -287,12 +288,19 @@ export default function DesignPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: generatePrompt, context, count: generateCount, version: generateVersion }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Generation failed');
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Something went wrong while generating. Please try again or contact support.');
+      }
+      if (!res.ok) throw new Error(data.error || 'Something went wrong while generating. Please try again or contact support.');
 
       const codes: string[] = data.codes || [data.code];
 
-      // Track AI token usage in subscription
+      // Track AI token usage in subscription — if limit exceeded, still show posts but warn user
+      setUsageWarning(null);
       if (data.usage) {
         try {
           await incrementUsage({
@@ -300,7 +308,14 @@ export default function DesignPage() {
             postsGenerated: data.usage.postsGenerated || codes.length,
           });
         } catch (e) {
-          console.warn("Usage tracking failed (no active subscription?):", e);
+          const msg = e instanceof Error ? e.message : '';
+          if (msg.includes('limit exceeded') || msg.includes('limit reached')) {
+            setUsageWarning("You've reached your subscription limit. Upgrade your plan to continue generating.");
+          } else if (msg.includes('expired')) {
+            setUsageWarning("Your subscription has expired. Please renew to continue generating.");
+          } else if (msg.includes('No active subscription')) {
+            setUsageWarning("No active subscription found. Please subscribe to continue generating.");
+          }
         }
       }
 
@@ -402,11 +417,18 @@ export default function DesignPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: generatePrompt, context, allLayouts: true }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Generation failed');
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Something went wrong while generating. Please try again or contact support.');
+      }
+      if (!res.ok) throw new Error(data.error || 'Something went wrong while generating. Please try again or contact support.');
 
       const codes: string[] = data.codes || [data.code];
 
+      setUsageWarning(null);
       if (data.usage) {
         try {
           await incrementUsage({
@@ -414,7 +436,14 @@ export default function DesignPage() {
             postsGenerated: data.usage.postsGenerated || codes.length,
           });
         } catch (e) {
-          console.warn("Usage tracking failed:", e);
+          const msg = e instanceof Error ? e.message : '';
+          if (msg.includes('limit exceeded') || msg.includes('limit reached')) {
+            setUsageWarning("You've reached your subscription limit. Upgrade your plan to continue generating.");
+          } else if (msg.includes('expired')) {
+            setUsageWarning("Your subscription has expired. Please renew to continue generating.");
+          } else if (msg.includes('No active subscription')) {
+            setUsageWarning("No active subscription found. Please subscribe to continue generating.");
+          }
         }
       }
 
