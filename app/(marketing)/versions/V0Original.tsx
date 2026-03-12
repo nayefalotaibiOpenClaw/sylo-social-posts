@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import FloatingNav from "@/app/components/FloatingNav";
+import HeroDemo from "./HeroDemo";
 
 // ... existing code ...
 
@@ -200,14 +201,46 @@ export default function V0Original() {
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 overflow-x-hidden">
       <FloatingNav activePage="home" />
 
-      {/* Hero Section */}
-      <section className="pt-48 pb-20 px-6 relative">
-        {/* Floating Logos Background */}
-        <FloatingLogo top="20%" left="15%" delay={0}><div className="w-full h-full bg-indigo-500 rounded-md" /></FloatingLogo>
-        <FloatingLogo top="35%" left="8%" delay={1}><div className="w-full h-full bg-pink-500 rounded-md" /></FloatingLogo>
-        <FloatingLogo top="15%" right="10%" delay={0.5}><div className="w-full h-full bg-yellow-500 rounded-md" /></FloatingLogo>
-        <FloatingLogo top="40%" right="12%" delay={1.5}><div className="w-full h-full bg-emerald-500 rounded-md" /></FloatingLogo>
+      {/* Hero Demo Section — Interactive Demo with Floating Icons */}
+      <section className="pt-36 pb-16 px-6 relative">
+        {/* Floating Logo Animations */}
+        <FloatingLogo top="12%" left="12%" delay={0}><div className="w-full h-full bg-indigo-300 rounded-lg" /></FloatingLogo>
+        <FloatingLogo top="30%" left="6%" delay={1}><div className="w-full h-full bg-pink-500 rounded-lg" /></FloatingLogo>
+        <FloatingLogo top="10%" right="8%" delay={0.5}><div className="w-full h-full bg-yellow-400 rounded-lg" /></FloatingLogo>
+        <FloatingLogo top="35%" right="10%" delay={1.5}><div className="w-full h-full bg-emerald-500 rounded-lg" /></FloatingLogo>
+        <FloatingLogo top="55%" left="10%" delay={0.8}><div className="w-full h-full bg-orange-400 rounded-lg" /></FloatingLogo>
+        <FloatingLogo top="50%" right="14%" delay={2}><div className="w-full h-full bg-sky-400 rounded-lg" /></FloatingLogo>
 
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight mb-5"
+          >
+            Your brand, everywhere.
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto mb-12"
+          >
+            AI-powered content for social media, app stores, and advertising
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="max-w-2xl mx-auto"
+          >
+            <HeroDemo theme="light" />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Original Hero Section — Tabs + Post Carousel */}
+      <section className="pt-20 pb-20 px-6 relative">
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
