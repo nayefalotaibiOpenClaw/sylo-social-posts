@@ -67,7 +67,7 @@ function EnglishContent() {
           editor that helps businesses create professional, on-brand social
           media content. This Privacy Policy explains how we collect, use,
           store, and protect your information when you use our platform at
-          odesigns.co and any associated services. By using oDesigns, you
+          odesigns.app and any associated services. By using oDesigns, you
           agree to the practices described in this policy.
         </p>
       </div>
@@ -219,6 +219,32 @@ function EnglishContent() {
             .
           </Bullet>
           <Bullet>
+            <strong className="text-slate-800 dark:text-neutral-200">
+              Meta (Facebook &amp; Instagram):
+            </strong>{" "}
+            When you connect your Facebook or Instagram account, we access
+            certain data through Meta&apos;s APIs to enable post publishing
+            and scheduling. This includes your Facebook Page name, page
+            access tokens, Instagram business profile information (username,
+            profile picture), and page engagement data. We use this data
+            solely to publish content you schedule through oDesigns and to
+            display your connected accounts. We store access tokens securely
+            and encrypted. You can disconnect your Facebook or Instagram
+            account at any time from the Channels page, which revokes our
+            access. We do not sell, share, or use your Meta data for
+            advertising or any purpose other than providing the oDesigns
+            publishing service. Meta&apos;s use of your data is governed by{" "}
+            <a
+              href="https://www.facebook.com/privacy/policy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-900 underline underline-offset-2 hover:text-slate-600"
+            >
+              Meta&apos;s Privacy Policy
+            </a>
+            .
+          </Bullet>
+          <Bullet>
             <strong className="text-slate-800 dark:text-neutral-200">Payment Processing:</strong>{" "}
             If you subscribe to a paid plan, your payment information is
             handled by our third-party payment processor. We do not
@@ -324,7 +350,7 @@ function ArabicContent() {
           التواصل الاجتماعي وتحرير التصاميم، تساعد الشركات على إنشاء محتوى
           احترافي ومتوافق مع هويتها البصرية. توضح سياسة الخصوصية هذه كيفية
           جمع معلوماتك واستخدامها وتخزينها وحمايتها عند استخدامك لمنصتنا على
-          odesigns.co وأي خدمات مرتبطة بها. باستخدامك لـ oDesigns، فإنك
+          odesigns.app وأي خدمات مرتبطة بها. باستخدامك لـ oDesigns، فإنك
           توافق على الممارسات الموضحة في هذه السياسة.
         </p>
       </div>
@@ -468,6 +494,31 @@ function ArabicContent() {
               className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
             >
               شروط خدمة واجهة برمجة التطبيقات
+            </a>
+            .
+          </Bullet>
+          <Bullet>
+            <strong className="text-slate-800 dark:text-neutral-200">
+              Meta (فيسبوك وإنستغرام):
+            </strong>{" "}
+            عند ربط حسابك على فيسبوك أو إنستغرام، نصل إلى بيانات معينة
+            من خلال واجهات برمجة تطبيقات Meta لتمكين نشر المنشورات
+            وجدولتها. يشمل ذلك اسم صفحة فيسبوك ورموز الوصول إلى الصفحة
+            ومعلومات حساب إنستغرام التجاري (اسم المستخدم، صورة الملف
+            الشخصي) وبيانات تفاعل الصفحة. نستخدم هذه البيانات فقط لنشر
+            المحتوى الذي تجدوله عبر oDesigns ولعرض حساباتك المتصلة. نخزن
+            رموز الوصول بشكل آمن ومشفر. يمكنك إلغاء ربط حسابك على فيسبوك
+            أو إنستغرام في أي وقت من صفحة القنوات، مما يلغي وصولنا. نحن
+            لا نبيع أو نشارك أو نستخدم بيانات Meta الخاصة بك للإعلانات أو
+            لأي غرض آخر غير تقديم خدمة النشر في oDesigns. يخضع استخدام
+            Meta لبياناتك لـ{" "}
+            <a
+              href="https://www.facebook.com/privacy/policy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-900 underline underline-offset-2 hover:text-slate-600"
+            >
+              سياسة خصوصية Meta
             </a>
             .
           </Bullet>

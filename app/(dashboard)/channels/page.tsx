@@ -93,7 +93,6 @@ export default function ChannelsPage() {
   };
 
   const activeAccounts = socialAccounts?.filter((a) => a.status === "active") || [];
-  const connectedProviders = new Set(activeAccounts.map((a) => a.provider));
 
   if (authLoading) {
     return (
@@ -206,10 +205,7 @@ export default function ChannelsPage() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {PROVIDERS.map((provider) => {
-                  const isConnected = connectedProviders.has(provider.id as "facebook" | "instagram" | "tiktok" | "twitter");
                   const Icon = provider.icon;
-
-                  if (isConnected) return null;
 
                   return (
                     <button
