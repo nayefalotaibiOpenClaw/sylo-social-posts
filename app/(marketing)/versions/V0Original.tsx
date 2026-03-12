@@ -30,6 +30,15 @@ import TravelBookingPost from "@/features/posts/templates/showcase/TravelBooking
 import FintechBankingPost from "@/features/posts/templates/showcase/FintechBankingPost";
 import RealEstatePost from "@/features/posts/templates/showcase/RealEstatePost";
 import BeautyCosmeticsPost from "@/features/posts/templates/showcase/BeautyCosmeticsPost";
+// App Store preview posts
+import AppStoreMeditationPost from "@/features/posts/templates/appstore/AppStoreMeditationPost";
+import AppStoreReadingPost from "@/features/posts/templates/appstore/AppStoreReadingPost";
+import AppStoreDeliveryPost from "@/features/posts/templates/appstore/AppStoreDeliveryPost";
+import AppStoreFinancePost from "@/features/posts/templates/appstore/AppStoreFinancePost";
+import AppStoreProductPost from "@/features/posts/templates/appstore/AppStoreProductPost";
+import AppStoreBankingPost from "@/features/posts/templates/appstore/AppStoreBankingPost";
+import AppStoreShoppingPost from "@/features/posts/templates/appstore/AppStoreShoppingPost";
+import AppStoreNewsPost from "@/features/posts/templates/appstore/AppStoreNewsPost";
 
 // Contexts for rendering posts
 import { type Theme, defaultTheme, ThemeCtx } from "@/contexts/ThemeContext";
@@ -123,16 +132,16 @@ const socialPosts = [
   { component: <InventoryPost />, theme: themes[2], label: "Inventory" },
 ];
 
-// App Store Preview — 9:16 tall
+// App Store Preview — 9:16 tall (dedicated App Store templates)
 const appStorePosts = [
-  { component: <FoodDeliveryPost />, theme: themes[0], label: "Food Delivery" },
-  { component: <SaaSDashboardPost />, theme: themes[1], label: "SaaS Dashboard" },
-  { component: <FitnessAppPost />, theme: themes[4], label: "Fitness App" },
-  { component: <FintechBankingPost />, theme: themes[6], label: "Fintech" },
-  { component: <LuxuryFashionPost />, theme: themes[2], label: "Luxury Fashion" },
-  { component: <BeautyCosmeticsPost />, theme: themes[3], label: "Beauty" },
-  { component: <TravelBookingPost />, theme: themes[5], label: "Travel Booking" },
-  { component: <RealEstatePost />, theme: themes[0], label: "Real Estate" },
+  { component: <AppStoreMeditationPost />, theme: themes[2], label: "Meditation" },
+  { component: <AppStoreReadingPost />, theme: themes[5], label: "Reading" },
+  { component: <AppStoreDeliveryPost />, theme: themes[0], label: "Food Delivery" },
+  { component: <AppStoreFinancePost />, theme: themes[1], label: "Finance" },
+  { component: <AppStoreProductPost />, theme: themes[6], label: "Device" },
+  { component: <AppStoreBankingPost />, theme: themes[4], label: "Banking" },
+  { component: <AppStoreShoppingPost />, theme: themes[3], label: "Shopping" },
+  { component: <AppStoreNewsPost />, theme: themes[0], label: "News" },
 ];
 
 // Ads — 16:9 landscape
