@@ -180,7 +180,7 @@ const FloatingLogo = ({ delay, children, top, left, right }: { delay: number; ch
     className="absolute z-0 hidden md:flex items-center justify-center"
     style={{ top, left, right }}
   >
-    <div className="w-12 h-12 bg-white rounded-xl shadow-lg border border-slate-100 flex items-center justify-center p-2">
+    <div className="w-12 h-12 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-slate-100 dark:border-neutral-700 flex items-center justify-center p-2">
       {children}
     </div>
   </motion.div>
@@ -198,7 +198,7 @@ export default function V0Original() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-white font-sans selection:bg-indigo-100 overflow-x-hidden">
       <FloatingNav activePage="home" />
 
       {/* Hero Demo Section — Interactive Demo with Floating Icons */}
@@ -223,7 +223,7 @@ export default function V0Original() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto mb-12"
+            className="text-lg sm:text-xl text-slate-500 dark:text-neutral-400 max-w-2xl mx-auto mb-12"
           >
             AI-powered content for social media, app stores, and advertising
           </motion.p>
@@ -234,7 +234,7 @@ export default function V0Original() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="max-w-2xl mx-auto"
           >
-            <HeroDemo theme="light" />
+            <HeroDemo />
           </motion.div>
         </div>
       </section>
@@ -256,15 +256,15 @@ export default function V0Original() {
             transition={{ delay: 0.1 }}
             className="flex items-center justify-center gap-2 mb-16"
           >
-            <div className="bg-slate-100 p-1 rounded-full flex gap-1">
+            <div className="bg-slate-100 dark:bg-neutral-800 p-1 rounded-full flex gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
                     activeTab === tab.key
-                      ? "bg-white shadow-sm text-slate-900"
-                      : "text-slate-500 hover:text-slate-900"
+                      ? "bg-white dark:bg-neutral-700 shadow-sm text-slate-900 dark:text-white"
+                      : "text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {tab.label}
@@ -303,8 +303,8 @@ export default function V0Original() {
                   <div className="mt-4 flex items-center justify-between px-2">
                     <span className="font-bold text-sm">{item.label}</span>
                     <div className="flex gap-1">
-                      <div className="w-2 h-2 rounded-full bg-slate-200" />
-                      <div className="w-2 h-2 rounded-full bg-slate-200" />
+                      <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-neutral-700" />
+                      <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-neutral-700" />
                     </div>
                   </div>
                 </motion.div>
@@ -315,10 +315,10 @@ export default function V0Original() {
       </section>
 
       {/* Feature Section 1: Automation */}
-      <section className="py-32 bg-white">
+      <section className="py-32 bg-white dark:bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-5xl md:text-7xl font-black mb-8">{t("landing.automationTitle")}</h2>
-          <p className="text-xl text-slate-500 max-w-3xl mx-auto mb-20 leading-relaxed">
+          <p className="text-xl text-slate-500 dark:text-neutral-400 max-w-3xl mx-auto mb-20 leading-relaxed">
             {t("landing.automationDesc")}
           </p>
 
@@ -338,7 +338,7 @@ export default function V0Original() {
       </section>
 
       {/* Feature Section 2: Dark Cards */}
-      <section className="py-24 bg-white px-6">
+      <section className="py-24 bg-white dark:bg-[#0a0a0a] px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Global Reach Card */}
           <div className="bg-black rounded-[2.5rem] p-12 text-white flex flex-col justify-between overflow-hidden">
@@ -405,15 +405,15 @@ export default function V0Original() {
                 "Animation", "Tracking", "Personalisation"
               ].map((title, i) => (
                 <div key={i} className="group cursor-pointer">
-                   <div className="aspect-[1.5] bg-slate-50 rounded-[2rem] p-6 border border-slate-100 group-hover:bg-slate-100 transition-colors relative overflow-hidden">
+                   <div className="aspect-[1.5] bg-slate-50 dark:bg-neutral-900 rounded-[2rem] p-6 border border-slate-100 dark:border-neutral-800 group-hover:bg-slate-100 dark:group-hover:bg-neutral-800 transition-colors relative overflow-hidden">
                       <div className="grid grid-cols-2 gap-4 h-full">
-                         <div className="h-full bg-white rounded-xl shadow-sm border border-slate-100" />
-                         <div className="h-full bg-white rounded-xl shadow-sm border border-slate-100 mt-8" />
+                         <div className="h-full bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-slate-100 dark:border-neutral-700" />
+                         <div className="h-full bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-slate-100 dark:border-neutral-700 mt-8" />
                       </div>
                    </div>
                    <div className="mt-4 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden" />
-                      <span className="font-bold text-slate-700">{title}</span>
+                      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-neutral-700 overflow-hidden" />
+                      <span className="font-bold text-slate-700 dark:text-neutral-300">{title}</span>
                    </div>
                 </div>
               ))}
@@ -422,8 +422,8 @@ export default function V0Original() {
       </section>
 
       {/* Trust / Action Split View */}
-      <section className="py-24 bg-white px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-stretch rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.05)] border border-slate-100">
+      <section className="py-24 bg-white dark:bg-[#0a0a0a] px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-stretch rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-neutral-800">
            <div className="flex-1 bg-slate-900 p-12 md:p-20 text-white flex flex-col justify-center items-center text-center">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-8">
                 <span className="text-slate-900 font-black text-2xl">S</span>
@@ -452,7 +452,7 @@ export default function V0Original() {
               </div>
            </div>
 
-           <div className="flex-1 bg-slate-50 relative overflow-hidden hidden md:block min-h-[500px]">
+           <div className="flex-1 bg-slate-50 dark:bg-neutral-900 relative overflow-hidden hidden md:block min-h-[500px]">
               {/* Real post collage */}
               <div className="absolute inset-0 grid grid-cols-2 gap-3 p-6 rotate-12 scale-125 origin-center">
                 {collagePostItems.map((item, i) => (
@@ -461,20 +461,20 @@ export default function V0Original() {
                   </div>
                 ))}
               </div>
-              <div className="absolute inset-0 bg-gradient-to-l from-slate-50 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-l from-slate-50 dark:from-[#0a0a0a] via-transparent to-transparent" />
            </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-20 border-t border-slate-100 bg-white">
+      <footer className="py-20 border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-slate-400 font-bold text-sm">
           <div />
           <div className="flex gap-8">
-            <a href="#" className="hover:text-slate-900">{t("landing.twitter")}</a>
-            <a href="#" className="hover:text-slate-900">{t("landing.linkedin")}</a>
-            <a href="#" className="hover:text-slate-900">{t("landing.termsOfService")}</a>
-            <a href="#" className="hover:text-slate-900">{t("landing.privacyPolicy")}</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white">{t("landing.twitter")}</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white">{t("landing.linkedin")}</a>
+            <a href="/terms" className="hover:text-slate-900 dark:hover:text-white">{t("landing.termsOfService")}</a>
+            <a href="/privacy" className="hover:text-slate-900 dark:hover:text-white">{t("landing.privacyPolicy")}</a>
           </div>
           <p>{t("landing.copyright")}</p>
         </div>

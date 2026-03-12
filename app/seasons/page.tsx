@@ -153,37 +153,37 @@ export default function SeasonsPage() {
   }, [selectedPosts]);
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
-      <div className="w-[72px] bg-white border-r border-gray-200 flex flex-col items-center py-4 gap-1 shrink-0">
+    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-[#0a0a0a]">
+      <div className="w-[72px] bg-white dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-neutral-800 flex flex-col items-center py-4 gap-1 shrink-0">
         <Link href="/" className="w-10 h-10 bg-rose-900 rounded-xl flex items-center justify-center mb-4">
           <span className="text-white font-black text-sm">S</span>
         </Link>
-        <button onClick={() => setActiveTab('settings')} className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all ${activeTab === 'settings' ? 'bg-rose-900 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>
+        <button onClick={() => setActiveTab('settings')} className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all ${activeTab === 'settings' ? 'bg-rose-900 text-white' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}>
           <Settings size={20} />
           <span className="text-[10px] font-medium">Settings</span>
         </button>
-        <button onClick={() => setActiveTab('theme')} className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all ${activeTab === 'theme' ? 'bg-rose-900 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>
+        <button onClick={() => setActiveTab('theme')} className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all ${activeTab === 'theme' ? 'bg-rose-900 text-white' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}>
           <Palette size={20} />
           <span className="text-[10px] font-medium">Theme</span>
         </button>
       </div>
 
       {activeTab && (
-        <div className="w-[280px] bg-white border-r border-gray-200 p-5 overflow-y-auto">
+        <div className="w-[280px] bg-white dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-neutral-800 p-5 overflow-y-auto">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-bold text-gray-900 capitalize">{activeTab}</h2>
-            <button onClick={() => setActiveTab(null)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white capitalize">{activeTab}</h2>
+            <button onClick={() => setActiveTab(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-neutral-300"><X size={16} /></button>
           </div>
           {activeTab === 'settings' && (
             <div className="space-y-6">
-               <button onClick={() => setEditMode(!editMode)} className={`w-full py-2.5 rounded-lg text-xs font-bold border ${editMode ? 'bg-rose-100 text-rose-900 border-rose-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+               <button onClick={() => setEditMode(!editMode)} className={`w-full py-2.5 rounded-lg text-xs font-bold border ${editMode ? 'bg-rose-100 text-rose-900 border-rose-200' : 'bg-gray-50 dark:bg-neutral-900 text-gray-500 dark:text-neutral-400 border-gray-200 dark:border-neutral-800'}`}>
                  {editMode ? 'Disable Editing' : 'Enable Editing'}
                </button>
                <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Aspect Ratio</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Aspect Ratio</label>
                   <div className="flex gap-1">
                     {(['1:1', '9:16', '3:4'] as const).map((ratio) => (
-                      <button key={ratio} onClick={() => setAspectRatio(ratio)} className={`flex-1 py-2 rounded-lg text-xs font-bold ${aspectRatio === ratio ? 'bg-rose-900 text-white' : 'bg-gray-50 text-gray-400'}`}>
+                      <button key={ratio} onClick={() => setAspectRatio(ratio)} className={`flex-1 py-2 rounded-lg text-xs font-bold ${aspectRatio === ratio ? 'bg-rose-900 text-white' : 'bg-gray-50 dark:bg-neutral-900 text-gray-400'}`}>
                         {ratio}
                       </button>
                     ))}
@@ -193,12 +193,12 @@ export default function SeasonsPage() {
           )}
           {activeTab === 'theme' && (
             <div className="space-y-4">
-               <p className="text-xs text-gray-500">Theme optimized for Seasons.</p>
+               <p className="text-xs text-gray-500 dark:text-neutral-400">Theme optimized for Seasons.</p>
                <div className="grid grid-cols-2 gap-2">
                   {Object.entries(currentTheme).filter(([k]) => k !== 'font').map(([key, value]) => (
-                    <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-100">
+                    <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800">
                       <input type="color" value={value as string} onChange={(e) => setTheme({ ...currentTheme, [key]: e.target.value })} className="w-6 h-6 rounded cursor-pointer" />
-                      <span className="text-[10px] font-semibold text-gray-500 truncate">{key}</span>
+                      <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400 truncate">{key}</span>
                     </label>
                   ))}
                </div>
@@ -210,12 +210,12 @@ export default function SeasonsPage() {
       <main className="flex-1 overflow-y-auto p-12">
         <div className="max-w-6xl mx-auto mb-12 flex justify-between items-end">
            <div>
-              <h1 className="text-4xl font-black text-rose-950">Seasons Flowers</h1>
-              <p className="text-rose-900/60 font-bold mt-2">Custom posts for tryseasons.co</p>
+              <h1 className="text-4xl font-black text-rose-950 dark:text-white">Seasons Flowers</h1>
+              <p className="text-rose-900/60 dark:text-rose-300/60 font-bold mt-2">Custom posts for tryseasons.co</p>
            </div>
            <div className="flex gap-3">
-              <button onClick={() => setSelectedPosts(SEASONS_POSTS.map(p => p.id))} className="px-4 py-2 text-rose-900 font-bold text-sm">Select All</button>
-              <button onClick={handleDownloadSelected} disabled={downloading || selectedPosts.length === 0} className="px-6 py-3 bg-rose-900 text-white rounded-xl font-bold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95">
+              <button onClick={() => setSelectedPosts(SEASONS_POSTS.map(p => p.id))} className="px-4 py-2 text-rose-900 dark:text-rose-300 font-bold text-sm">Select All</button>
+              <button onClick={handleDownloadSelected} disabled={downloading || selectedPosts.length === 0} className="px-6 py-3 bg-rose-900 text-white dark:bg-white dark:text-black rounded-xl font-bold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95">
                  {downloading ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />}
                  Download {selectedPosts.length > 0 ? `(${selectedPosts.length})` : ''}
               </button>

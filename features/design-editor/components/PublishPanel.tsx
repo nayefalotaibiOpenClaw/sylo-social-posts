@@ -142,13 +142,13 @@ export default function PublishPanel({
     <div className="space-y-6">
       {/* Connected Accounts */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-3">
+        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider block mb-3">
           Connected Accounts
         </label>
 
         {socialAccounts === undefined ? (
           <div className="flex items-center justify-center py-4">
-            <Loader2 size={16} className="animate-spin text-gray-400" />
+            <Loader2 size={16} className="animate-spin text-gray-400 dark:text-neutral-500" />
           </div>
         ) : activeAccounts && activeAccounts.length > 0 ? (
           <div className="space-y-2">
@@ -157,8 +157,8 @@ export default function PublishPanel({
                 key={account._id}
                 className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
                   selectedAccountId === account._id
-                    ? "bg-slate-900/5 border-slate-900"
-                    : "bg-gray-50 border-gray-200 hover:border-gray-300"
+                    ? "bg-slate-900/5 dark:bg-white/5 border-slate-900 dark:border-white"
+                    : "bg-gray-50 dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 hover:border-gray-300 dark:hover:border-neutral-600"
                 }`}
                 onClick={() => {
                   setSelectedAccountId(account._id);
@@ -169,10 +169,10 @@ export default function PublishPanel({
                   {providerIcon(account.provider)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-gray-800 truncate">
+                  <p className="text-xs font-bold text-gray-800 dark:text-neutral-200 truncate">
                     {account.providerAccountName}
                   </p>
-                  <p className="text-[10px] text-gray-400 capitalize">
+                  <p className="text-[10px] text-gray-400 dark:text-neutral-500 capitalize">
                     {account.provider}
                   </p>
                 </div>
@@ -181,7 +181,7 @@ export default function PublishPanel({
                     e.stopPropagation();
                     handleDisconnect(account._id);
                   }}
-                  className="text-gray-300 hover:text-red-400 transition-colors"
+                  className="text-gray-300 dark:text-neutral-600 hover:text-red-400 transition-colors"
                   aria-label="Disconnect account"
                 >
                   <Trash2 size={14} />
@@ -190,20 +190,20 @@ export default function PublishPanel({
             ))}
           </div>
         ) : (
-          <p className="text-xs text-gray-400">No accounts connected yet.</p>
+          <p className="text-xs text-gray-400 dark:text-neutral-500">No accounts connected yet.</p>
         )}
 
         <div className="mt-3 flex gap-2">
           <button
             onClick={() => handleConnect("instagram")}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border border-dashed border-gray-300 text-gray-500 hover:border-pink-500 hover:text-pink-600 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border border-dashed border-gray-300 dark:border-neutral-600 text-gray-500 dark:text-neutral-400 hover:border-pink-500 hover:text-pink-600 transition-all"
           >
             <Instagram size={14} />
             Instagram
           </button>
           <button
             onClick={() => handleConnect("facebook")}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border border-dashed border-gray-300 dark:border-neutral-600 text-gray-500 dark:text-neutral-400 hover:border-blue-500 hover:text-blue-600 transition-all"
           >
             <Facebook size={14} />
             Facebook
@@ -214,7 +214,7 @@ export default function PublishPanel({
       {/* Compose */}
       {step !== "select-account" && selectedAccountId && (
         <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-3">
+          <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider block mb-3">
             Select Post
           </label>
 
@@ -226,8 +226,8 @@ export default function PublishPanel({
                   onClick={() => setSelectedPostId(post._id)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
                     selectedPostId === post._id
-                      ? "bg-slate-900/5 border-slate-900 text-slate-900"
-                      : "bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300"
+                      ? "bg-slate-900/5 dark:bg-white/5 border-slate-900 dark:border-white text-slate-900 dark:text-white"
+                      : "bg-gray-50 dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-neutral-400 hover:border-gray-300 dark:hover:border-neutral-600"
                   }`}
                 >
                   {post.title.slice(0, 60)}
@@ -235,7 +235,7 @@ export default function PublishPanel({
               ))}
             </div>
           ) : (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-neutral-500">
               No posts in this collection.
             </p>
           )}
@@ -244,7 +244,7 @@ export default function PublishPanel({
             <>
               <label
                 htmlFor="publish-caption"
-                className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2 mt-4"
+                className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider block mb-2 mt-4"
               >
                 Caption
               </label>
@@ -255,16 +255,16 @@ export default function PublishPanel({
                 placeholder="Write a caption..."
                 rows={4}
                 maxLength={2200}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs text-gray-700 resize-none focus:outline-none focus:border-slate-900 transition-colors"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 text-xs text-gray-700 dark:text-neutral-300 resize-none dark:bg-neutral-800 focus:outline-none focus:border-slate-900 transition-colors"
               />
-              <p className={`text-[10px] mt-1 ${caption.length > 2000 ? "text-amber-500" : "text-gray-400"}`}>
+              <p className={`text-[10px] mt-1 ${caption.length > 2000 ? "text-amber-500" : "text-gray-400 dark:text-neutral-500"}`}>
                 {caption.length}/2200 characters
               </p>
 
               <button
                 onClick={handlePublish}
                 disabled={publishing || !caption.trim()}
-                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-50"
+                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-neutral-200 active:scale-95 transition-all disabled:opacity-50"
               >
                 {publishing ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -284,9 +284,9 @@ export default function PublishPanel({
       {/* Publishing Status */}
       {step === "publishing" && (
         <div className="flex flex-col items-center py-6" role="status" aria-label="Publishing post">
-          <Loader2 size={24} className="animate-spin text-slate-900 mb-3" />
-          <p className="text-xs font-medium text-gray-600">Publishing...</p>
-          <p className="text-[10px] text-gray-400 mt-1">
+          <Loader2 size={24} className="animate-spin text-slate-900 dark:text-white mb-3" />
+          <p className="text-xs font-medium text-gray-600 dark:text-neutral-400">Publishing...</p>
+          <p className="text-[10px] text-gray-400 dark:text-neutral-500 mt-1">
             This may take a moment
           </p>
         </div>
@@ -335,7 +335,7 @@ export default function PublishPanel({
 
           <button
             onClick={resetFlow}
-            className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
+            className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all"
           >
             <RefreshCw size={12} />
             Publish Another
@@ -362,14 +362,14 @@ function PublishHistorySection({
 
   return (
     <div>
-      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-3">
+      <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider block mb-3">
         Recent Publishes
       </label>
       <div className="space-y-2">
         {recent.map((entry) => (
           <div
             key={entry._id}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg"
+            className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-neutral-800 rounded-lg"
           >
             <div
               className={`w-2 h-2 rounded-full ${
@@ -380,10 +380,10 @@ function PublishHistorySection({
                     : "bg-gray-400"
               }`}
             />
-            <span className="text-[10px] text-gray-500 capitalize flex-1">
+            <span className="text-[10px] text-gray-500 dark:text-neutral-400 capitalize flex-1">
               {entry.provider} · {entry.contentType}
             </span>
-            <span className="text-[10px] text-gray-400">
+            <span className="text-[10px] text-gray-400 dark:text-neutral-500">
               {new Date(entry.publishedAt).toLocaleDateString()}
             </span>
             {entry.providerPostUrl && (
@@ -391,7 +391,7 @@ function PublishHistorySection({
                 href={entry.providerPostUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300"
               >
                 <ExternalLink size={10} />
               </a>

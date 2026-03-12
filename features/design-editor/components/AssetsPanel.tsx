@@ -79,22 +79,22 @@ export default function AssetsPanel({
       {/* Upload Dialog */}
       {showAssetUploadDialog && pendingFiles.length > 0 && (
         <div className="p-3 rounded-lg border border-[#1B4332] bg-[#EAF4EE] space-y-3">
-          <p className="text-xs font-bold text-gray-700">{pendingFiles.length} file{pendingFiles.length > 1 ? 's' : ''} selected</p>
+          <p className="text-xs font-bold text-gray-700 dark:text-neutral-300">{pendingFiles.length} file{pendingFiles.length > 1 ? 's' : ''} selected</p>
 
           <div className="grid grid-cols-3 gap-1.5">
             {pendingFiles.map((file, i) => (
-              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white border border-gray-200">
+              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
                 <img src={previewUrls[i]} alt="" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
 
           <div>
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Asset Type</label>
+            <label className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-1 block">Asset Type</label>
             <select
               value={assetTypeSelect}
               onChange={(e) => setAssetTypeSelect(e.target.value as AssetTypeValue)}
-              className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-xs font-bold text-gray-700 bg-white focus:outline-none focus:border-[#1B4332]"
+              className="w-full px-2.5 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 text-xs font-bold text-gray-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#1B4332]"
             >
               {ASSET_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -103,7 +103,7 @@ export default function AssetsPanel({
           </div>
 
           <div>
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Scope</label>
+            <label className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-1 block">Scope</label>
             <div className="flex gap-1.5">
               {(["workspace", "global"] as const).map((s) => (
                 <button
@@ -112,7 +112,7 @@ export default function AssetsPanel({
                   className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
                     assetScope === s
                       ? 'bg-[#1B4332] text-white'
-                      : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'
+                      : 'bg-white dark:bg-neutral-800 text-gray-500 dark:text-neutral-400 border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700'
                   }`}
                 >
                   {s === "workspace" ? "This Project" : "All Projects"}
@@ -124,7 +124,7 @@ export default function AssetsPanel({
           <div className="flex gap-2">
             <button
               onClick={() => { setPendingFiles([]); setShowAssetUploadDialog(false); }}
-              className="flex-1 py-2 rounded-lg text-xs font-bold text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-2 rounded-lg text-xs font-bold text-gray-500 dark:text-neutral-400 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
             >
               Cancel
             </button>
@@ -152,17 +152,17 @@ export default function AssetsPanel({
 
           return Object.entries(grouped).map(([type, items]) => (
             <div key={type}>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
+              <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
                 {ASSET_TYPES.find(t => t.value === type)?.label || type} ({items!.length})
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {items!.map((asset: AssetRecord) => (
-                  <div key={asset._id} className="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200" title={asset.description || asset.fileName}>
+                  <div key={asset._id} className="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700" title={asset.description || asset.fileName}>
                     {asset.url ? (
                       <img src={asset.url} alt={asset.fileName} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon size={20} className="text-gray-300" />
+                        <ImageIcon size={20} className="text-gray-300 dark:text-neutral-600" />
                       </div>
                     )}
                     {/* Analysis status indicator */}
@@ -202,8 +202,8 @@ export default function AssetsPanel({
         })()
       ) : assets && assets.length === 0 ? (
         <div className="text-center py-6">
-          <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-xs text-gray-400">No assets yet. Upload images for AI to use.</p>
+          <ImageIcon className="w-8 h-8 text-gray-300 dark:text-neutral-600 mx-auto mb-2" />
+          <p className="text-xs text-gray-400 dark:text-neutral-500">No assets yet. Upload images for AI to use.</p>
         </div>
       ) : null}
     </div>

@@ -53,7 +53,7 @@ function getProviderIcon(provider: string) {
     case "facebook":
       return <Facebook className="w-4 h-4 text-blue-400" />;
     default:
-      return <Send className="w-4 h-4 text-neutral-400" />;
+      return <Send className="w-4 h-4 text-slate-400 dark:text-neutral-400" />;
   }
 }
 
@@ -70,7 +70,7 @@ function StatusBadge({ status }: { status: ScheduleStatus }) {
 
 function ContentTypeBadge({ type }: { type: string }) {
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-800 text-neutral-300 border border-neutral-700">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300 border border-slate-200 dark:border-neutral-700">
       {type.charAt(0).toUpperCase() + type.slice(1)}
     </span>
   );
@@ -88,23 +88,23 @@ export default function ScheduledPostCard({
   const account = accounts.find((a) => a._id === post.socialAccountId);
 
   return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden hover:border-neutral-700 transition-colors">
-      <div className="h-32 bg-neutral-800 flex items-center justify-center">
-        <Grid3X3 className="w-8 h-8 text-neutral-600" />
+    <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl overflow-hidden hover:border-slate-300 dark:hover:border-neutral-700 transition-colors">
+      <div className="h-32 bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+        <Grid3X3 className="w-8 h-8 text-slate-300 dark:text-neutral-600" />
       </div>
 
       <div className="p-4 space-y-3">
-        <p className="text-sm text-neutral-300 line-clamp-2 leading-relaxed">
+        <p className="text-sm text-slate-700 dark:text-neutral-300 line-clamp-2 leading-relaxed">
           {post.caption || "No caption"}
         </p>
 
-        <div className="flex items-center gap-2 text-xs text-neutral-500">
+        <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-neutral-500">
           <Clock className="w-3.5 h-3.5" />
           <span>{formatDateTime(post.scheduledFor)}</span>
         </div>
 
         {account && (
-          <div className="flex items-center gap-2 text-xs text-neutral-400">
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400">
             {getProviderIcon(account.provider)}
             <span>{account.providerAccountName}</span>
           </div>

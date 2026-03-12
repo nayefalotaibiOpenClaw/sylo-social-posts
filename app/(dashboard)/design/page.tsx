@@ -1068,7 +1068,7 @@ export default function DesignPage() {
   // Loading state
   if (authLoading || user === undefined) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a]">
         <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
       </div>
     );
@@ -1076,7 +1076,7 @@ export default function DesignPage() {
 
   if (!user) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a]">
         <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
       </div>
     );
@@ -1084,14 +1084,14 @@ export default function DesignPage() {
 
   if (!workspaceId) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a]">
         <div className="text-center">
           <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-lg font-bold text-gray-700 mb-2">No workspace selected</h2>
+          <h2 className="text-lg font-bold text-gray-700 dark:text-neutral-300 mb-2">No workspace selected</h2>
           <p className="text-sm text-gray-400 mb-6">Select a workspace to view your posts</p>
           <Link
             href="/workspaces"
-            className="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:scale-105 transition-all active:scale-95"
+            className="px-5 py-2.5 bg-slate-900 dark:bg-white dark:text-black text-white rounded-xl font-bold text-sm hover:scale-105 transition-all active:scale-95"
           >
             Go to Workspaces
           </Link>
@@ -1103,7 +1103,7 @@ export default function DesignPage() {
   const allPostIds = localOrder.length > 0 ? localOrder : (posts?.map(p => p._id) ?? []);
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
+    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-[#0a0a0a]">
       <Sidebar
         activeTab={activeTab}
         onTabClick={handleTabClick}
@@ -1194,19 +1194,19 @@ export default function DesignPage() {
       {activeTab !== 'brand' && activeTab !== 'publish' && activeTab !== 'channels' && activeTab !== 'assets' && <div className="flex-1 flex flex-col overflow-hidden">
         {/* Nav Header with Design/Generate sub-tab switcher */}
         <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-          <nav className="max-w-4xl mx-auto bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
+          <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
             <MobileNavMenu activeTab={activeTab} onTabClick={handleTabClick} workspaces={workspaces?.map(w => ({ _id: w._id, name: w.name }))} currentWorkspaceId={workspaceId ?? undefined} currentWorkspaceName={workspace?.name} />
-            <div className="w-px h-5 bg-slate-200 md:hidden" />
+            <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700 md:hidden" />
 
             {/* Sub-tab switcher: Design | Generate — active shows label, inactive icon-only */}
-            <div className="flex items-center bg-slate-100 rounded-full p-0.5">
+            <div className="flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5">
               <button
                 onClick={() => setActiveTab(null)}
                 title="Design"
                 className={`group flex items-center gap-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
                   activeTab !== 'generate'
-                    ? 'bg-white text-slate-900 shadow-sm px-3 py-1.5'
-                    : 'text-slate-400 hover:text-slate-600 p-1.5'
+                    ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm px-3 py-1.5'
+                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 p-1.5'
                 }`}
               >
                 <LayoutGrid size={14} />
@@ -1217,8 +1217,8 @@ export default function DesignPage() {
                 title="Generate"
                 className={`group flex items-center gap-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
                   activeTab === 'generate'
-                    ? 'bg-white text-slate-900 shadow-sm px-3 py-1.5'
-                    : 'text-slate-400 hover:text-slate-600 p-1.5'
+                    ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm px-3 py-1.5'
+                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 p-1.5'
                 }`}
               >
                 <Sparkles size={14} />
@@ -1226,7 +1226,7 @@ export default function DesignPage() {
               </button>
             </div>
 
-            <div className="w-px h-5 bg-slate-200" />
+            <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700" />
 
             {posts && <span className="text-xs font-medium text-slate-400">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>}
 
@@ -1280,8 +1280,8 @@ export default function DesignPage() {
         {collections !== undefined && collections.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h2 className="text-lg font-bold text-gray-500 mb-2">No collections yet</h2>
+              <FolderOpen className="w-12 h-12 text-gray-300 dark:text-neutral-600 mx-auto mb-4" />
+              <h2 className="text-lg font-bold text-gray-500 dark:text-neutral-400 mb-2">No collections yet</h2>
               <p className="text-sm text-gray-400">Create a collection in your workspace to get started</p>
             </div>
           </div>
@@ -1292,8 +1292,8 @@ export default function DesignPage() {
         ) : posts.length === 0 && generatedPosts.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h2 className="text-lg font-bold text-gray-500 mb-2">No posts yet</h2>
+              <ImageIcon className="w-12 h-12 text-gray-300 dark:text-neutral-600 mx-auto mb-4" />
+              <h2 className="text-lg font-bold text-gray-500 dark:text-neutral-400 mb-2">No posts yet</h2>
               <p className="text-sm text-gray-400">Use the Generate panel to create your first post</p>
             </div>
           </div>
@@ -1346,12 +1346,12 @@ export default function DesignPage() {
         {/* Bottom toolbar — only visible in Design mode */}
         {activeTab !== 'generate' && (
         <div ref={toolbarRef} className="fixed bottom-[64px] md:bottom-4 left-1/2 -translate-x-1/2 z-[60]">
-          <div className="flex items-center bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border border-gray-200/60 px-1.5 py-1.5 gap-0.5">
+          <div className="flex items-center bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border border-gray-200/60 dark:border-neutral-700/60 px-1.5 py-1.5 gap-0.5">
 
             {/* Cursor / default mode */}
             <button
               onClick={() => { setActiveMode('default'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeMode === 'default' ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeMode === 'default' ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
             >
               <MousePointer2 size={18} />
             </button>
@@ -1359,7 +1359,7 @@ export default function DesignPage() {
             {/* Edit mode */}
             <button
               onClick={() => { setActiveMode(activeMode === 'edit' ? 'default' : 'edit'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeMode === 'edit' ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeMode === 'edit' ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
             >
               <Pencil size={18} />
             </button>
@@ -1378,7 +1378,7 @@ export default function DesignPage() {
                   </span>
                 </button>
                 {toolbarDropdown === 'hidden' && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 py-1.5 min-w-[200px] max-h-[300px] overflow-y-auto">
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[200px] max-h-[300px] overflow-y-auto">
                     <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hidden Components</div>
                     {Array.from(hiddenComponents).map((cid) => (
                       <button
@@ -1390,16 +1390,16 @@ export default function DesignPage() {
                             return next;
                           });
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
                       >
                         <Eye size={12} className="text-gray-400 shrink-0" />
                         <span className="font-mono truncate">{cid}</span>
                       </button>
                     ))}
-                    <div className="border-t border-gray-100 mt-1 pt-1">
+                    <div className="border-t border-gray-100 dark:border-neutral-800 mt-1 pt-1">
                       <button
                         onClick={() => { setHiddenComponents(new Set()); setToolbarDropdown(null); }}
-                        className="w-full px-3 py-2 text-[12px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="w-full px-3 py-2 text-[12px] font-bold text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
                       >
                         Restore All
                       </button>
@@ -1413,15 +1413,15 @@ export default function DesignPage() {
             <div className="relative">
               <button
                 onClick={() => setToolbarDropdown(toolbarDropdown === 'ratio' ? null : 'ratio')}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'ratio' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'ratio' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
               >
                 <Proportions size={18} />
               </button>
               {toolbarDropdown === 'ratio' && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 py-1.5 min-w-[140px]">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[140px]">
                   {(['1:1', '3:4', '4:3', '9:16', '16:9'] as const).map((r) => (
                     <button key={r} onClick={() => { setAspectRatio(r); setToolbarDropdown(null); }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${aspectRatio === r ? 'font-semibold text-gray-900 bg-gray-50' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}`}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${aspectRatio === r ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                     >
                       {r}
                     </button>
@@ -1434,15 +1434,15 @@ export default function DesignPage() {
             <div className="relative">
               <button
                 onClick={() => setToolbarDropdown(toolbarDropdown === 'device' ? null : 'device')}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'device' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'device' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
               >
                 <Smartphone size={18} />
               </button>
               {toolbarDropdown === 'device' && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 py-1.5 min-w-[150px]">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[150px]">
                   {([['iphone', 'iPhone'], ['android', 'Android'], ['ipad', 'iPad'], ['android_tablet', 'Tab'], ['desktop', 'Desktop']] as const).map(([key, label]) => (
                     <button key={key} onClick={() => { setDeviceType(key as typeof deviceType); setToolbarDropdown(null); }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${deviceType === key ? 'font-semibold text-gray-900 bg-gray-50' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}`}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${deviceType === key ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                     >
                       {label}
                     </button>
@@ -1455,15 +1455,15 @@ export default function DesignPage() {
             <div className="relative">
               <button
                 onClick={() => setToolbarDropdown(toolbarDropdown === 'grid' ? null : 'grid')}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'grid' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'grid' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
               >
                 <LayoutGrid size={18} />
               </button>
               {toolbarDropdown === 'grid' && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 py-1.5 min-w-[140px]">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[140px]">
                   {[1, 2, 3, 4].map((n) => (
                     <button key={n} onClick={() => { setGridCols(n); setToolbarDropdown(null); }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${gridCols === n ? 'font-semibold text-gray-900 bg-gray-50' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}`}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${gridCols === n ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                     >
                       {n} {n === 1 ? 'Column' : 'Columns'}
                     </button>
@@ -1472,12 +1472,12 @@ export default function DesignPage() {
               )}
             </div>
 
-            <div className="w-px h-5 bg-gray-200/80 mx-0.5" />
+            <div className="w-px h-5 bg-gray-200/80 dark:bg-neutral-700/80 mx-0.5" />
 
             {/* Reorder */}
             <button
               onClick={() => { setActiveMode(activeMode === 'reorder' ? 'default' : 'reorder'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${reorderMode ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${reorderMode ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
             >
               <ArrowUpDown size={18} />
             </button>
@@ -1489,7 +1489,7 @@ export default function DesignPage() {
                 else { setActiveMode('select'); }
                 setToolbarDropdown(null);
               }}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${selectMode ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${selectMode ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
             >
               <Download size={18} />
             </button>
@@ -1500,7 +1500,7 @@ export default function DesignPage() {
         {/* Floating chat input — only visible in Generate mode */}
         {activeTab === 'generate' && (
           <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] md:w-full max-w-3xl px-0 md:px-4 z-[60]">
-            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
+            <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-neutral-700/80 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
               <textarea
                 value={generatePrompt}
                 onChange={(e) => setGeneratePrompt(e.target.value)}
@@ -1512,14 +1512,14 @@ export default function DesignPage() {
                 }}
                 placeholder="Describe the post you want to generate..."
                 rows={2}
-                className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
+                className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 dark:text-white resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
               />
               {/* Image previews */}
               {chatImages.length > 0 && (
                 <div className="flex items-center gap-2 px-4 pb-2 pt-1 overflow-x-auto">
                   {chatImages.map((img, i) => (
                     <div key={i} className="relative flex-shrink-0 group">
-                      <img src={img.preview} alt={`Reference ${i + 1}`} className="w-14 h-14 rounded-lg object-cover border border-slate-200" />
+                      <img src={img.preview} alt={`Reference ${i + 1}`} className="w-14 h-14 rounded-lg object-cover border border-slate-200 dark:border-neutral-700" />
                       <button
                         onClick={() => setChatImages(prev => prev.filter((_, idx) => idx !== i))}
                         className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1532,7 +1532,7 @@ export default function DesignPage() {
               )}
               <div className="flex items-center justify-between px-4 pb-3">
                 {/* Left: attachment */}
-                <label className="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 cursor-pointer transition-colors">
+                <label className="w-9 h-9 rounded-full border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 hover:border-slate-300 dark:hover:border-neutral-600 cursor-pointer transition-colors">
                   <Paperclip size={16} />
                   <input ref={chatImageInputRef} type="file" accept="image/*" multiple onChange={handleChatImageUpload} className="hidden" />
                 </label>
@@ -1540,15 +1540,15 @@ export default function DesignPage() {
                 {/* Right: options + send */}
                 <div className="flex items-center gap-1">
                   {/* Post count */}
-                  <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-0.5">
+                  <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5">
                     {[1, 2, 3, 4].map((n) => (
                       <button
                         key={n}
                         onClick={() => setGenerateCount(n)}
                         className={`w-7 h-7 rounded-full text-xs font-bold transition-colors ${
                           generateCount === n
-                            ? 'bg-white text-slate-900 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
+                            ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300'
                         }`}
                       >
                         {n}
@@ -1557,7 +1557,7 @@ export default function DesignPage() {
                   </div>
 
                   {/* Style selector */}
-                  <div className="hidden sm:flex items-center bg-slate-100 rounded-full p-0.5 ml-1">
+                  <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
                     {([
                       { v: 5 as const, label: 'C', title: 'Classic' },
                       { v: 1 as const, label: 'G', title: 'Guided' },
@@ -1571,8 +1571,8 @@ export default function DesignPage() {
                         title={title}
                         className={`w-7 h-7 rounded-full text-[10px] font-bold transition-colors ${
                           generateVersion === v
-                            ? 'bg-white text-slate-900 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
+                            ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300'
                         }`}
                       >
                         {label}
@@ -1581,7 +1581,7 @@ export default function DesignPage() {
                   </div>
 
                   {/* Ratio selector */}
-                  <div className="flex items-center bg-slate-100 rounded-full p-0.5 ml-1">
+                  <div className="flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
                     {(['1:1', '9:16', '3:4', '4:3', '16:9'] as AspectRatioType[]).map((r) => {
                       const isSelected = targetRatios.includes(r);
                       const isBase = r === '1:1';
@@ -1597,8 +1597,8 @@ export default function DesignPage() {
                           title={isBase ? '1:1 (base — always included)' : `${isSelected ? 'Remove' : 'Add'} ${r} variant`}
                           className={`px-1.5 h-7 rounded-full text-[10px] font-bold transition-colors ${
                             isSelected
-                              ? 'bg-white text-slate-900 shadow-sm'
-                              : 'text-slate-400 hover:text-slate-600'
+                              ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm'
+                              : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300'
                           } ${isBase ? 'opacity-100' : ''}`}
                         >
                           {r}
@@ -1613,7 +1613,7 @@ export default function DesignPage() {
                     disabled={generating || !generatePrompt.trim()}
                     className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ml-1 ${
                       generating || !generatePrompt.trim()
-                        ? 'bg-slate-200 text-slate-400'
+                        ? 'bg-slate-200 dark:bg-neutral-700 text-slate-400'
                         : 'bg-[#1B4332] text-white hover:bg-[#2D6A4F]'
                     }`}
                   >
@@ -1688,12 +1688,12 @@ export default function DesignPage() {
       {showLimitModal && usage && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-md" onClick={() => setShowLimitModal(false)} />
-          <div className="relative bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.12)] max-w-sm w-full overflow-hidden">
+          <div className="relative bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-neutral-700/60 rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.12)] max-w-sm w-full overflow-hidden">
 
             {/* Close */}
             <button
               onClick={() => setShowLimitModal(false)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors z-10"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors z-10"
             >
               <X size={14} className="text-slate-500" />
             </button>
@@ -1702,26 +1702,26 @@ export default function DesignPage() {
             <div className="px-7 pt-8 pb-7">
               {/* Icon + Title */}
               <div className="flex items-center gap-3 mb-1">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
-                  <Zap size={18} className="text-white" />
+                <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center shrink-0">
+                  <Zap size={18} className="text-white dark:text-black" />
                 </div>
-                <h2 className="text-xl font-black tracking-tight text-slate-900">Limit reached</h2>
+                <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Limit reached</h2>
               </div>
-              <p className="text-sm text-slate-500 mt-2 mb-6">
-                Your <span className="font-semibold text-slate-700 capitalize">{usage.plan === "trial" ? "Free Trial" : usage.plan}</span> plan credits have been used up.
+              <p className="text-sm text-slate-500 dark:text-neutral-400 mt-2 mb-6">
+                Your <span className="font-semibold text-slate-700 dark:text-neutral-300 capitalize">{usage.plan === "trial" ? "Free Trial" : usage.plan}</span> plan credits have been used up.
               </p>
 
               {/* Usage cards */}
               <div className="space-y-3 mb-5">
                 {/* AI Tokens */}
-                <div className="bg-slate-50 rounded-2xl px-4 py-3.5">
+                <div className="bg-slate-50 dark:bg-neutral-800 rounded-2xl px-4 py-3.5">
                   <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-[13px] font-semibold text-slate-700">AI Tokens</span>
-                    <span className={`text-[13px] font-bold tabular-nums ${usage.aiTokensUsed >= usage.aiTokensLimit ? 'text-red-500' : 'text-slate-500'}`}>
-                      {(usage.aiTokensUsed).toLocaleString()} <span className="text-slate-300 font-normal">/</span> {(usage.aiTokensLimit).toLocaleString()}
+                    <span className="text-[13px] font-semibold text-slate-700 dark:text-neutral-300">AI Tokens</span>
+                    <span className={`text-[13px] font-bold tabular-nums ${usage.aiTokensUsed >= usage.aiTokensLimit ? 'text-red-500' : 'text-slate-500 dark:text-neutral-400'}`}>
+                      {(usage.aiTokensUsed).toLocaleString()} <span className="text-slate-300 dark:text-neutral-600 font-normal">/</span> {(usage.aiTokensLimit).toLocaleString()}
                     </span>
                   </div>
-                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-slate-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         usage.aiTokensUsed >= usage.aiTokensLimit ? 'bg-red-400' : 'bg-slate-900'
@@ -1732,14 +1732,14 @@ export default function DesignPage() {
                 </div>
 
                 {/* Posts */}
-                <div className="bg-slate-50 rounded-2xl px-4 py-3.5">
+                <div className="bg-slate-50 dark:bg-neutral-800 rounded-2xl px-4 py-3.5">
                   <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-[13px] font-semibold text-slate-700">Posts</span>
-                    <span className={`text-[13px] font-bold tabular-nums ${usage.postsUsed >= usage.postsLimit ? 'text-red-500' : 'text-slate-500'}`}>
-                      {usage.postsUsed} <span className="text-slate-300 font-normal">/</span> {usage.postsLimit}
+                    <span className="text-[13px] font-semibold text-slate-700 dark:text-neutral-300">Posts</span>
+                    <span className={`text-[13px] font-bold tabular-nums ${usage.postsUsed >= usage.postsLimit ? 'text-red-500' : 'text-slate-500 dark:text-neutral-400'}`}>
+                      {usage.postsUsed} <span className="text-slate-300 dark:text-neutral-600 font-normal">/</span> {usage.postsLimit}
                     </span>
                   </div>
-                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-slate-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         usage.postsUsed >= usage.postsLimit ? 'bg-red-400' : 'bg-slate-900'
@@ -1752,11 +1752,11 @@ export default function DesignPage() {
 
               {/* Renewal info */}
               {usage.expiresAt && usage.daysLeft > 0 && (
-                <div className="flex items-center gap-2.5 bg-slate-50 rounded-xl px-4 py-3 mb-6">
+                <div className="flex items-center gap-2.5 bg-slate-50 dark:bg-neutral-800 rounded-xl px-4 py-3 mb-6">
                   <Clock size={14} className="text-slate-400 shrink-0" />
-                  <p className="text-[13px] text-slate-500">
-                    Resets in <span className="font-bold text-slate-700">{usage.daysLeft}d</span>
-                    <span className="text-slate-300 mx-1.5">&middot;</span>
+                  <p className="text-[13px] text-slate-500 dark:text-neutral-400">
+                    Resets in <span className="font-bold text-slate-700 dark:text-neutral-300">{usage.daysLeft}d</span>
+                    <span className="text-slate-300 dark:text-neutral-600 mx-1.5">&middot;</span>
                     {new Date(usage.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
                 </div>
@@ -1766,7 +1766,7 @@ export default function DesignPage() {
               <Link
                 href="/pricing"
                 onClick={() => setShowLimitModal(false)}
-                className="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-neutral-200 text-white dark:text-black rounded-full font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 Upgrade Plan
                 <ChevronRight size={16} />

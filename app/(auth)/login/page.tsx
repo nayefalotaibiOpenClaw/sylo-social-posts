@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-screen bg-white flex flex-col md:flex-row font-sans selection:bg-indigo-100 overflow-hidden">
+    <div className="h-screen bg-white dark:bg-[#0a0a0a] flex flex-col md:flex-row font-sans selection:bg-indigo-100 overflow-hidden">
       {/* Left Side: Form Container */}
       <div className="w-full md:w-[45%] lg:w-[40%] bg-[#0B0E14] flex flex-col relative z-10 overflow-y-auto">
         {/* Navigation - Top Fixed/Absolute */}
@@ -89,14 +89,14 @@ export default function LoginPage() {
 
             <p className="mt-10 text-center text-slate-500 text-[11px] font-bold leading-relaxed">
               {t("login.terms")} <br />
-              <a href="#" className="text-white hover:underline underline-offset-4">{t("login.termsOfService")}</a> {t("login.and")} <a href="#" className="text-white hover:underline underline-offset-4">{t("login.privacyPolicy")}</a>.
+              <a href="/terms" className="text-white hover:underline underline-offset-4">{t("login.termsOfService")}</a> {t("login.and")} <a href="/privacy" className="text-white hover:underline underline-offset-4">{t("login.privacyPolicy")}</a>.
             </p>
           </div>
         </div>
       </div>
 
       {/* Right Side: Visual Collage - Fixed Height */}
-      <div className="flex-1 bg-[#F8FAFC] relative overflow-hidden hidden md:flex items-center justify-center">
+      <div className="flex-1 bg-[#F8FAFC] dark:bg-neutral-900 relative overflow-hidden hidden md:flex items-center justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.08),transparent)] pointer-events-none" />
 
         {/* Animated Grid of Screens */}
@@ -117,9 +117,9 @@ export default function LoginPage() {
             <motion.div
               key={i}
               whileHover={{ y: -12, scale: 1.05, rotate: -2 }}
-              className="aspect-[9/16] bg-white rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.12)] border border-slate-200/50 overflow-hidden p-3"
+              className="aspect-[9/16] bg-white dark:bg-neutral-800 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.12)] border border-slate-200/50 dark:border-neutral-700/50 overflow-hidden p-3"
             >
-               <div className="w-full h-full bg-slate-50/50 rounded-[1.5rem] relative overflow-hidden flex flex-col">
+               <div className="w-full h-full bg-slate-50/50 dark:bg-neutral-700/50 rounded-[1.5rem] relative overflow-hidden flex flex-col">
                   <div className={`w-full h-[45%] bg-gradient-to-br ${
                     i % 3 === 0 ? "from-indigo-500 to-purple-600" :
                     i % 3 === 1 ? "from-pink-500 to-rose-600" :

@@ -40,7 +40,7 @@ function MarkdownContent({ content }: { content: string }) {
       }
       if (match[2]) {
         parts.push(
-          <strong key={`b-${match.index}`} className="text-slate-800 font-semibold">
+          <strong key={`b-${match.index}`} className="text-slate-800 dark:text-neutral-200 font-semibold">
             {match[2]}
           </strong>
         );
@@ -61,7 +61,7 @@ function MarkdownContent({ content }: { content: string }) {
     if (currentParagraph.length > 0) {
       const text = currentParagraph.join(" ");
       elements.push(
-        <p key={key++} className="text-slate-600 leading-relaxed text-lg mb-6">
+        <p key={key++} className="text-slate-600 dark:text-neutral-400 leading-relaxed text-lg mb-6">
           {formatInline(text)}
         </p>
       );
@@ -80,7 +80,7 @@ function MarkdownContent({ content }: { content: string }) {
     if (trimmed.startsWith("## ")) {
       flushParagraph();
       elements.push(
-        <h2 key={key++} className="text-2xl font-bold text-slate-900 mt-10 mb-4">
+        <h2 key={key++} className="text-2xl font-bold text-slate-900 dark:text-white mt-10 mb-4">
           {trimmed.slice(3)}
         </h2>
       );
@@ -90,7 +90,7 @@ function MarkdownContent({ content }: { content: string }) {
     if (trimmed.startsWith("# ")) {
       flushParagraph();
       elements.push(
-        <h1 key={key++} className="text-3xl font-black text-slate-900 mt-12 mb-6">
+        <h1 key={key++} className="text-3xl font-black text-slate-900 dark:text-white mt-12 mb-6">
           {trimmed.slice(2)}
         </h1>
       );
@@ -111,20 +111,20 @@ export default function BlogDetailPage() {
   const { locale, dir, t } = useLocale();
 
   return (
-    <div dir={dir} className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 overflow-x-hidden">
+    <div dir={dir} className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-white font-sans selection:bg-indigo-100 overflow-x-hidden">
       <FloatingNav activePage="blogs" />
 
       {blog === undefined ? (
         <div className="pt-40 pb-32 px-6">
           <div className="max-w-3xl mx-auto">
-            <div className="h-8 w-48 bg-slate-100 rounded-lg animate-pulse mb-8" />
-            <div className="h-12 w-full bg-slate-100 rounded-lg animate-pulse mb-4" />
-            <div className="h-6 w-2/3 bg-slate-100 rounded-lg animate-pulse mb-12" />
+            <div className="h-8 w-48 bg-slate-100 dark:bg-neutral-800 rounded-lg animate-pulse mb-8" />
+            <div className="h-12 w-full bg-slate-100 dark:bg-neutral-800 rounded-lg animate-pulse mb-4" />
+            <div className="h-6 w-2/3 bg-slate-100 dark:bg-neutral-800 rounded-lg animate-pulse mb-12" />
             <div className="space-y-4">
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-4 bg-slate-50 rounded animate-pulse"
+                  className="h-4 bg-slate-50 dark:bg-neutral-900 rounded animate-pulse"
                   style={{ width: `${85 + Math.random() * 15}%` }}
                 />
               ))}
@@ -135,12 +135,12 @@ export default function BlogDetailPage() {
         <div className="pt-40 pb-32 px-6 text-center">
           <div className="max-w-md mx-auto">
             <h1 className="text-4xl font-black mb-4">{t("blog.notFound")}</h1>
-            <p className="text-slate-500 mb-8">
+            <p className="text-slate-500 dark:text-neutral-400 mb-8">
               {t("blog.notFoundDesc")}
             </p>
             <Link
               href="/blogs"
-              className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 hover:gap-3 transition-all"
+              className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:gap-3 transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
               {t("blog.browseAll")}
@@ -153,7 +153,7 @@ export default function BlogDetailPage() {
             <div className="max-w-3xl mx-auto">
               <Link
                 href="/blogs"
-                className="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-900 hover:gap-3 transition-all mb-10"
+                className="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white hover:gap-3 transition-all mb-10"
               >
                 <ArrowLeft className="w-4 h-4" />
                 {t("blog.backToBlogs")}
@@ -163,7 +163,7 @@ export default function BlogDetailPage() {
                 {blog.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-slate-500 bg-slate-100 rounded-full"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-800 rounded-full"
                   >
                     <Tag className="w-3 h-3" />
                     {tag}
@@ -175,7 +175,7 @@ export default function BlogDetailPage() {
                 {blog.title}
               </h1>
 
-              <div className="flex items-center gap-6 text-sm text-slate-400 font-medium pb-10 border-b border-slate-100">
+              <div className="flex items-center gap-6 text-sm text-slate-400 font-medium pb-10 border-b border-slate-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   {blog.author}
@@ -196,14 +196,14 @@ export default function BlogDetailPage() {
         </>
       )}
 
-      <footer className="py-20 border-t border-slate-100 bg-white">
+      <footer className="py-20 border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-slate-400 font-bold text-sm">
           <div />
           <div className="flex gap-8">
-            <a href="#" className="hover:text-slate-900">{t("footer.twitter")}</a>
-            <a href="#" className="hover:text-slate-900">{t("footer.linkedin")}</a>
-            <a href="/terms" className="hover:text-slate-900">{t("footer.termsOfService")}</a>
-            <a href="/privacy" className="hover:text-slate-900">{t("footer.privacyPolicy")}</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white">{t("footer.twitter")}</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white">{t("footer.linkedin")}</a>
+            <a href="/terms" className="hover:text-slate-900 dark:hover:text-white">{t("footer.termsOfService")}</a>
+            <a href="/privacy" className="hover:text-slate-900 dark:hover:text-white">{t("footer.privacyPolicy")}</a>
           </div>
           <p>&copy; {new Date().getFullYear()} {t("footer.copyright")}</p>
         </div>

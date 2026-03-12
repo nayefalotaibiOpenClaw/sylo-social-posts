@@ -377,13 +377,13 @@ function Bar({ value, max, color }: { value: number; max: number; color: string 
 function Collapsible({ title, icon, children, defaultOpen = false }: { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left">
+    <div className="border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors text-left">
         {icon}
-        <span className="text-sm font-bold text-gray-800 flex-1">{title}</span>
+        <span className="text-sm font-bold text-gray-800 dark:text-neutral-300 flex-1">{title}</span>
         {open ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
       </button>
-      {open && <div className="p-4 text-sm text-gray-700 space-y-3">{children}</div>}
+      {open && <div className="p-4 text-sm text-gray-700 dark:text-neutral-300 space-y-3">{children}</div>}
     </div>
   );
 }
@@ -393,7 +393,7 @@ function EngineCard({ engine, isSelected, onSelect }: { engine: typeof ENGINES[0
     <div
       onClick={onSelect}
       className={`rounded-2xl border-2 p-5 cursor-pointer transition-all ${
-        isSelected ? "border-gray-900 shadow-lg scale-[1.02]" : "border-gray-200 hover:border-gray-300"
+        isSelected ? "border-gray-900 dark:border-white shadow-lg scale-[1.02]" : "border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700"
       }`}
     >
       <div className="flex items-center gap-3 mb-3">
@@ -402,11 +402,11 @@ function EngineCard({ engine, isSelected, onSelect }: { engine: typeof ENGINES[0
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-lg font-black text-gray-900">{engine.name}</span>
-            <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">v{engine.version}</span>
+            <span className="text-lg font-black text-gray-900 dark:text-white">{engine.name}</span>
+            <span className="text-xs font-bold text-gray-400 bg-gray-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">v{engine.version}</span>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: engine.color + "15", color: engine.color }}>{engine.label}</span>
           </div>
-          <p className="text-xs text-gray-500">{engine.tagline}</p>
+          <p className="text-xs text-gray-500 dark:text-neutral-400">{engine.tagline}</p>
         </div>
       </div>
 
@@ -421,7 +421,7 @@ function EngineCard({ engine, isSelected, onSelect }: { engine: typeof ENGINES[0
         </div>
       </div>
 
-      <p className="text-xs text-gray-600 leading-relaxed">{engine.description}</p>
+      <p className="text-xs text-gray-600 dark:text-neutral-400 leading-relaxed">{engine.description}</p>
     </div>
   );
 }
@@ -433,75 +433,75 @@ export default function EnginesPage() {
   const engine = ENGINES.find((e) => e.key === selected)!;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
       {/* Header */}
-      <div className="border-b border-gray-200 px-6 py-8">
-        <h1 className="text-3xl font-black text-gray-900 mb-1">AI Engine Comparison</h1>
-        <p className="text-sm text-gray-500">Compare the 5 generation engines — their prompts, what they control, and how they differ.</p>
+      <div className="border-b border-gray-200 dark:border-neutral-800 px-6 py-8">
+        <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-1">AI Engine Comparison</h1>
+        <p className="text-sm text-gray-500 dark:text-neutral-400">Compare the 5 generation engines — their prompts, what they control, and how they differ.</p>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Quick comparison table */}
         <div className="mb-10 overflow-x-auto">
-          <table className="w-full text-sm border border-gray-200 rounded-xl overflow-hidden">
+          <table className="w-full text-sm border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left px-4 py-3 font-bold text-gray-600 text-xs uppercase tracking-wider">Feature</th>
+              <tr className="bg-gray-50 dark:bg-neutral-900">
+                <th className="text-left px-4 py-3 font-bold text-gray-600 dark:text-neutral-400 text-xs uppercase tracking-wider">Feature</th>
                 {ENGINES.map((e) => (
                   <th key={e.key} className="text-center px-4 py-3">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: e.color }}>{e.label}</span>
-                      <span className="text-xs font-bold text-gray-800">{e.name}</span>
+                      <span className="text-xs font-bold text-gray-800 dark:text-neutral-300">{e.name}</span>
                     </span>
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
               <tr>
-                <td className="px-4 py-2.5 font-medium text-gray-700">Layout assigned?</td>
+                <td className="px-4 py-2.5 font-medium text-gray-700 dark:text-neutral-300">Layout assigned?</td>
                 {ENGINES.map((e) => (
                   <td key={e.key} className="text-center px-4 py-2.5">{["classic", "guided"].includes(e.key) ? "✅ Yes" : "❌ No"}</td>
                 ))}
               </tr>
-              <tr className="bg-gray-50/50">
-                <td className="px-4 py-2.5 font-medium text-gray-700">Copy angle?</td>
+              <tr className="bg-gray-50/50 dark:bg-neutral-900/50">
+                <td className="px-4 py-2.5 font-medium text-gray-700 dark:text-neutral-300">Copy angle?</td>
                 {ENGINES.map((e) => (
                   <td key={e.key} className="text-center px-4 py-2.5">{["classic", "guided", "creative"].includes(e.key) ? "✅ Yes" : "❌ No"}</td>
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-gray-700">Featured asset per post?</td>
+                <td className="px-4 py-2.5 font-medium text-gray-700 dark:text-neutral-300">Featured asset per post?</td>
                 {ENGINES.map((e) => (
                   <td key={e.key} className="text-center px-4 py-2.5">{["free", "wild"].includes(e.key) ? "✅ Yes" : "❌ No"}</td>
                 ))}
               </tr>
-              <tr className="bg-gray-50/50">
-                <td className="px-4 py-2.5 font-medium text-gray-700">Mood direction?</td>
+              <tr className="bg-gray-50/50 dark:bg-neutral-900/50">
+                <td className="px-4 py-2.5 font-medium text-gray-700 dark:text-neutral-300">Mood direction?</td>
                 {ENGINES.map((e) => (
                   <td key={e.key} className="text-center px-4 py-2.5">{e.key === "wild" ? "✅ Yes" : "❌ No"}</td>
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-gray-700">Design guide?</td>
+                <td className="px-4 py-2.5 font-medium text-gray-700 dark:text-neutral-300">Design guide?</td>
                 {ENGINES.map((e) => (
                   <td key={e.key} className="text-center px-4 py-2.5">{e.key === "wild" ? "✅ Yes" : "❌ No"}</td>
                 ))}
               </tr>
-              <tr className="bg-gray-50/50">
-                <td className="px-4 py-2.5 font-medium text-gray-700">Reference examples?</td>
+              <tr className="bg-gray-50/50 dark:bg-neutral-900/50">
+                <td className="px-4 py-2.5 font-medium text-gray-700 dark:text-neutral-300">Reference examples?</td>
                 {ENGINES.map((e) => (
                   <td key={e.key} className="text-center px-4 py-2.5">{e.key === "wild" ? "❌ No" : "✅ Yes"}</td>
                 ))}
               </tr>
               <tr>
-                <td className="px-4 py-2.5 font-medium text-gray-700">System prompt</td>
+                <td className="px-4 py-2.5 font-medium text-gray-700 dark:text-neutral-300">System prompt</td>
                 {ENGINES.map((e) => (
                   <td key={e.key} className="text-center px-4 py-2.5 text-xs font-mono">{e.systemPrompt.name}<br /><span className="text-gray-400">{e.systemPrompt.lines} lines</span></td>
                 ))}
               </tr>
-              <tr className="bg-gray-50/50">
-                <td className="px-4 py-2.5 font-medium text-gray-700">Shared components</td>
+              <tr className="bg-gray-50/50 dark:bg-neutral-900/50">
+                <td className="px-4 py-2.5 font-medium text-gray-700 dark:text-neutral-300">Shared components</td>
                 {ENGINES.map((e) => (
                   <td key={e.key} className="text-center px-4 py-2.5 text-xs">
                     {e.key === "classic" ? "Old (separate mockups)" : e.key === "wild" ? "Minimal (no shared)" : "New (MockupFrame)"}
@@ -513,7 +513,7 @@ export default function EnginesPage() {
         </div>
 
         {/* Engine selector cards */}
-        <h2 className="text-xl font-black text-gray-900 mb-4">Select an engine to explore</h2>
+        <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4">Select an engine to explore</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-10">
           {ENGINES.map((e) => (
             <EngineCard
@@ -526,14 +526,14 @@ export default function EnginesPage() {
         </div>
 
         {/* Selected engine detail */}
-        <div className="border-2 border-gray-900 rounded-2xl p-6 space-y-5">
+        <div className="border-2 border-gray-900 dark:border-white rounded-2xl p-6 space-y-5">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg" style={{ backgroundColor: engine.color }}>
               {engine.icon}
             </div>
             <div>
-              <h2 className="text-2xl font-black text-gray-900">{engine.name} <span className="text-gray-400 text-base">v{engine.version}</span></h2>
-              <p className="text-sm text-gray-500">{engine.tagline}</p>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white">{engine.name} <span className="text-gray-400 text-base">v{engine.version}</span></h2>
+              <p className="text-sm text-gray-500 dark:text-neutral-400">{engine.tagline}</p>
             </div>
           </div>
 
@@ -588,14 +588,14 @@ export default function EnginesPage() {
 
         {/* Shared resources */}
         <div className="mt-10 space-y-6">
-          <h2 className="text-xl font-black text-gray-900">Shared Resources</h2>
+          <h2 className="text-xl font-black text-gray-900 dark:text-white">Shared Resources</h2>
 
           <Collapsible title={`Copy Angles (${COPY_ANGLES.length}) — used by Classic, Guided, Creative`} icon={<Type size={16} className="text-gray-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {COPY_ANGLES.map((a, i) => (
-                <div key={i} className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs font-bold text-gray-800 mb-1">{a.angle}</p>
-                  <p className="text-[11px] text-gray-500">{a.instruction}</p>
+                <div key={i} className="bg-gray-50 dark:bg-neutral-900 rounded-lg p-3">
+                  <p className="text-xs font-bold text-gray-800 dark:text-neutral-300 mb-1">{a.angle}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-neutral-400">{a.instruction}</p>
                 </div>
               ))}
             </div>
@@ -604,7 +604,7 @@ export default function EnginesPage() {
           <Collapsible title={`Layout Blueprints (${LAYOUTS_SUMMARY.length}) — used by Classic, Guided`} icon={<LayoutGrid size={16} className="text-gray-500" />}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {LAYOUTS_SUMMARY.map((l, i) => (
-                <div key={i} className="bg-gray-50 rounded-lg px-3 py-2 text-xs font-medium text-gray-700">
+                <div key={i} className="bg-gray-50 dark:bg-neutral-900 rounded-lg px-3 py-2 text-xs font-medium text-gray-700 dark:text-neutral-300">
                   {i + 1}. {l}
                 </div>
               ))}
@@ -614,7 +614,7 @@ export default function EnginesPage() {
           <Collapsible title={`Wild Moods (${MOODS.length}) — used by Wild only`} icon={<Flame size={16} className="text-gray-500" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {MOODS.map((m, i) => (
-                <div key={i} className="bg-gray-50 rounded-lg px-3 py-2.5 text-xs text-gray-700">
+                <div key={i} className="bg-gray-50 dark:bg-neutral-900 rounded-lg px-3 py-2.5 text-xs text-gray-700 dark:text-neutral-300">
                   <span className="font-bold">{m.split("—")[0].trim()}</span>
                   <span className="text-gray-400"> — {m.split("—")[1]?.trim()}</span>
                 </div>
@@ -625,13 +625,13 @@ export default function EnginesPage() {
 
         {/* Flow diagram */}
         <div className="mt-10 mb-6">
-          <h2 className="text-xl font-black text-gray-900 mb-4">How Each Engine Builds the Prompt</h2>
+          <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4">How Each Engine Builds the Prompt</h2>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
             {ENGINES.map((e) => (
-              <div key={e.key} className="rounded-xl border border-gray-200 p-4">
+              <div key={e.key} className="rounded-xl border border-gray-200 dark:border-neutral-800 p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: e.color }}>{e.label}</span>
-                  <span className="text-sm font-black text-gray-800">{e.name}</span>
+                  <span className="text-sm font-black text-gray-800 dark:text-neutral-300">{e.name}</span>
                 </div>
                 <div className="space-y-2">
                   {[
@@ -644,7 +644,7 @@ export default function EnginesPage() {
                   ].map((row, i) => (
                     <div key={i} className="flex items-center gap-2 text-[11px]">
                       <span className="font-bold text-gray-400 w-16 shrink-0">{row.label}</span>
-                      <span className={row.value === "—" ? "text-gray-300" : "text-gray-700 font-medium"}>{row.value}</span>
+                      <span className={row.value === "—" ? "text-gray-300 dark:text-neutral-600" : "text-gray-700 dark:text-neutral-300 font-medium"}>{row.value}</span>
                     </div>
                   ))}
                 </div>

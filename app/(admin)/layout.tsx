@@ -31,8 +31,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Show loading while auth or admin check is pending
   if (isLoading || !isAuthenticated || isAdmin === undefined) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-neutral-500 animate-spin" />
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-slate-300 dark:text-neutral-500 animate-spin" />
       </div>
     );
   }
@@ -40,18 +40,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isAdmin) return null;
 
   return (
-    <div dir={dir} className="min-h-screen bg-[#0a0a0a] text-neutral-100 font-sans">
+    <div dir={dir} className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-neutral-100 font-sans">
       <div className="max-w-7xl mx-auto px-6 pt-6 pb-16">
         <div className="flex items-center gap-4 mb-8">
           <Link
             href="/workspaces"
-            className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
+            className="flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-500 hover:text-slate-900 dark:hover:text-neutral-300 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             {t("admin.backToApp")}
           </Link>
-          <span className="text-neutral-700">|</span>
-          <span className="text-sm font-bold text-neutral-400">{t("admin.title")}</span>
+          <span className="text-slate-300 dark:text-neutral-700">|</span>
+          <span className="text-sm font-bold text-slate-500 dark:text-neutral-400">{t("admin.title")}</span>
         </div>
         {children}
       </div>

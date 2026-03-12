@@ -11,6 +11,7 @@ import {
   Check,
 } from "lucide-react";
 import Link from "next/link";
+import { useTheme as useNextTheme } from "next-themes";
 import { PostPreview, socialPosts } from "./shared";
 
 /* ─── Theme types ─── */
@@ -222,8 +223,13 @@ function DoneVisual() {
 }
 
 /* ─── Main HeroDemo Component ─── */
-export default function HeroDemo({ theme = "dark" }: { theme?: DemoTheme }) {
-  const s = t(theme);
+export default function HeroDemo({ theme }: { theme?: DemoTheme }) {
+  const { resolvedTheme } = useNextTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  // Use "light" as SSR default; once mounted, read resolvedTheme correctly
+  const effectiveTheme: DemoTheme = theme ?? (mounted && resolvedTheme === "dark" ? "dark" : "light");
+  const s = t(effectiveTheme);
   const [demoStep, setDemoStep] = useState<DemoStep>("idle");
   const [inputValue, setInputValue] = useState("");
   const [urlIndex, setUrlIndex] = useState(0);
@@ -297,7 +303,7 @@ export default function HeroDemo({ theme = "dark" }: { theme?: DemoTheme }) {
   );
 
   return (
-    <div className={`border rounded-2xl overflow-hidden ${s.cardBg} ${s.cardShadow}`}>
+    <div className={`border rounded-2xl overflow-hidden transition-opacity duration-300 ${mounted ? "opacity-100" : "opacity-0"} ${s.cardBg} ${s.cardShadow}`}>
       <div className="p-5">
         {/* Idle — auto-typing URL */}
         {demoStep === "idle" && (
@@ -332,9 +338,9 @@ export default function HeroDemo({ theme = "dark" }: { theme?: DemoTheme }) {
               {demoStep === "generating" && "Generating ads, social posts & app store previews..."}
             </p>
             <AnimatePresence mode="wait">
-              {demoStep === "scanning" && <motion.div key="s" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ScanningVisual theme={theme} /></motion.div>}
-              {demoStep === "extracting" && <motion.div key="e" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ExtractingVisual theme={theme} /></motion.div>}
-              {demoStep === "generating" && <motion.div key="g" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><GeneratingVisual theme={theme} /></motion.div>}
+              {demoStep === "scanning" && <motion.div key="s" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ScanningVisual theme={effectiveTheme} /></motion.div>}
+              {demoStep === "extracting" && <motion.div key="e" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ExtractingVisual theme={effectiveTheme} /></motion.div>}
+              {demoStep === "generating" && <motion.div key="g" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><GeneratingVisual theme={effectiveTheme} /></motion.div>}
             </AnimatePresence>
           </motion.div>
         )}
@@ -344,7 +350,7 @@ export default function HeroDemo({ theme = "dark" }: { theme?: DemoTheme }) {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <ProgressSteps />
             <p className={`text-center text-sm mb-4 ${s.progressLabel}`}>Publishing to all channels...</p>
-            <PublishingVisual theme={theme} />
+            <PublishingVisual theme={effectiveTheme} />
           </motion.div>
         )}
 

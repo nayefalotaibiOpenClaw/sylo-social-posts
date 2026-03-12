@@ -243,31 +243,31 @@ export default function BrandPanel({
   } : null);
 
   return (
-    <div className="flex-1 bg-white flex flex-col overflow-hidden">
+    <div className="flex-1 bg-white dark:bg-[#0a0a0a] flex flex-col overflow-hidden">
       {/* ── Floating Nav ── */}
       <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-        <nav className="max-w-4xl mx-auto bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
+        <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
           {onTabClick && <MobileNavMenu activeTab={activeTab ?? 'brand'} onTabClick={onTabClick} workspaces={wsList} currentWorkspaceId={wsId} currentWorkspaceName={wsName} />}
-          {onTabClick && <div className="w-px h-5 bg-slate-200 md:hidden" />}
+          {onTabClick && <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700 md:hidden" />}
           {/* Brand name / logo */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="w-7 h-7 rounded-full bg-slate-100 items-center justify-center overflow-hidden hidden md:flex">
+            <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-neutral-800 items-center justify-center overflow-hidden hidden md:flex">
               {logoUrl ? (
                 <img src={logoUrl} alt="" className="w-full h-full object-contain p-0.5" />
               ) : (
                 <Building2 size={13} className="text-slate-400" />
               )}
             </div>
-            <span className="text-sm font-black text-slate-900 hidden sm:block">
+            <span className="text-sm font-black text-slate-900 dark:text-white hidden sm:block">
               {branding?.brandName || workspace?.name || "Brand Kit"}
             </span>
           </div>
 
           {/* Divider */}
-          <div className="w-px h-5 bg-slate-200" />
+          <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700" />
 
           {/* Page title */}
-          <span className="text-sm font-semibold text-slate-500">Brand Kit</span>
+          <span className="text-sm font-semibold text-slate-500 dark:text-neutral-400">Brand Kit</span>
 
           {/* Spacer */}
           <div className="flex-1" />
@@ -278,7 +278,7 @@ export default function BrandPanel({
               setFetchUrl(workspace?.website || "");
               setShowFetchPopup(true);
             }}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-all"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-slate-200 dark:border-neutral-700 text-xs font-bold text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-neutral-600 transition-all"
           >
             <Globe size={13} />
             {businessInfo ? "Refetch" : "Fetch"}
@@ -286,7 +286,7 @@ export default function BrandPanel({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-900"
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-slate-400 dark:text-neutral-500 hover:text-slate-900 dark:hover:text-white"
             title="Back to editor"
           >
             <X size={18} />
@@ -315,7 +315,7 @@ export default function BrandPanel({
             <div className="flex gap-3 shrink-0">
               <button
                 onClick={() => logoInputRef.current?.click()}
-                className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden hover:border-slate-300 hover:bg-slate-100 transition-all group relative"
+                className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 dark:border-neutral-700 flex items-center justify-center overflow-hidden hover:border-slate-300 dark:hover:border-neutral-600 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all group relative"
                 title="Upload logo"
               >
                 {logoUrl ? (
@@ -371,14 +371,14 @@ export default function BrandPanel({
               <InlineEdit
                 value={branding?.brandName || workspace?.name || ""}
                 placeholder="Brand name"
-                className="text-2xl font-black text-slate-900"
+                className="text-2xl font-black text-slate-900 dark:text-white"
                 onSave={(val) => onUpdateBranding("brandName", val)}
               />
               {/* Editable tagline */}
               <InlineEdit
                 value={branding?.tagline || ""}
                 placeholder="Add tagline..."
-                className="text-sm text-slate-400 mt-0.5"
+                className="text-sm text-slate-400 dark:text-neutral-500 mt-0.5"
                 onSave={(val) => onUpdateBranding("tagline", val)}
               />
               <div className="flex items-center gap-3 mt-2">
@@ -387,7 +387,7 @@ export default function BrandPanel({
                   <InlineEdit
                     value={workspace?.website || ""}
                     placeholder="https://example.com"
-                    className="text-xs text-slate-400 hover:text-slate-600"
+                    className="text-xs text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300"
                     onSave={(val) => onUpdateWorkspace({ website: val })}
                   />
                   {workspace?.website && (
@@ -399,7 +399,7 @@ export default function BrandPanel({
                 <InlineEdit
                   value={workspace?.industry || ""}
                   placeholder="Industry"
-                  className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full"
+                  className="text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-800 px-2.5 py-0.5 rounded-full"
                   onSave={(val) => onUpdateWorkspace({ industry: val })}
                 />
               </div>
@@ -410,10 +410,10 @@ export default function BrandPanel({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Website Info Card */}
-            <div className="bg-slate-50 rounded-2xl p-6 space-y-4">
+            <div className="bg-slate-50 dark:bg-neutral-900 rounded-2xl p-6 space-y-4">
               <div className="flex items-center gap-2">
                 <Globe size={16} className="text-slate-400" />
-                <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Website Info</h2>
+                <h2 className="text-xs font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Website Info</h2>
               </div>
 
               {businessInfo ? (
@@ -421,7 +421,7 @@ export default function BrandPanel({
                   <InlineEdit
                     value={businessInfo.description || ""}
                     placeholder="Add description..."
-                    className="text-sm text-slate-600 leading-relaxed"
+                    className="text-sm text-slate-600 dark:text-neutral-400 leading-relaxed"
                     multiline
                     onSave={(val) => onUpdateWebsiteInfo({ description: val })}
                   />
@@ -452,21 +452,21 @@ export default function BrandPanel({
                   {websiteInfo?.features && websiteInfo.features.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {websiteInfo.features.map((f, i) => (
-                        <span key={i} className="text-[11px] font-medium px-2.5 py-1 bg-white text-slate-500 rounded-full border border-slate-100">{f}</span>
+                        <span key={i} className="text-[11px] font-medium px-2.5 py-1 bg-white dark:bg-neutral-800 text-slate-500 dark:text-neutral-400 rounded-full border border-slate-100 dark:border-neutral-700">{f}</span>
                       ))}
                     </div>
                   )}
 
                   {websiteInfo?.contact && (
-                    <div className="flex flex-wrap gap-4 pt-2 border-t border-slate-200/60">
+                    <div className="flex flex-wrap gap-4 pt-2 border-t border-slate-200/60 dark:border-neutral-700/60">
                       {websiteInfo.contact.phone && (
-                        <span className="flex items-center gap-1.5 text-xs text-slate-400"><Phone size={12} /> {websiteInfo.contact.phone}</span>
+                        <span className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-neutral-500"><Phone size={12} /> {websiteInfo.contact.phone}</span>
                       )}
                       {websiteInfo.contact.email && (
-                        <span className="flex items-center gap-1.5 text-xs text-slate-400"><Mail size={12} /> {websiteInfo.contact.email}</span>
+                        <span className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-neutral-500"><Mail size={12} /> {websiteInfo.contact.email}</span>
                       )}
                       {websiteInfo.contact.address && (
-                        <span className="flex items-center gap-1.5 text-xs text-slate-400"><MapPin size={12} /> {websiteInfo.contact.address}</span>
+                        <span className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-neutral-500"><MapPin size={12} /> {websiteInfo.contact.address}</span>
                       )}
                     </div>
                   )}
@@ -474,13 +474,13 @@ export default function BrandPanel({
               ) : (
                 <div className="text-center py-8">
                   <Globe size={32} className="text-slate-200 mx-auto mb-3" />
-                  <p className="text-sm text-slate-400 mb-3">No website data fetched yet</p>
+                  <p className="text-sm text-slate-400 dark:text-neutral-500 mb-3">No website data fetched yet</p>
                   <button
                     onClick={() => {
                       setFetchUrl(workspace?.website || "");
                       setShowFetchPopup(true);
                     }}
-                    className="px-5 py-2 rounded-full bg-slate-900 text-white text-xs font-bold hover:scale-105 active:scale-95 transition-all"
+                    className="px-5 py-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black text-xs font-bold hover:scale-105 active:scale-95 transition-all"
                   >
                     Fetch Website Info
                   </button>
@@ -489,10 +489,10 @@ export default function BrandPanel({
             </div>
 
             {/* Theme Card */}
-            <div className="bg-slate-50 rounded-2xl p-6 space-y-5">
+            <div className="bg-slate-50 dark:bg-neutral-900 rounded-2xl p-6 space-y-5">
               <div className="flex items-center gap-2">
                 <Palette size={16} className="text-slate-400" />
-                <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Theme</h2>
+                <h2 className="text-xs font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Theme</h2>
               </div>
 
               {/* Live preview */}
@@ -507,7 +507,7 @@ export default function BrandPanel({
 
               {/* Colors */}
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Colors</p>
+                <p className="text-[10px] font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest mb-3">Colors</p>
                 <div className="grid grid-cols-4 gap-3">
                   {([
                     { key: 'primary', label: 'Primary' },
@@ -528,7 +528,7 @@ export default function BrandPanel({
                           className="w-10 h-10 rounded-xl border-2 border-white shadow-sm cursor-pointer bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-0 group-hover:scale-110 transition-transform"
                         />
                       </div>
-                      <span className="text-[10px] font-bold text-slate-400">{label}</span>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500">{label}</span>
                     </label>
                   ))}
                 </div>
@@ -536,7 +536,7 @@ export default function BrandPanel({
 
               {/* Palette presets */}
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Presets</p>
+                <p className="text-[10px] font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest mb-3">Presets</p>
                 <div className="flex flex-wrap gap-2">
                   {PALETTES.map((palette) => {
                     const isSelected = palette.theme.primary === currentTheme.primary && palette.theme.primaryLight === currentTheme.primaryLight;
@@ -545,7 +545,7 @@ export default function BrandPanel({
                         key={palette.name}
                         onClick={() => setTheme({ ...palette.theme, font: currentTheme.font })}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all ${
-                          isSelected ? 'border-slate-900 bg-white shadow-sm' : 'border-transparent bg-white hover:border-slate-200'
+                          isSelected ? 'border-slate-900 dark:border-white bg-white dark:bg-neutral-800 shadow-sm' : 'border-transparent bg-white dark:bg-neutral-800 hover:border-slate-200 dark:hover:border-neutral-600'
                         }`}
                       >
                         <div className="flex gap-0.5">
@@ -553,8 +553,8 @@ export default function BrandPanel({
                             <div key={j} className="w-4 h-4 rounded-md" style={{ backgroundColor: c }} />
                           ))}
                         </div>
-                        <span className="text-[11px] font-bold text-slate-600">{palette.name}</span>
-                        {isSelected && <Check size={12} className="text-slate-900" />}
+                        <span className="text-[11px] font-bold text-slate-600 dark:text-neutral-300">{palette.name}</span>
+                        {isSelected && <Check size={12} className="text-slate-900 dark:text-white" />}
                       </button>
                     );
                   })}
@@ -565,7 +565,7 @@ export default function BrandPanel({
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Type size={14} className="text-slate-400" />
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Font</p>
+                  <p className="text-[10px] font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Font</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {FONTS.map((font) => {
@@ -575,11 +575,11 @@ export default function BrandPanel({
                         key={font.value}
                         onClick={() => setTheme({ ...currentTheme, font: font.value })}
                         className={`flex items-center justify-between px-3 py-2.5 rounded-xl border-2 transition-all ${
-                          isSelected ? 'border-slate-900 bg-white shadow-sm' : 'border-transparent bg-white hover:border-slate-200'
+                          isSelected ? 'border-slate-900 dark:border-white bg-white dark:bg-neutral-800 shadow-sm' : 'border-transparent bg-white dark:bg-neutral-800 hover:border-slate-200 dark:hover:border-neutral-600'
                         }`}
                       >
-                        <span className="text-sm font-bold text-slate-700 truncate" style={{ fontFamily: font.value }}>{font.name}</span>
-                        {isSelected && <Check size={14} className="text-slate-900 shrink-0 ml-2" />}
+                        <span className="text-sm font-bold text-slate-700 dark:text-neutral-300 truncate" style={{ fontFamily: font.value }}>{font.name}</span>
+                        {isSelected && <Check size={14} className="text-slate-900 dark:text-white shrink-0 ml-2" />}
                       </button>
                     );
                   })}
@@ -594,10 +594,10 @@ export default function BrandPanel({
 
               {/* Sections */}
               {crawlData && crawlData.status === "ready" && crawlData.sections.length > 0 && (
-                <div className="bg-slate-50 rounded-2xl p-6">
+                <div className="bg-slate-50 dark:bg-neutral-900 rounded-2xl p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Layers size={16} className="text-slate-400" />
-                    <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                    <h2 className="text-xs font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
                       Sections ({crawlData.sections.length})
                     </h2>
                   </div>
@@ -609,26 +609,26 @@ export default function BrandPanel({
                       );
 
                       return (
-                        <div key={section.url} className="bg-white rounded-xl overflow-hidden">
+                        <div key={section.url} className="bg-white dark:bg-neutral-800 rounded-xl overflow-hidden">
                           <button
                             onClick={() => toggleSection(section.url)}
-                            className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-slate-50 transition-colors"
+                            className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
                           >
                             {isExpanded
                               ? <ChevronDown size={14} className="text-slate-400 shrink-0" />
                               : <ChevronRight size={14} className="text-slate-400 shrink-0" />
                             }
-                            <span className="text-sm font-bold text-slate-700 truncate flex-1 text-left">
+                            <span className="text-sm font-bold text-slate-700 dark:text-neutral-300 truncate flex-1 text-left">
                               {section.nameAr || section.name}
                             </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-700 text-slate-400 dark:text-neutral-500">
                               {section.type}
                             </span>
                             {section.fetched && <CheckCircle2 size={14} className="text-green-400 shrink-0" />}
                           </button>
 
                           {isExpanded && (
-                            <div className="px-4 pb-4 border-t border-slate-50">
+                            <div className="px-4 pb-4 border-t border-slate-50 dark:border-neutral-700">
                               {!section.fetched && (
                                 <button
                                   onClick={() => handleFetchSection(section.url)}
@@ -646,16 +646,16 @@ export default function BrandPanel({
                               {sectionProducts.length > 0 && (
                                 <div className="mt-3 space-y-1.5">
                                   {sectionProducts.map((product, i) => (
-                                    <div key={`${product.sourceUrl}-${i}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 group transition-colors">
-                                      <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden shrink-0">
+                                    <div key={`${product.sourceUrl}-${i}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700 group transition-colors">
+                                      <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-neutral-700 overflow-hidden shrink-0">
                                         {product.imageUrl
                                           ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                                           : <ImageIcon size={16} className="text-slate-300 m-auto mt-2.5" />
                                         }
                                       </div>
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-bold text-slate-700 truncate">{product.name}</p>
-                                        {product.price && <p className="text-[10px] text-slate-400">{product.price} {product.currency || ""}</p>}
+                                        <p className="text-xs font-bold text-slate-700 dark:text-neutral-300 truncate">{product.name}</p>
+                                        {product.price && <p className="text-[10px] text-slate-400 dark:text-neutral-500">{product.price} {product.currency || ""}</p>}
                                       </div>
                                       {product.savedAsAssetId ? (
                                         <CheckCircle2 size={14} className="text-green-400 shrink-0" />
@@ -677,7 +677,7 @@ export default function BrandPanel({
                               )}
 
                               {section.fetched && section.productsFetched !== undefined && (
-                                <p className="text-[10px] text-slate-300 mt-2">{section.productsFetched} products fetched</p>
+                                <p className="text-[10px] text-slate-300 dark:text-neutral-600 mt-2">{section.productsFetched} products fetched</p>
                               )}
                             </div>
                           )}
@@ -690,15 +690,15 @@ export default function BrandPanel({
 
               {/* Crawl status */}
               {crawlData?.status === "discovering" && (
-                <div className="bg-slate-50 rounded-2xl p-8 flex flex-col items-center justify-center gap-3">
+                <div className="bg-slate-50 dark:bg-neutral-900 rounded-2xl p-8 flex flex-col items-center justify-center gap-3">
                   <Loader2 size={24} className="animate-spin text-slate-300" />
-                  <p className="text-sm font-bold text-slate-400">Discovering website structure...</p>
+                  <p className="text-sm font-bold text-slate-400 dark:text-neutral-500">Discovering website structure...</p>
                 </div>
               )}
               {crawlData?.status === "failed" && (
                 <div className="bg-red-50 rounded-2xl p-8 flex flex-col items-center justify-center gap-3">
                   <AlertCircle size={24} className="text-red-300" />
-                  <p className="text-sm font-bold text-red-400">Crawl failed. Try refetching.</p>
+                  <p className="text-sm font-bold text-red-400 dark:text-red-300">Crawl failed. Try refetching.</p>
                 </div>
               )}
 
@@ -711,11 +711,11 @@ export default function BrandPanel({
                   : crawlData.discoveredProducts.slice(0, 24);
 
                 return (
-                  <div className="bg-slate-50 rounded-2xl p-6">
+                  <div className="bg-slate-50 dark:bg-neutral-900 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <ShoppingBag size={16} className="text-slate-400" />
-                        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                        <h2 className="text-xs font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest">
                           Products ({crawlData.totalProductsFound})
                         </h2>
                       </div>
@@ -747,7 +747,7 @@ export default function BrandPanel({
                       {visibleProducts.map((product, i) => (
                         <div
                           key={`${product.sourceUrl}-${i}`}
-                          className="aspect-square rounded-xl bg-white overflow-hidden relative group cursor-pointer shadow-sm hover:shadow-md transition-shadow"
+                          className="aspect-square rounded-xl bg-white dark:bg-neutral-800 overflow-hidden relative group cursor-pointer shadow-sm hover:shadow-md transition-shadow"
                           onClick={() => !product.savedAsAssetId && handleSaveProduct(product)}
                         >
                           {product.imageUrl ? (
@@ -791,7 +791,7 @@ export default function BrandPanel({
                     {crawlData.discoveredProducts.length > 24 && (
                       <button
                         onClick={() => setShowAllProducts(prev => !prev)}
-                        className="w-full text-xs font-bold text-slate-500 hover:text-slate-900 mt-4 py-2 rounded-xl hover:bg-white transition-all"
+                        className="w-full text-xs font-bold text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white mt-4 py-2 rounded-xl hover:bg-white dark:hover:bg-neutral-800 transition-all"
                       >
                         {showAllProducts ? "Show less" : `Show all ${crawlData.discoveredProducts.length} products`}
                       </button>
@@ -809,47 +809,47 @@ export default function BrandPanel({
       {showFetchPopup && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !fetching && setShowFetchPopup(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md p-8">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-black text-slate-900">Fetch Website</h3>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">Fetch Website</h3>
               <button
                 onClick={() => !fetching && setShowFetchPopup(false)}
-                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                className="p-2 rounded-full hover:bg-slate-100 dark:bg-neutral-700 text-slate-400 dark:text-neutral-500 hover:text-slate-600 transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
 
             <div className="mb-5">
-              <label className="text-xs font-bold text-slate-500 mb-2 block">Website URL</label>
+              <label className="text-xs font-bold text-slate-500 dark:text-neutral-400 mb-2 block">Website URL</label>
               <input
                 type="url"
                 value={fetchUrl}
                 onChange={(e) => setFetchUrl(e.target.value)}
                 placeholder="https://example.com"
-                className="w-full h-12 px-4 text-sm font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 placeholder:text-slate-300 transition-all"
+                className="w-full h-12 px-4 text-sm font-medium text-slate-900 dark:text-white bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 placeholder:text-slate-300 dark:placeholder:text-neutral-600 transition-all"
               />
             </div>
 
             <div className="mb-6">
-              <label className="text-xs font-bold text-slate-500 mb-2 block">
+              <label className="text-xs font-bold text-slate-500 dark:text-neutral-400 mb-2 block">
                 Screenshot <span className="text-slate-300 font-medium">(optional)</span>
               </label>
               <input ref={screenshotRef} type="file" accept="image/*" onChange={handleScreenshotUpload} className="hidden" />
               {fetchScreenshot ? (
-                <div className="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
-                  <div className="w-16 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
+                <div className="flex items-center gap-3 bg-slate-50 dark:bg-neutral-800 rounded-xl p-3">
+                  <div className="w-16 h-12 rounded-lg bg-slate-200 dark:bg-neutral-700 overflow-hidden shrink-0">
                     <img src={`data:image/jpeg;base64,${fetchScreenshot}`} alt="" className="w-full h-full object-cover" />
                   </div>
-                  <span className="text-xs font-bold text-slate-500 flex-1">Screenshot attached</span>
-                  <button onClick={() => setFetchScreenshot(null)} className="p-1.5 rounded-full hover:bg-slate-200 text-slate-400">
+                  <span className="text-xs font-bold text-slate-500 dark:text-neutral-400 flex-1">Screenshot attached</span>
+                  <button onClick={() => setFetchScreenshot(null)} className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-400 dark:text-neutral-500">
                     <X size={14} />
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => screenshotRef.current?.click()}
-                  className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-400 border-2 border-dashed border-slate-200 rounded-xl py-4 hover:border-slate-300 hover:text-slate-500 hover:bg-slate-50 transition-all"
+                  className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-400 border-2 border-dashed border-slate-200 dark:border-neutral-700 rounded-xl py-4 hover:border-slate-300 dark:hover:border-neutral-600 hover:text-slate-500 dark:hover:text-slate-400 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all"
                 >
                   <Upload size={14} />
                   Upload for better analysis
@@ -861,7 +861,7 @@ export default function BrandPanel({
               <button
                 onClick={() => !fetching && setShowFetchPopup(false)}
                 disabled={fetching}
-                className="flex-1 h-12 text-sm font-bold text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200 disabled:opacity-50 transition-colors"
+                className="flex-1 h-12 text-sm font-bold text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-800 rounded-xl hover:bg-slate-200 dark:hover:bg-neutral-700 disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>
@@ -939,7 +939,7 @@ function InlineEdit({
   return (
     <div
       onClick={() => setEditing(true)}
-      className={`${className} cursor-text hover:bg-slate-100/50 rounded px-1 -mx-1 transition-colors ${!value ? 'italic opacity-50' : ''}`}
+      className={`${className} cursor-text hover:bg-slate-100/50 dark:hover:bg-neutral-800/50 rounded px-1 -mx-1 transition-colors ${!value ? 'italic opacity-50' : ''}`}
       title="Click to edit"
     >
       {value || placeholder}
@@ -961,7 +961,7 @@ function EditableInfoCard({
   onSave: (val: string) => void;
 }) {
   return (
-    <div className="bg-white rounded-xl p-3 space-y-1">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl p-3 space-y-1">
       <div className="flex items-center gap-1.5 text-slate-300">
         {icon}
         <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
@@ -969,7 +969,7 @@ function EditableInfoCard({
       <InlineEdit
         value={value}
         placeholder={placeholder}
-        className="text-xs font-bold text-slate-600"
+        className="text-xs font-bold text-slate-600 dark:text-neutral-300"
         onSave={onSave}
       />
     </div>

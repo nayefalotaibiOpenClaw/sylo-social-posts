@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 const PROVIDERS = [
-  { id: "instagram" as const, name: "Instagram", icon: Instagram, color: "from-pink-500 to-purple-600", available: true },
+  { id: "instagram" as const, name: "Instagram", icon: Instagram, color: "from-pink-500 to-rose-600", available: true },
   { id: "facebook" as const, name: "Facebook", icon: Facebook, color: "from-blue-600 to-blue-700", available: true },
   { id: "tiktok" as const, name: "TikTok", icon: Video, color: "from-neutral-800 to-neutral-900", available: false },
   { id: "linkedin" as const, name: "LinkedIn", icon: Briefcase, color: "from-blue-700 to-blue-800", available: false },
@@ -97,22 +97,22 @@ export default function ChannelsPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-neutral-500" />
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-slate-300 dark:text-neutral-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
-      <FloatingNav variant="dark" />
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+      <FloatingNav />
 
       {/* Toast */}
       {toast && (
         <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl border flex items-center gap-3 shadow-2xl max-w-lg ${
           toast.type === "success"
-            ? "bg-green-950/90 border-green-800 text-green-200"
-            : "bg-red-950/90 border-red-800 text-red-200"
+            ? "bg-green-50 dark:bg-green-950/90 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200"
+            : "bg-red-50 dark:bg-red-950/90 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200"
         }`}>
           {toast.type === "success" ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
           <span className="text-sm font-medium">{toast.message}</span>
@@ -126,8 +126,8 @@ export default function ChannelsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">Channels</h1>
-            <p className="text-sm text-neutral-500 mt-1">Connect your social media accounts</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Channels</h1>
+            <p className="text-sm text-slate-500 dark:text-neutral-500 mt-1">Connect your social media accounts</p>
           </div>
 
           {/* Workspace Selector */}
@@ -135,7 +135,7 @@ export default function ChannelsPage() {
             <select
               value={selectedWorkspaceId || ""}
               onChange={(e) => setSelectedWorkspaceId(e.target.value as Id<"workspaces">)}
-              className="bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-neutral-600"
+              className="bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-neutral-600"
             >
               {workspaces.map((w) => (
                 <option key={w._id} value={w._id}>{w.name}</option>
@@ -146,15 +146,15 @@ export default function ChannelsPage() {
 
         {!selectedWorkspaceId ? (
           <div className="text-center py-20">
-            <LinkIcon className="w-10 h-10 text-neutral-700 mx-auto mb-3" />
-            <p className="text-neutral-500">Select a workspace to manage channels</p>
+            <LinkIcon className="w-10 h-10 text-slate-300 dark:text-neutral-700 mx-auto mb-3" />
+            <p className="text-slate-500 dark:text-neutral-500">Select a workspace to manage channels</p>
           </div>
         ) : (
           <>
             {/* Connected Accounts */}
             {activeAccounts.length > 0 && (
               <div className="mb-10">
-                <h2 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
+                <h2 className="text-xs font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
                   Connected ({activeAccounts.length})
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -164,7 +164,7 @@ export default function ChannelsPage() {
                     return (
                       <div
                         key={account._id}
-                        className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 flex items-center gap-4 group"
+                        className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl p-4 flex items-center gap-4 group hover:border-slate-300 dark:hover:border-neutral-600 transition-colors"
                       >
                         <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${provider?.color || "from-neutral-700 to-neutral-800"} flex items-center justify-center flex-shrink-0`}>
                           {account.providerAccountImage ? (
@@ -178,16 +178,16 @@ export default function ChannelsPage() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                             {account.providerAccountName}
                           </p>
-                          <p className="text-xs text-neutral-500 capitalize">{account.provider}</p>
+                          <p className="text-xs text-slate-400 dark:text-neutral-500 capitalize">{account.provider}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-green-500" />
                           <button
                             onClick={() => handleDisconnect(account._id)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition-all"
+                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-400 dark:text-neutral-500 hover:text-red-400 transition-all"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -201,7 +201,7 @@ export default function ChannelsPage() {
 
             {/* Connect New */}
             <div>
-              <h2 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
+              <h2 className="text-xs font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
                 Connect a Channel
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -222,23 +222,23 @@ export default function ChannelsPage() {
                       disabled={!provider.available}
                       className={`flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${
                         provider.available
-                          ? "bg-neutral-900/50 border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900 cursor-pointer"
-                          : "bg-neutral-950/50 border-neutral-900 cursor-not-allowed opacity-50"
+                          ? "bg-white dark:bg-neutral-900/50 border-slate-200 dark:border-neutral-800 hover:border-slate-300 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-900 cursor-pointer"
+                          : "bg-slate-50 dark:bg-neutral-950/50 border-slate-100 dark:border-neutral-900 cursor-not-allowed opacity-50"
                       }`}
                     >
                       <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${provider.color} flex items-center justify-center flex-shrink-0`}>
                         <Icon size={18} className="text-white" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-white">{provider.name}</p>
-                        <p className="text-xs text-neutral-500">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{provider.name}</p>
+                        <p className="text-xs text-slate-400 dark:text-neutral-500">
                           {provider.available ? "Click to connect" : "Coming soon"}
                         </p>
                       </div>
                       {provider.available ? (
-                        <Zap size={14} className="text-neutral-600" />
+                        <Zap size={14} className="text-slate-300 dark:text-neutral-600" />
                       ) : (
-                        <span className="text-[10px] font-bold text-neutral-600 uppercase">Soon</span>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 uppercase">Soon</span>
                       )}
                     </button>
                   );

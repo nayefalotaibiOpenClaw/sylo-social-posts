@@ -37,7 +37,7 @@ export default async function RootLayout({
 
   return (
     <ConvexAuthNextjsServerProvider>
-      <html lang={locale} dir={dir}>
+      <html lang={locale} dir={dir} suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} antialiased`}
         >

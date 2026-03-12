@@ -63,7 +63,7 @@ export default function ODesignsPage() {
   }, [selectedPosts]);
 
   return (
-    <div className="h-screen flex overflow-hidden bg-slate-50">
+    <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-[#0a0a0a]">
       <div className="w-[72px] bg-slate-900 border-r border-slate-800 flex flex-col items-center py-4 gap-1 shrink-0">
         <Link href="/" className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
           <span className="text-white font-black text-sm">O</span>
@@ -79,21 +79,21 @@ export default function ODesignsPage() {
       </div>
 
       {activeTab && (
-        <div className="w-[280px] bg-white border-r border-slate-200 p-5 overflow-y-auto shadow-xl">
+        <div className="w-[280px] bg-white dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-neutral-800 p-5 overflow-y-auto shadow-xl">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-bold text-slate-900 capitalize">{activeTab}</h2>
-            <button onClick={() => setActiveTab(null)} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white capitalize">{activeTab}</h2>
+            <button onClick={() => setActiveTab(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300"><X size={16} /></button>
           </div>
           {activeTab === 'settings' && (
             <div className="space-y-6">
-               <button onClick={() => setEditMode(!editMode)} className={`w-full py-2.5 rounded-lg text-xs font-bold border ${editMode ? 'bg-cyan-100 text-cyan-900 border-cyan-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+               <button onClick={() => setEditMode(!editMode)} className={`w-full py-2.5 rounded-lg text-xs font-bold border ${editMode ? 'bg-cyan-100 text-cyan-900 border-cyan-200' : 'bg-slate-50 dark:bg-neutral-900 text-slate-500 dark:text-neutral-400 border-slate-200 dark:border-neutral-800'}`}>
                  {editMode ? 'Disable Editing' : 'Enable Editing'}
                </button>
                <div>
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Aspect Ratio</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Aspect Ratio</label>
                   <div className="flex gap-1">
                     {(['1:1', '9:16', '3:4'] as const).map((ratio) => (
-                      <button key={ratio} onClick={() => setAspectRatio(ratio)} className={`flex-1 py-2 rounded-lg text-xs font-bold ${aspectRatio === ratio ? 'bg-cyan-500 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                      <button key={ratio} onClick={() => setAspectRatio(ratio)} className={`flex-1 py-2 rounded-lg text-xs font-bold ${aspectRatio === ratio ? 'bg-cyan-500 text-white' : 'bg-slate-50 dark:bg-neutral-900 text-slate-400'}`}>
                         {ratio}
                       </button>
                     ))}
@@ -103,12 +103,12 @@ export default function ODesignsPage() {
           )}
           {activeTab === 'theme' && (
             <div className="space-y-4">
-               <p className="text-xs text-slate-500">Agency theme for oDesigns.</p>
+               <p className="text-xs text-slate-500 dark:text-neutral-400">Agency theme for oDesigns.</p>
                <div className="grid grid-cols-2 gap-2">
                   {Object.entries(currentTheme).filter(([k]) => k !== 'font').map(([key, value]) => (
-                    <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800">
                       <input type="color" value={value as string} onChange={(e) => setTheme({ ...currentTheme, [key]: e.target.value })} className="w-6 h-6 rounded cursor-pointer" />
-                      <span className="text-[10px] font-semibold text-slate-500 truncate">{key}</span>
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 truncate">{key}</span>
                     </label>
                   ))}
                </div>
@@ -122,13 +122,13 @@ export default function ODesignsPage() {
            <div>
               <div className="flex items-center gap-3 mb-2">
                  <Rocket className="text-cyan-500" size={32} />
-                 <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">oDesigns Agency</h1>
+                 <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">oDesigns Agency</h1>
               </div>
-              <p className="text-slate-500 font-bold ml-1">Premium Social Media Content & Management Engine</p>
+              <p className="text-slate-500 dark:text-neutral-400 font-bold ml-1">Premium Social Media Content & Management Engine</p>
            </div>
            <div className="flex gap-3">
-              <button onClick={() => setSelectedPosts(ODESIGNS_POSTS.map(p => p.id))} className="px-4 py-2 text-slate-600 font-bold text-sm">Select All</button>
-              <button onClick={handleDownloadSelected} disabled={downloading || selectedPosts.length === 0} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-xl">
+              <button onClick={() => setSelectedPosts(ODESIGNS_POSTS.map(p => p.id))} className="px-4 py-2 text-slate-600 dark:text-neutral-400 font-bold text-sm">Select All</button>
+              <button onClick={handleDownloadSelected} disabled={downloading || selectedPosts.length === 0} className="px-6 py-3 bg-slate-900 text-white dark:bg-white dark:text-black rounded-xl font-bold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-xl">
                  {downloading ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />}
                  Download {selectedPosts.length > 0 ? `(${selectedPosts.length})` : ''}
               </button>

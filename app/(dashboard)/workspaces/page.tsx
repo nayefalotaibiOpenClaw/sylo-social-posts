@@ -152,14 +152,14 @@ export default function WorkspacesPage() {
 
   if (authLoading || (!user && process.env.NODE_ENV !== "development")) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-slate-300 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-white font-sans selection:bg-indigo-100">
       <FloatingNav activePage="workspaces" />
 
       <div className="max-w-5xl mx-auto px-6 pt-28 pb-16">
@@ -173,7 +173,7 @@ export default function WorkspacesPage() {
           </div>
           <button
             onClick={() => { resetForm(); setShowCreate(true); }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full font-bold text-sm hover:scale-105 transition-all active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black rounded-full font-bold text-sm hover:scale-105 transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             {t("workspaces.newWorkspace")}
@@ -200,14 +200,14 @@ export default function WorkspacesPage() {
           </div>
         ) : workspaces.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-neutral-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Folder className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-bold text-slate-600 mb-2">{t("workspaces.noWorkspaces")}</h3>
+            <h3 className="text-lg font-bold text-slate-600 dark:text-neutral-400 mb-2">{t("workspaces.noWorkspaces")}</h3>
             <p className="text-sm text-slate-400 mb-6">{t("workspaces.createFirst")}</p>
             <button
               onClick={() => setShowCreate(true)}
-              className="px-6 py-2.5 bg-slate-900 text-white rounded-full font-bold text-sm hover:scale-105 transition-all active:scale-95"
+              className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black rounded-full font-bold text-sm hover:scale-105 transition-all active:scale-95"
             >
               {t("workspaces.createWorkspace")}
             </button>
@@ -228,9 +228,9 @@ export default function WorkspacesPage() {
             {/* New Workspace Card */}
             <button
               onClick={() => { resetForm(); setShowCreate(true); }}
-              className="border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover:border-slate-300 hover:bg-slate-50 transition-all min-h-[200px]"
+              className="border-2 border-dashed border-slate-200 dark:border-neutral-700 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover:border-slate-300 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all min-h-[200px]"
             >
-              <div className="w-11 h-11 bg-slate-100 rounded-xl flex items-center justify-center">
+              <div className="w-11 h-11 bg-slate-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center">
                 <Plus className="w-5 h-5 text-slate-400" />
               </div>
               <span className="text-sm font-bold text-slate-400">{t("workspaces.newWorkspace")}</span>

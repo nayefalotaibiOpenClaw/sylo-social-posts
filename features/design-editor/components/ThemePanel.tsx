@@ -24,7 +24,7 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Color Palette</label>
+        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Color Palette</label>
         <div className="space-y-1.5">
           {PALETTES.map((palette) => {
             const isSelected = palette.theme.primary === currentTheme.primary && palette.theme.primaryLight === currentTheme.primaryLight;
@@ -33,7 +33,7 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
                 key={palette.name}
                 onClick={() => setTheme({ ...palette.theme, font: currentTheme.font })}
                 className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left ${
-                  isSelected ? 'border-gray-900 bg-white shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-gray-300'
+                  isSelected ? 'border-gray-900 dark:border-white bg-white dark:bg-neutral-900 shadow-sm' : 'border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800 hover:border-gray-300 dark:hover:border-neutral-600'
                 }`}
               >
                 <div className="flex gap-1 shrink-0">
@@ -41,8 +41,8 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
                     <div key={j} className="w-5 h-5 rounded" style={{ backgroundColor: c }} />
                   ))}
                 </div>
-                <span className="text-xs font-bold text-gray-700 truncate flex-1">{palette.name}</span>
-                {isSelected && <Check size={14} className="text-gray-900 shrink-0" />}
+                <span className="text-xs font-bold text-gray-700 dark:text-neutral-300 truncate flex-1">{palette.name}</span>
+                {isSelected && <Check size={14} className="text-gray-900 dark:text-white shrink-0" />}
               </button>
             );
           })}
@@ -50,7 +50,7 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Edit Colors</label>
+        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Edit Colors</label>
         <div className="grid grid-cols-2 gap-2">
           {([
             { key: 'primary', label: 'Primary' },
@@ -62,21 +62,21 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
             { key: 'border', label: 'Border' },
             { key: 'primaryDark', label: 'Dark' },
           ] as { key: keyof Theme; label: string }[]).map(({ key, label }) => (
-            <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-100 cursor-pointer hover:border-gray-300 transition-colors">
+            <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 cursor-pointer hover:border-gray-300 dark:hover:border-neutral-600 transition-colors">
               <input
                 type="color"
                 value={currentTheme[key]}
                 onChange={(e) => setTheme({ ...currentTheme, [key]: e.target.value })}
                 className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch]:border-0"
               />
-              <span className="text-[10px] font-semibold text-gray-500">{label}</span>
+              <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400">{label}</span>
             </label>
           ))}
         </div>
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Font</label>
+        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Font</label>
         <div className="space-y-1.5">
           {FONTS.map((font) => {
             const isSelected = font.value === currentTheme.font;
@@ -85,11 +85,11 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
                 key={font.value}
                 onClick={() => setTheme({ ...currentTheme, font: font.value })}
                 className={`w-full flex items-center justify-between p-2.5 rounded-lg border transition-all ${
-                  isSelected ? 'border-gray-900 bg-white shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-gray-300'
+                  isSelected ? 'border-gray-900 dark:border-white bg-white dark:bg-neutral-900 shadow-sm' : 'border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800 hover:border-gray-300 dark:hover:border-neutral-600'
                 }`}
               >
                 <span className="text-sm font-bold" style={{ fontFamily: font.value }}>{font.name}</span>
-                {isSelected && <Check size={14} className="text-gray-900 shrink-0" />}
+                {isSelected && <Check size={14} className="text-gray-900 dark:text-white shrink-0" />}
               </button>
             );
           })}

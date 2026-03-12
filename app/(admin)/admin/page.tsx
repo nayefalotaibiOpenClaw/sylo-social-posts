@@ -73,14 +73,14 @@ function StatCard({ label, value, icon: Icon, accent }: {
   label: string; value: string; icon: React.ElementType; accent?: string;
 }) {
   return (
-    <div className="bg-neutral-900/80 border border-neutral-800/60 rounded-2xl p-4 hover:border-neutral-700/60 transition-colors">
+    <div className="bg-slate-50 dark:bg-neutral-900/80 border border-slate-200 dark:border-neutral-800/60 rounded-2xl p-4 hover:border-slate-300 dark:hover:border-neutral-700/60 transition-colors">
       <div className="flex items-center gap-2.5 mb-2.5">
-        <div className={`w-8 h-8 ${accent || "bg-neutral-800"} rounded-lg flex items-center justify-center`}>
-          <Icon className="w-4 h-4 text-neutral-300" />
+        <div className={`w-8 h-8 ${accent || "bg-slate-100 dark:bg-neutral-800"} rounded-lg flex items-center justify-center`}>
+          <Icon className="w-4 h-4 text-slate-600 dark:text-neutral-300" />
         </div>
-        <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">{label}</span>
+        <span className="text-xs font-medium text-slate-500 dark:text-neutral-500 uppercase tracking-wide">{label}</span>
       </div>
-      <div className="text-xl font-black tracking-tight text-neutral-100">{value}</div>
+      <div className="text-xl font-black tracking-tight text-slate-900 dark:text-neutral-100">{value}</div>
     </div>
   );
 }
@@ -91,7 +91,7 @@ function UsageBar({ used, limit, color = "bg-blue-500" }: { used: number; limit:
   const p = pct(used, limit);
   const isOver = used > limit;
   return (
-    <div className="h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+    <div className="h-1.5 bg-slate-200 dark:bg-neutral-800 rounded-full overflow-hidden">
       <div
         className={`h-full rounded-full transition-all ${isOver ? "bg-red-500" : color}`}
         style={{ width: `${Math.min(p, 100)}%` }}
@@ -107,13 +107,13 @@ function SmallInput({ label, value, onChange, type = "text", suffix }: {
 }) {
   return (
     <div>
-      <label className="text-[10px] text-neutral-500 block mb-1">{label}</label>
+      <label className="text-[10px] text-slate-500 dark:text-neutral-500 block mb-1">{label}</label>
       <div className="flex items-center gap-1">
         <input
           type={type} value={value} onChange={e => onChange(e.target.value)}
-          className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-neutral-500"
+          className="w-full bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-slate-900 dark:text-neutral-200 focus:outline-none focus:border-slate-400 dark:focus:border-neutral-500"
         />
-        {suffix && <span className="text-[10px] text-neutral-600 whitespace-nowrap">{suffix}</span>}
+        {suffix && <span className="text-[10px] text-slate-400 dark:text-neutral-600 whitespace-nowrap">{suffix}</span>}
       </div>
     </div>
   );
@@ -134,7 +134,7 @@ const CAT_COLORS: Record<string, string> = {
 const PLAN_BADGE: Record<string, string> = {
   pro: "bg-violet-500/15 text-violet-400 border-violet-500/25",
   starter: "bg-blue-500/15 text-blue-400 border-blue-500/25",
-  trial: "bg-neutral-700/40 text-neutral-400 border-neutral-600/25",
+  trial: "bg-slate-200/50 dark:bg-neutral-700/40 text-slate-500 dark:text-neutral-400 border-slate-300/50 dark:border-neutral-600/25",
 };
 
 const STATUS_BADGE: Record<string, string> = {
@@ -219,51 +219,54 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
     setShowCreate(true);
   };
 
+  const selectClass = "w-full bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-slate-900 dark:text-neutral-200";
+  const dateClass = "w-full bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-slate-900 dark:text-neutral-200";
+
   return (
-    <div className="border-b border-neutral-800/50">
+    <div className="border-b border-slate-100 dark:border-neutral-800/50">
       {/* Collapsed row */}
       <button
         onClick={onToggle}
-        className="w-full px-5 py-3.5 flex items-center gap-4 hover:bg-neutral-800/20 transition-colors text-left"
+        className="w-full px-5 py-3.5 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-neutral-800/20 transition-colors text-left"
       >
         {u.image ? (
           <img src={u.image} alt="" className="w-9 h-9 rounded-full shrink-0" />
         ) : (
-          <div className="w-9 h-9 bg-neutral-700 rounded-full flex items-center justify-center text-xs font-bold text-neutral-300 shrink-0">
+          <div className="w-9 h-9 bg-slate-200 dark:bg-neutral-700 rounded-full flex items-center justify-center text-xs font-bold text-slate-600 dark:text-neutral-300 shrink-0">
             {(u.name || u.email || "U")[0].toUpperCase()}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-sm text-neutral-200 truncate">{u.name || "—"}</div>
-          <div className="text-xs text-neutral-500 truncate">{u.email}</div>
+          <div className="font-semibold text-sm text-slate-900 dark:text-neutral-200 truncate">{u.name || "—"}</div>
+          <div className="text-xs text-slate-400 dark:text-neutral-500 truncate">{u.email}</div>
         </div>
         <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border shrink-0 ${
-          PLAN_BADGE[u.plan || ""] || "bg-neutral-800/50 text-neutral-500 border-neutral-700/30"
+          PLAN_BADGE[u.plan || ""] || "bg-slate-100 dark:bg-neutral-800/50 text-slate-400 dark:text-neutral-500 border-slate-200 dark:border-neutral-700/30"
         }`}>
           {u.plan || t("admin.none")}
         </span>
         <div className="hidden md:flex flex-col gap-1 w-28 shrink-0">
           {sub && isActive ? (
             <>
-              <div className="flex items-center justify-between text-[10px] text-neutral-500">
+              <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-neutral-500">
                 <span>{t("admin.tokens")}</span>
                 <span className="tabular-nums">{pct(sub.aiTokensUsed, sub.aiTokensLimit)}%</span>
               </div>
               <UsageBar used={sub.aiTokensUsed} limit={sub.aiTokensLimit} />
             </>
           ) : (
-            <span className="text-[10px] text-neutral-600">{sub ? sub.status : t("admin.noSub")}</span>
+            <span className="text-[10px] text-slate-400 dark:text-neutral-600">{sub ? sub.status : t("admin.noSub")}</span>
           )}
         </div>
-        <div className="hidden md:block text-xs text-neutral-500 tabular-nums w-12 text-center shrink-0">{u.workspaceCount}</div>
-        <div className="hidden md:block text-xs text-neutral-500 tabular-nums w-20 text-right shrink-0">{fmtDateShort(u.createdAt, locale)}</div>
-        {isExpanded ? <ChevronUp className="w-4 h-4 text-neutral-600 shrink-0" /> : <ChevronDown className="w-4 h-4 text-neutral-600 shrink-0" />}
+        <div className="hidden md:block text-xs text-slate-400 dark:text-neutral-500 tabular-nums w-12 text-center shrink-0">{u.workspaceCount}</div>
+        <div className="hidden md:block text-xs text-slate-400 dark:text-neutral-500 tabular-nums w-20 text-right shrink-0">{fmtDateShort(u.createdAt, locale)}</div>
+        {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400 dark:text-neutral-600 shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 dark:text-neutral-600 shrink-0" />}
       </button>
 
       {/* Expanded */}
       {isExpanded && (
         <div className="px-5 pb-5 pt-1">
-          <div className="bg-neutral-800/30 rounded-xl border border-neutral-800/50 p-4 space-y-4">
+          <div className="bg-slate-50 dark:bg-neutral-800/30 rounded-xl border border-slate-200 dark:border-neutral-800/50 p-4 space-y-4">
 
             {/* Subscription section */}
             {sub ? (
@@ -271,31 +274,28 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
                 /* ── Edit mode ── */
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-400">{t("admin.editSubscription")}</span>
-                    <button onClick={() => setEditing(false)} className="text-neutral-600 hover:text-neutral-400"><X className="w-3.5 h-3.5" /></button>
+                    <span className="text-xs font-bold text-slate-500 dark:text-neutral-400">{t("admin.editSubscription")}</span>
+                    <button onClick={() => setEditing(false)} className="text-slate-400 dark:text-neutral-600 hover:text-slate-600 dark:hover:text-neutral-400"><X className="w-3.5 h-3.5" /></button>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     <div>
-                      <label className="text-[10px] text-neutral-500 block mb-1">{t("admin.planLabel")}</label>
-                      <select value={editPlan} onChange={e => setEditPlan(e.target.value)}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-neutral-200">
+                      <label className="text-[10px] text-slate-500 dark:text-neutral-500 block mb-1">{t("admin.planLabel")}</label>
+                      <select value={editPlan} onChange={e => setEditPlan(e.target.value)} className={selectClass}>
                         <option value="trial">{t("admin.trial")}</option>
                         <option value="starter">{t("admin.starter")}</option>
                         <option value="pro">{t("admin.pro")}</option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] text-neutral-500 block mb-1">{t("admin.period")}</label>
-                      <select value={editPeriod} onChange={e => setEditPeriod(e.target.value)}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-neutral-200">
+                      <label className="text-[10px] text-slate-500 dark:text-neutral-500 block mb-1">{t("admin.period")}</label>
+                      <select value={editPeriod} onChange={e => setEditPeriod(e.target.value)} className={selectClass}>
                         <option value="monthly">{t("admin.monthly")}</option>
                         <option value="yearly">{t("admin.yearly")}</option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] text-neutral-500 block mb-1">{t("admin.expires")}</label>
-                      <input type="date" value={editExpiresAt} onChange={e => setEditExpiresAt(e.target.value)}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-neutral-200" />
+                      <label className="text-[10px] text-slate-500 dark:text-neutral-500 block mb-1">{t("admin.expires")}</label>
+                      <input type="date" value={editExpiresAt} onChange={e => setEditExpiresAt(e.target.value)} className={dateClass} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -315,28 +315,28 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
                 <div className="space-y-3">
                   {/* Status + dates */}
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_BADGE[sub.status] || "bg-neutral-800 text-neutral-500"}`}>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_BADGE[sub.status] || "bg-slate-100 dark:bg-neutral-800 text-slate-500 dark:text-neutral-500"}`}>
                       {sub.status}
                     </span>
                     <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${PLAN_BADGE[sub.plan] || ""}`}>
                       {sub.plan}
                     </span>
-                    <span className="text-xs text-neutral-500">{sub.billingPeriod || "—"}</span>
-                    <span className="text-xs text-neutral-600">&middot; {fmt$(sub.amountPaid)} {t("admin.paid")}</span>
+                    <span className="text-xs text-slate-400 dark:text-neutral-500">{sub.billingPeriod || "—"}</span>
+                    <span className="text-xs text-slate-400 dark:text-neutral-600">&middot; {fmt$(sub.amountPaid)} {t("admin.paid")}</span>
                   </div>
 
                   {/* Start / End dates */}
                   <div className="flex items-center gap-6 text-xs">
                     <div>
-                      <span className="text-neutral-500">{t("admin.start")}: </span>
-                      <span className="text-neutral-300 tabular-nums">{fmtDate(sub.startsAt, locale)}</span>
+                      <span className="text-slate-400 dark:text-neutral-500">{t("admin.start")}: </span>
+                      <span className="text-slate-700 dark:text-neutral-300 tabular-nums">{fmtDate(sub.startsAt, locale)}</span>
                     </div>
                     <div>
-                      <span className="text-neutral-500">{t("admin.end")}: </span>
-                      <span className={`tabular-nums ${daysLeft(sub.expiresAt) <= 5 ? "text-amber-400" : "text-neutral-300"}`}>
+                      <span className="text-slate-400 dark:text-neutral-500">{t("admin.end")}: </span>
+                      <span className={`tabular-nums ${daysLeft(sub.expiresAt) <= 5 ? "text-amber-400" : "text-slate-700 dark:text-neutral-300"}`}>
                         {fmtDate(sub.expiresAt, locale)}
                       </span>
-                      <span className="text-neutral-600 ms-1">({daysLeft(sub.expiresAt)}{t("admin.daysLeft")})</span>
+                      <span className="text-slate-400 dark:text-neutral-600 ms-1">({daysLeft(sub.expiresAt)}{t("admin.daysLeft")})</span>
                     </div>
                   </div>
 
@@ -344,8 +344,8 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs">
-                        <span className="text-neutral-400">{t("admin.aiTokensLabel")}</span>
-                        <span className="text-neutral-300 tabular-nums font-medium">
+                        <span className="text-slate-500 dark:text-neutral-400">{t("admin.aiTokensLabel")}</span>
+                        <span className="text-slate-700 dark:text-neutral-300 tabular-nums font-medium">
                           {(sub.aiTokensUsed / 1000).toFixed(0)}k / {(sub.aiTokensLimit / 1000).toFixed(0)}k
                         </span>
                       </div>
@@ -353,8 +353,8 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs">
-                        <span className="text-neutral-400">{t("admin.postsLabel")}</span>
-                        <span className="text-neutral-300 tabular-nums font-medium">{sub.postsUsed} / {sub.postsLimit}</span>
+                        <span className="text-slate-500 dark:text-neutral-400">{t("admin.postsLabel")}</span>
+                        <span className="text-slate-700 dark:text-neutral-300 tabular-nums font-medium">{sub.postsUsed} / {sub.postsLimit}</span>
                       </div>
                       <UsageBar used={sub.postsUsed} limit={sub.postsLimit} color="bg-violet-500" />
                     </div>
@@ -363,7 +363,7 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
                   {/* Action buttons */}
                   <div className="flex items-center gap-2 flex-wrap pt-1">
                     <button onClick={startEdit}
-                      className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700/30 border-neutral-700/30 transition-colors">
+                      className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-700/30 border-slate-200 dark:border-neutral-700/30 transition-colors">
                       <Save className="w-3 h-3" /> {t("admin.editSub")}
                     </button>
                     <ConfirmBtn icon={RotateCcw} label={t("admin.resetUsage")} loading={loading === "reset"} active={confirm === "reset"}
@@ -395,7 +395,7 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
               /* ── No subscription ── */
               !showCreate ? (
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-500">{t("admin.noSubscription")}</span>
+                  <span className="text-sm text-slate-500 dark:text-neutral-500">{t("admin.noSubscription")}</span>
                   <button onClick={openCreate}
                     className="flex items-center gap-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors">
                     <Plus className="w-3 h-3" /> {t("admin.createSubscription")}
@@ -405,23 +405,23 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
                 /* ── Create form ── */
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-400">{t("admin.createSubscription")}</span>
-                    <button onClick={() => setShowCreate(false)} className="text-neutral-600 hover:text-neutral-400"><X className="w-3.5 h-3.5" /></button>
+                    <span className="text-xs font-bold text-slate-500 dark:text-neutral-400">{t("admin.createSubscription")}</span>
+                    <button onClick={() => setShowCreate(false)} className="text-slate-400 dark:text-neutral-600 hover:text-slate-600 dark:hover:text-neutral-400"><X className="w-3.5 h-3.5" /></button>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     <div>
-                      <label className="text-[10px] text-neutral-500 block mb-1">{t("admin.planLabel")}</label>
+                      <label className="text-[10px] text-slate-500 dark:text-neutral-500 block mb-1">{t("admin.planLabel")}</label>
                       <select value={newPlan} onChange={e => { const p = e.target.value as any; setNewPlan(p); applyDefaults(p, newPeriod); }}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-neutral-200">
+                        className={selectClass}>
                         <option value="trial">{t("admin.trial")}</option>
                         <option value="starter">{t("admin.starter")}</option>
                         <option value="pro">{t("admin.pro")}</option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] text-neutral-500 block mb-1">{t("admin.period")}</label>
+                      <label className="text-[10px] text-slate-500 dark:text-neutral-500 block mb-1">{t("admin.period")}</label>
                       <select value={newPeriod} onChange={e => { const p = e.target.value as any; setNewPeriod(p); applyDefaults(newPlan, p); }}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-2 py-1.5 text-xs text-neutral-200">
+                        className={selectClass}>
                         <option value="monthly">{t("admin.monthly")}</option>
                         <option value="yearly">{t("admin.yearly")}</option>
                       </select>
@@ -447,15 +447,15 @@ function UserRow({ u, isExpanded, onToggle }: { u: any; isExpanded: boolean; onT
             )}
 
             {/* Role toggle */}
-            <div className="flex items-center gap-2 pt-1 border-t border-neutral-800/30">
-              <span className="text-[10px] text-neutral-600 uppercase tracking-wide">{t("admin.role")}:</span>
+            <div className="flex items-center gap-2 pt-1 border-t border-slate-200 dark:border-neutral-800/30">
+              <span className="text-[10px] text-slate-400 dark:text-neutral-600 uppercase tracking-wide">{t("admin.role")}:</span>
               <button
                 onClick={() => run("role", () => updateRole({ targetUserId: u._id, role: u.role === "admin" ? "user" : "admin" }))}
                 disabled={loading === "role"}
                 className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors ${
                   u.role === "admin"
                     ? "bg-amber-500/15 text-amber-400 border-amber-500/25 hover:bg-amber-500/25"
-                    : "bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-700/40"
+                    : "bg-slate-100 dark:bg-neutral-800/50 text-slate-500 dark:text-neutral-500 border-slate-200 dark:border-neutral-700/30 hover:bg-slate-200 dark:hover:bg-neutral-700/40"
                 }`}>
                 {u.role === "admin" ? t("admin.adminRole") : t("admin.userRole")}
               </button>
@@ -482,7 +482,7 @@ function ConfirmBtn({ icon: Icon, label, variant, loading, active, onAsk, onCanc
           className="p-1 rounded-md bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 transition-colors">
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
         </button>
-        <button onClick={onCancel} className="p-1 rounded-md bg-neutral-700/30 text-neutral-500 hover:bg-neutral-700/50 transition-colors">
+        <button onClick={onCancel} className="p-1 rounded-md bg-slate-200 dark:bg-neutral-700/30 text-slate-500 dark:text-neutral-500 hover:bg-slate-300 dark:hover:bg-neutral-700/50 transition-colors">
           <X className="w-3 h-3" />
         </button>
       </div>
@@ -490,7 +490,7 @@ function ConfirmBtn({ icon: Icon, label, variant, loading, active, onAsk, onCanc
   }
   const base = variant === "danger"
     ? "text-red-400/70 hover:text-red-400 hover:bg-red-500/10 border-red-500/10"
-    : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700/30 border-neutral-700/30";
+    : "text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-700/30 border-slate-200 dark:border-neutral-700/30";
   return (
     <button onClick={onAsk}
       className={`flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-colors ${base}`}>
@@ -512,7 +512,7 @@ export default function AdminOverviewPage() {
   if (!overview) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-6 h-6 text-neutral-600 animate-spin" />
+        <Loader2 className="w-6 h-6 text-slate-300 dark:text-neutral-600 animate-spin" />
       </div>
     );
   }
@@ -527,7 +527,7 @@ export default function AdminOverviewPage() {
     <div dir={dir} className="space-y-8">
       <div>
         <h1 className="text-2xl font-black tracking-tight">{t("admin.dashboard")}</h1>
-        <p className="text-sm text-neutral-500 mt-1">{t("admin.subtitle")}</p>
+        <p className="text-sm text-slate-500 dark:text-neutral-500 mt-1">{t("admin.subtitle")}</p>
       </div>
 
       {/* Stats */}
@@ -546,14 +546,14 @@ export default function AdminOverviewPage() {
       {/* Users + Activity */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
         {/* Users */}
-        <div className="xl:col-span-3 bg-neutral-900/60 border border-neutral-800/50 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-neutral-800/50 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-bold text-neutral-300">{t("admin.users")} ({allUsers?.length ?? 0})</h2>
+        <div className="xl:col-span-3 bg-white dark:bg-neutral-900/60 border border-slate-200 dark:border-neutral-800/50 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-neutral-800/50 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-bold text-slate-700 dark:text-neutral-300">{t("admin.users")} ({allUsers?.length ?? 0})</h2>
             <input type="text" placeholder={t("admin.searchUsers")} value={userSearch}
               onChange={e => setUserSearch(e.target.value)}
-              className="bg-neutral-800/60 border border-neutral-700/40 rounded-lg px-3 py-1.5 text-xs text-neutral-200 placeholder-neutral-600 w-48 focus:outline-none focus:border-neutral-600" />
+              className="bg-slate-50 dark:bg-neutral-800/60 border border-slate-200 dark:border-neutral-700/40 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-neutral-200 placeholder-slate-400 dark:placeholder-neutral-600 w-48 focus:outline-none focus:border-slate-400 dark:focus:border-neutral-600" />
           </div>
-          <div className="px-5 py-2 flex items-center gap-4 text-[10px] text-neutral-600 uppercase tracking-wider border-b border-neutral-800/30">
+          <div className="px-5 py-2 flex items-center gap-4 text-[10px] text-slate-400 dark:text-neutral-600 uppercase tracking-wider border-b border-slate-100 dark:border-neutral-800/30">
             <div className="flex-1">{t("admin.user")}</div>
             <div className="w-16 text-center">{t("admin.plan")}</div>
             <div className="hidden md:block w-28 text-center">{t("admin.usage")}</div>
@@ -567,37 +567,37 @@ export default function AdminOverviewPage() {
                 onToggle={() => setExpandedUser(expandedUser === u._id ? null : u._id)} />
             ))}
             {filteredUsers?.length === 0 && (
-              <div className="px-5 py-10 text-center text-neutral-600 text-sm">{t("admin.noUsersFound")}</div>
+              <div className="px-5 py-10 text-center text-slate-400 dark:text-neutral-600 text-sm">{t("admin.noUsersFound")}</div>
             )}
           </div>
         </div>
 
         {/* Activity */}
-        <div className="xl:col-span-2 bg-neutral-900/60 border border-neutral-800/50 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-neutral-800/50">
-            <h2 className="text-sm font-bold text-neutral-300">{t("admin.aiActivity")}</h2>
+        <div className="xl:col-span-2 bg-white dark:bg-neutral-900/60 border border-slate-200 dark:border-neutral-800/50 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-neutral-800/50">
+            <h2 className="text-sm font-bold text-slate-700 dark:text-neutral-300">{t("admin.aiActivity")}</h2>
           </div>
           <div className="max-h-[650px] overflow-y-auto">
             {recentUsage?.length === 0 && (
-              <div className="px-5 py-10 text-center text-neutral-600 text-sm">{t("admin.noAiUsage")}</div>
+              <div className="px-5 py-10 text-center text-slate-400 dark:text-neutral-600 text-sm">{t("admin.noAiUsage")}</div>
             )}
             {recentUsage?.map((log) => (
-              <div key={log._id} className="px-4 py-3 border-b border-neutral-800/30 hover:bg-neutral-800/15 transition-colors">
+              <div key={log._id} className="px-4 py-3 border-b border-slate-100 dark:border-neutral-800/30 hover:bg-slate-50 dark:hover:bg-neutral-800/15 transition-colors">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                    CAT_COLORS[log.category] || "bg-neutral-800 text-neutral-400 border-neutral-700"
+                    CAT_COLORS[log.category] || "bg-slate-100 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400 border-slate-200 dark:border-neutral-700"
                   }`}>
                     {log.category.replace(/_/g, " ")}
                   </span>
-                  <span className="text-[10px] text-neutral-600 tabular-nums">{timeAgo(log.createdAt, t)}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-neutral-600 tabular-nums">{timeAgo(log.createdAt, t)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-neutral-400 truncate max-w-[120px]">
+                  <span className="text-xs text-slate-500 dark:text-neutral-400 truncate max-w-[120px]">
                     {log.user?.name || log.user?.email || t("admin.unknown")}
                   </span>
-                  <div className="flex items-center gap-3 text-[11px] text-neutral-500 tabular-nums">
+                  <div className="flex items-center gap-3 text-[11px] text-slate-400 dark:text-neutral-500 tabular-nums">
                     <span>{log.totalTokens.toLocaleString()} {t("admin.tok")}</span>
-                    <span className="text-neutral-600">${log.estimatedCostUsd.toFixed(4)}</span>
+                    <span className="text-slate-300 dark:text-neutral-600">${log.estimatedCostUsd.toFixed(4)}</span>
                   </div>
                 </div>
               </div>

@@ -87,21 +87,21 @@ export default function AssetsPage({
   }, [assets]);
 
   return (
-    <div className="flex-1 bg-white flex flex-col overflow-hidden">
+    <div className="flex-1 bg-white dark:bg-[#0a0a0a] flex flex-col overflow-hidden">
       {/* Floating Nav */}
       <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-        <nav className="max-w-4xl mx-auto bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
+        <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
           {onTabClick && <MobileNavMenu activeTab={activeTab ?? 'assets'} onTabClick={onTabClick} workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} currentWorkspaceName={currentWorkspaceName} />}
-          {onTabClick && <div className="w-px h-5 bg-slate-200 md:hidden" />}
+          {onTabClick && <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700 md:hidden" />}
           <div className="flex items-center gap-2 shrink-0">
-            <Upload size={14} className="text-slate-400 hidden md:block" />
-            <span className="text-sm font-black text-slate-900">Assets</span>
+            <Upload size={14} className="text-slate-400 dark:text-neutral-500 hidden md:block" />
+            <span className="text-sm font-black text-slate-900 dark:text-white">Assets</span>
           </div>
 
-          <div className="w-px h-5 bg-slate-200" />
+          <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700" />
 
           {assets && (
-            <span className="text-xs font-medium text-slate-400">
+            <span className="text-xs font-medium text-slate-400 dark:text-neutral-500">
               {assets.length} asset{assets.length !== 1 ? "s" : ""}
             </span>
           )}
@@ -121,12 +121,12 @@ export default function AssetsPage({
         <div className="max-w-6xl mx-auto px-6 py-8">
           {/* Upload Dialog */}
           {showAssetUploadDialog && pendingFiles.length > 0 && (
-            <div className="mb-8 p-5 rounded-2xl border border-[#1B4332]/20 bg-[#EAF4EE] space-y-4 max-w-2xl">
-              <p className="text-sm font-bold text-slate-700">{pendingFiles.length} file{pendingFiles.length > 1 ? "s" : ""} selected</p>
+            <div className="mb-8 p-5 rounded-2xl border border-[#1B4332]/20 dark:border-[#1B4332]/40 bg-[#EAF4EE] dark:bg-[#1B4332]/10 space-y-4 max-w-2xl">
+              <p className="text-sm font-bold text-slate-700 dark:text-neutral-300">{pendingFiles.length} file{pendingFiles.length > 1 ? "s" : ""} selected</p>
 
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                 {pendingFiles.map((file, i) => (
-                  <div key={i} className="aspect-square rounded-xl overflow-hidden bg-white border border-slate-200">
+                  <div key={i} className="aspect-square rounded-xl overflow-hidden bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700">
                     <img src={previewUrls[i]} alt="" className="w-full h-full object-cover" />
                   </div>
                 ))}
@@ -134,11 +134,11 @@ export default function AssetsPage({
 
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Asset Type</label>
+                  <label className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5 block">Asset Type</label>
                   <select
                     value={assetTypeSelect}
                     onChange={(e) => setAssetTypeSelect(e.target.value as AssetTypeValue)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:border-[#1B4332]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-neutral-700 text-sm font-medium text-slate-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#1B4332]"
                   >
                     {ASSET_TYPES.map((t) => (
                       <option key={t.value} value={t.value}>{t.label}</option>
@@ -147,7 +147,7 @@ export default function AssetsPage({
                 </div>
 
                 <div className="flex-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Scope</label>
+                  <label className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5 block">Scope</label>
                   <div className="flex gap-1.5">
                     {(["workspace", "global"] as const).map((s) => (
                       <button
@@ -156,7 +156,7 @@ export default function AssetsPage({
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                           assetScope === s
                             ? "bg-[#1B4332] text-white"
-                            : "bg-white text-slate-500 border border-slate-200 hover:bg-slate-50"
+                            : "bg-white dark:bg-neutral-800 text-slate-500 dark:text-neutral-400 border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-700"
                         }`}
                       >
                         {s === "workspace" ? "This Project" : "All Projects"}
@@ -169,7 +169,7 @@ export default function AssetsPage({
               <div className="flex gap-2">
                 <button
                   onClick={() => { setPendingFiles([]); setShowAssetUploadDialog(false); }}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 transition-colors"
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-slate-500 dark:text-neutral-400 bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
                 >
                   Cancel
                 </button>
@@ -200,9 +200,9 @@ export default function AssetsPage({
             </div>
           ) : assets && assets.length === 0 ? (
             <div className="text-center py-20">
-              <ImageIcon className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500 font-medium">No assets yet</p>
-              <p className="text-xs text-slate-400 mt-1">Upload images for AI to use in your designs</p>
+              <ImageIcon className="w-10 h-10 text-slate-300 dark:text-neutral-600 mx-auto mb-3" />
+              <p className="text-slate-500 dark:text-neutral-400 font-medium">No assets yet</p>
+              <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">Upload images for AI to use in your designs</p>
             </div>
           ) : null}
         </div>
@@ -230,21 +230,21 @@ function AssetGroup({
 
   return (
     <div>
-      <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+      <h2 className="text-xs font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
         {ASSET_TYPES.find((t) => t.value === type)?.label || type} ({items.length})
       </h2>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
         {visibleItems.map((asset: AssetRecord) => (
                       <div
                         key={asset._id}
-                        className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 hover:border-slate-300 transition-colors"
+                        className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 hover:border-slate-300 dark:hover:border-neutral-600 transition-colors"
                         title={asset.description || asset.fileName}
                       >
                         {asset.url ? (
                           <img src={asset.url} alt={asset.fileName} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <ImageIcon size={24} className="text-slate-300" />
+                            <ImageIcon size={24} className="text-slate-300 dark:text-neutral-600" />
                           </div>
                         )}
                         {/* Analysis status */}
@@ -282,7 +282,7 @@ function AssetGroup({
       {hasMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-3 flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors"
+          className="mt-3 flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-300 transition-colors"
         >
           {expanded ? (
             <><ChevronUp size={14} /> Show less</>

@@ -27,7 +27,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div dir={dir} className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100">
+    <div dir={dir} className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-white font-sans selection:bg-indigo-100">
       <FloatingNav activePage="contact" />
 
       {/* Header */}
@@ -36,7 +36,7 @@ export default function ContactPage() {
           <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6">
             {t("contact.title")}
           </h1>
-          <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-500 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
             {t("contact.subtitle")}
           </p>
         </div>
@@ -48,17 +48,17 @@ export default function ContactPage() {
           {/* Form */}
           <div className="md:col-span-3">
             {submitted ? (
-              <div className="flex flex-col items-center justify-center text-center py-20 px-6 bg-slate-50 rounded-3xl border border-slate-100">
-                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+              <div className="flex flex-col items-center justify-center text-center py-20 px-6 bg-slate-50 dark:bg-neutral-900 rounded-3xl border border-slate-100 dark:border-neutral-800">
+                <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-6">
                   <CheckCircle className="w-8 h-8 text-emerald-600" />
                 </div>
                 <h2 className="text-2xl font-bold mb-3">{t("contact.success")}</h2>
-                <p className="text-slate-500 max-w-sm mb-8">
+                <p className="text-slate-500 dark:text-neutral-400 max-w-sm mb-8">
                   {t("contact.successDesc")}
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
-                  className="px-6 py-3 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-colors"
+                  className="px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-sm hover:bg-slate-800 dark:hover:bg-neutral-200 transition-colors"
                 >
                   {t("contact.sendAnother")}
                 </button>
@@ -67,7 +67,7 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-bold text-slate-700 mb-2">
+                    <label htmlFor="name" className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
                       {t("contact.name")}
                     </label>
                     <input
@@ -78,11 +78,11 @@ export default function ContactPage() {
                       value={form.name}
                       onChange={handleChange}
                       placeholder={t("contact.namePlaceholder")}
-                      className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all"
+                      className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 focus:border-slate-300 dark:focus:border-neutral-600 transition-all"
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-bold text-slate-700 mb-2">
+                    <label htmlFor="email" className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
                       {t("contact.email")}
                     </label>
                     <input
@@ -93,13 +93,13 @@ export default function ContactPage() {
                       value={form.email}
                       onChange={handleChange}
                       placeholder={t("contact.emailPlaceholder")}
-                      className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all"
+                      className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 focus:border-slate-300 dark:focus:border-neutral-600 transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-bold text-slate-700 mb-2">
+                  <label htmlFor="subject" className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
                     {t("contact.subject")}
                   </label>
                   <input
@@ -110,12 +110,12 @@ export default function ContactPage() {
                     value={form.subject}
                     onChange={handleChange}
                     placeholder={t("contact.subjectPlaceholder")}
-                    className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all"
+                    className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 focus:border-slate-300 dark:focus:border-neutral-600 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-bold text-slate-700 mb-2">
+                  <label htmlFor="message" className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
                     {t("contact.message")}
                   </label>
                   <textarea
@@ -126,14 +126,14 @@ export default function ContactPage() {
                     value={form.message}
                     onChange={handleChange}
                     placeholder={t("contact.messagePlaceholder")}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 focus:border-slate-300 dark:focus:border-neutral-600 transition-all resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={sending}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-sm hover:bg-slate-800 dark:hover:bg-neutral-200 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {sending ? (
                     <>
@@ -157,14 +157,14 @@ export default function ContactPage() {
               <h3 className="text-lg font-bold mb-4">{t("contact.contactInfo")}</h3>
               <div className="space-y-5">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
-                    <Mail className="w-5 h-5 text-slate-600" />
+                  <div className="w-10 h-10 bg-slate-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center shrink-0">
+                    <Mail className="w-5 h-5 text-slate-600 dark:text-neutral-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-700">{t("contact.emailLabel")}</p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-neutral-300">{t("contact.emailLabel")}</p>
                     <a
                       href="mailto:hi@oagents.app"
-                      className="text-sm text-slate-500 hover:text-slate-900 transition-colors"
+                      className="text-sm text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                       hi@oagents.app
                     </a>
@@ -172,25 +172,25 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
-                    <MapPin className="w-5 h-5 text-slate-600" />
+                  <div className="w-10 h-10 bg-slate-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5 text-slate-600 dark:text-neutral-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-700">{t("contact.location")}</p>
-                    <p className="text-sm text-slate-500">{t("contact.locationValue")}</p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-neutral-300">{t("contact.location")}</p>
+                    <p className="text-sm text-slate-500 dark:text-neutral-400">{t("contact.locationValue")}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="h-px bg-slate-100" />
+            <div className="h-px bg-slate-100 dark:bg-neutral-800" />
 
             <div>
               <h3 className="text-lg font-bold mb-4">{t("contact.followUs")}</h3>
               <div className="flex gap-3">
                 <a
                   href="#"
-                  className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-colors"
+                  className="w-10 h-10 bg-slate-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700 hover:text-slate-900 dark:hover:text-white transition-colors"
                   aria-label="Twitter"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -199,7 +199,7 @@ export default function ContactPage() {
                 </a>
                 <a
                   href="#"
-                  className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-colors"
+                  className="w-10 h-10 bg-slate-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700 hover:text-slate-900 dark:hover:text-white transition-colors"
                   aria-label="LinkedIn"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -208,7 +208,7 @@ export default function ContactPage() {
                 </a>
                 <a
                   href="#"
-                  className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-colors"
+                  className="w-10 h-10 bg-slate-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700 hover:text-slate-900 dark:hover:text-white transition-colors"
                   aria-label="Instagram"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -218,11 +218,11 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="h-px bg-slate-100" />
+            <div className="h-px bg-slate-100 dark:bg-neutral-800" />
 
-            <div className="bg-slate-50 rounded-2xl border border-slate-100 p-6">
+            <div className="bg-slate-50 dark:bg-neutral-900 rounded-2xl border border-slate-100 dark:border-neutral-800 p-6">
               <h3 className="text-sm font-bold mb-2">{t("contact.responseTime")}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+              <p className="text-sm text-slate-500 dark:text-neutral-400 leading-relaxed">
                 {t("contact.responseTimeValue")}
               </p>
             </div>
@@ -231,14 +231,14 @@ export default function ContactPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-20 border-t border-slate-100 bg-white">
+      <footer className="py-20 border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-slate-400 font-bold text-sm">
           <div />
           <div className="flex gap-8">
-            <a href="#" className="hover:text-slate-900">{t("footer.twitter")}</a>
-            <a href="#" className="hover:text-slate-900">{t("footer.linkedin")}</a>
-            <a href="/terms" className="hover:text-slate-900">{t("footer.termsOfService")}</a>
-            <a href="/privacy" className="hover:text-slate-900">{t("footer.privacyPolicy")}</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white">{t("footer.twitter")}</a>
+            <a href="#" className="hover:text-slate-900 dark:hover:text-white">{t("footer.linkedin")}</a>
+            <a href="/terms" className="hover:text-slate-900 dark:hover:text-white">{t("footer.termsOfService")}</a>
+            <a href="/privacy" className="hover:text-slate-900 dark:hover:text-white">{t("footer.privacyPolicy")}</a>
           </div>
           <p>&copy; 2026 {t("footer.copyright")}</p>
         </div>

@@ -52,24 +52,24 @@ function getProviderIcon(provider: string) {
 /** Theme-aware color classes */
 function c(inline: boolean) {
   return inline ? {
-    bg: "bg-white",
-    bgSub: "bg-gray-50",
-    bgHover: "hover:bg-gray-100",
-    border: "border-gray-200",
-    borderHover: "hover:border-gray-300",
-    text: "text-gray-900",
-    textSub: "text-gray-600",
-    textMuted: "text-gray-400",
-    input: "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-emerald-600",
-    card: "border-gray-200 bg-gray-50/50 hover:border-gray-300",
-    cardSelected: "border-emerald-600 bg-emerald-50",
-    pill: "bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300",
-    pillActive: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    stepDone: "text-gray-600 hover:bg-gray-100",
-    stepInactive: "text-gray-400",
-    stepBgInactive: "bg-gray-200 text-gray-500",
-    separator: "border-gray-200",
-    timeline: "bg-gray-50 border border-gray-200",
+    bg: "bg-white dark:bg-[#0a0a0a]",
+    bgSub: "bg-gray-50 dark:bg-neutral-800",
+    bgHover: "hover:bg-gray-100 dark:hover:bg-neutral-800",
+    border: "border-gray-200 dark:border-neutral-800",
+    borderHover: "hover:border-gray-300 dark:hover:border-neutral-700",
+    text: "text-gray-900 dark:text-white",
+    textSub: "text-gray-600 dark:text-neutral-400",
+    textMuted: "text-gray-400 dark:text-neutral-500",
+    input: "bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-600 focus:outline-none focus:border-emerald-600",
+    card: "border-gray-200 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-800/50 hover:border-gray-300 dark:hover:border-neutral-700",
+    cardSelected: "border-emerald-600 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10",
+    pill: "bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 border border-gray-200 dark:border-neutral-700 hover:border-gray-300 dark:hover:border-neutral-600",
+    pillActive: "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30",
+    stepDone: "text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800",
+    stepInactive: "text-gray-400 dark:text-neutral-600",
+    stepBgInactive: "bg-gray-200 dark:bg-neutral-700 text-gray-500 dark:text-neutral-400",
+    separator: "border-gray-200 dark:border-neutral-800",
+    timeline: "bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700/50",
   } : {
     bg: "bg-neutral-900",
     bgSub: "bg-neutral-800",
@@ -500,11 +500,11 @@ export default function BulkScheduleModal({
                 className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${
                   isSelected
                     ? "border-emerald-600 bg-emerald-50 text-emerald-700 shadow-sm"
-                    : `border-gray-200 ${t.bgSub} ${inline ? 'text-gray-600 hover:border-gray-300' : 'text-neutral-400 hover:border-neutral-600'}`
+                    : `border-gray-200 dark:border-neutral-800 ${t.bgSub} ${inline ? 'text-gray-600 dark:text-neutral-400 hover:border-gray-300 dark:hover:border-neutral-700' : 'text-neutral-400 hover:border-neutral-600'}`
                 }`}
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  isSelected ? "bg-emerald-100" : inline ? "bg-gray-100" : "bg-neutral-700"
+                  isSelected ? "bg-emerald-100 dark:bg-emerald-900/30" : inline ? "bg-gray-100 dark:bg-neutral-700" : "bg-neutral-700"
                 }`}>
                   {ct.icon}
                 </div>
@@ -519,8 +519,8 @@ export default function BulkScheduleModal({
       </div>
 
       {/* Info about the selected type */}
-      <div className={`rounded-xl p-4 ${inline ? 'bg-gray-50 border border-gray-200' : 'bg-neutral-800 border border-neutral-700'}`}>
-        <p className={`text-sm ${inline ? 'text-gray-700' : 'text-neutral-300'}`}>
+      <div className={`rounded-xl p-4 ${inline ? 'bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700' : 'bg-neutral-800 border border-neutral-700'}`}>
+        <p className={`text-sm ${inline ? 'text-gray-700 dark:text-neutral-300' : 'text-neutral-300'}`}>
           {contentType === "image" && "Each selected post will be scheduled as a separate image post (1:1)."}
           {contentType === "carousel" && "Create one or more carousel posts (1:1). Each carousel needs 2-10 slides. You can group posts into separate carousels."}
           {contentType === "story" && "Each selected post will be scheduled as a story (9:16). Posts with 9:16 variants will use that version."}
@@ -662,7 +662,7 @@ export default function BulkScheduleModal({
                         <DynamicPost code={code} />
                       </div>
                     </div>
-                    <p className={`text-xs truncate font-medium px-1 ${inline ? 'text-gray-800' : 'text-neutral-300'}`}>{post.title}</p>
+                    <p className={`text-xs truncate font-medium px-1 ${inline ? 'text-gray-800 dark:text-neutral-300' : 'text-neutral-300'}`}>{post.title}</p>
                     {/* Caption: always visible, editable */}
                     <textarea
                       value={postCaptions[post._id] || ""}
@@ -786,7 +786,7 @@ export default function BulkScheduleModal({
           </div>
         )}
 
-        <div className={`rounded-2xl border ${t.border} ${inline ? 'bg-white' : 'bg-neutral-800/30'} divide-y ${t.separator}`}>
+        <div className={`rounded-2xl border ${t.border} ${inline ? 'bg-white dark:bg-neutral-900' : 'bg-neutral-800/30'} divide-y ${t.separator}`}>
           {/* Frequency */}
           {showFrequency && (
             <div className="p-4">
@@ -854,7 +854,7 @@ export default function BulkScheduleModal({
                   <input
                     type="time" value={time}
                     onChange={(e) => setTimesPerDay((prev) => prev.map((t, j) => j === i ? e.target.value : t))}
-                    className={`text-sm font-medium bg-transparent ${inline ? 'text-gray-900' : 'text-white'} focus:outline-none`}
+                    className={`text-sm font-medium bg-transparent ${inline ? 'text-gray-900 dark:text-white' : 'text-white'} focus:outline-none`}
                     style={{ colorScheme: inline ? 'light' : 'dark' }}
                   />
                   {showMultipleTimes && timesPerDay.length > 1 && (
@@ -1025,7 +1025,7 @@ export default function BulkScheduleModal({
               >
                 {getProviderIcon(account.provider)}
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium truncate ${inline ? 'text-gray-800' : 'text-neutral-200'}`}>{account.providerAccountName}</p>
+                  <p className={`text-sm font-medium truncate ${inline ? 'text-gray-800 dark:text-neutral-200' : 'text-neutral-200'}`}>{account.providerAccountName}</p>
                   <p className={`text-xs ${t.textMuted} capitalize`}>{account.provider}</p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
@@ -1130,7 +1130,7 @@ export default function BulkScheduleModal({
                 )}
 
                 {/* Title */}
-                <p className={`text-xs truncate font-medium px-1 ${inline ? 'text-gray-800' : 'text-neutral-300'}`}>{card.title}</p>
+                <p className={`text-xs truncate font-medium px-1 ${inline ? 'text-gray-800 dark:text-neutral-300' : 'text-neutral-300'}`}>{card.title}</p>
 
                 {/* Caption */}
                 <p className={`text-[10px] leading-relaxed px-1 mt-0.5 ${card.caption ? t.textSub : t.textMuted} ${card.caption ? 'line-clamp-3' : 'italic'}`}>
@@ -1213,16 +1213,16 @@ export default function BulkScheduleModal({
   // ── Inline page mode ──
   if (inline) {
     return (
-      <div className="flex-1 bg-white flex flex-col overflow-hidden relative">
+      <div className="flex-1 bg-white dark:bg-[#0a0a0a] flex flex-col overflow-hidden relative">
         {/* Floating Nav */}
         <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-          <nav className="max-w-4xl mx-auto bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-3">
+          <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-3">
             <div className="flex items-center gap-2 shrink-0">
-              <Send size={14} className="text-slate-400 hidden md:block" />
-              <span className="text-sm font-black text-slate-900">Schedule</span>
+              <Send size={14} className="text-slate-400 dark:text-neutral-500 hidden md:block" />
+              <span className="text-sm font-black text-slate-900 dark:text-white">Schedule</span>
             </div>
 
-            <div className="w-px h-5 bg-slate-200" />
+            <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700" />
 
             {stepIndicator}
 
@@ -1233,7 +1233,7 @@ export default function BulkScheduleModal({
                 <button
                   onClick={goPrev}
                   disabled={isSubmitting}
-                  className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
                 >
                   Back
                 </button>
@@ -1264,8 +1264,8 @@ export default function BulkScheduleModal({
         {(error || (isSubmitting && submitProgress)) && (
           <div className="px-6">
             <div className="max-w-6xl mx-auto">
-              {error && <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-4 py-2">{error}</p>}
-              {isSubmitting && submitProgress && <p className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2">{submitProgress}</p>}
+              {error && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg px-4 py-2">{error}</p>}
+              {isSubmitting && submitProgress && <p className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg px-4 py-2">{submitProgress}</p>}
             </div>
           </div>
         )}

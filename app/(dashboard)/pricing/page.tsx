@@ -228,7 +228,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {toast && <Toast message={toast} onClose={dismissToast} />}
 
-      <FloatingNav variant="dark" activePage="pricing" />
+      <FloatingNav activePage="pricing" />
 
       <div className="max-w-5xl mx-auto px-6 pt-24 pb-16">
         {/* Header */}

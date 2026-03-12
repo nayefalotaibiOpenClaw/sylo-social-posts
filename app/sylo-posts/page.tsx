@@ -220,9 +220,9 @@ export default function DesignPage() {
   const panelOpen = activeTab !== null;
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
+    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-[#0a0a0a]">
       {/* Icon Rail */}
-      <div className="w-[72px] bg-white border-r border-gray-200 flex flex-col items-center py-4 gap-1 shrink-0">
+      <div className="w-[72px] bg-white dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-neutral-800 flex flex-col items-center py-4 gap-1 shrink-0">
         <Link href="/" className="w-10 h-10 bg-[#1B4332] rounded-xl flex items-center justify-center mb-4">
           <span className="text-white font-black text-sm">S</span>
         </Link>
@@ -233,7 +233,7 @@ export default function DesignPage() {
             className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all text-[10px] font-medium ${
               activeTab === id
                 ? 'bg-[#1B4332] text-white'
-                : 'text-gray-500 hover:bg-gray-100'
+                : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'
             }`}
           >
             <Icon size={20} />
@@ -244,7 +244,7 @@ export default function DesignPage() {
 
       {/* Expandable Panel */}
       <div
-        className={`bg-white border-r border-gray-200 overflow-y-auto shrink-0 transition-all duration-300 ${
+        className={`bg-white dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-neutral-800 overflow-y-auto shrink-0 transition-all duration-300 ${
           panelOpen ? 'w-[280px]' : 'w-0'
         }`}
       >
@@ -252,8 +252,8 @@ export default function DesignPage() {
           <div className="w-[280px] p-5">
             {/* Panel Header */}
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-bold text-gray-900 capitalize">{activeTab}</h2>
-              <button onClick={() => setActiveTab(null)} className="text-gray-400 hover:text-gray-600">
+              <h2 className="text-sm font-bold text-gray-900 dark:text-white capitalize">{activeTab}</h2>
+              <button onClick={() => setActiveTab(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-neutral-300">
                 <X size={16} />
               </button>
             </div>
@@ -263,14 +263,14 @@ export default function DesignPage() {
               <div className="space-y-6">
                 {/* Edit & Reorder */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Mode</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Mode</label>
                   <div className="flex gap-2">
                     <button
                       onClick={() => { setEditMode(!editMode); setReorderMode(false); setSelectMode(false); }}
                       className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border transition-all ${
                         editMode
                           ? 'bg-yellow-400 text-yellow-900 border-yellow-500'
-                          : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                          : 'bg-gray-50 dark:bg-neutral-900 text-gray-500 dark:text-neutral-400 border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800'
                       }`}
                     >
                       <Pencil size={14} />
@@ -281,7 +281,7 @@ export default function DesignPage() {
                       className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border transition-all ${
                         reorderMode
                           ? 'bg-[#1B4332] text-white border-[#1B4332]'
-                          : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                          : 'bg-gray-50 dark:bg-neutral-900 text-gray-500 dark:text-neutral-400 border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800'
                       }`}
                     >
                       <ArrowUpDown size={14} />
@@ -303,7 +303,7 @@ export default function DesignPage() {
 
                 {/* Aspect Ratio */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Aspect Ratio</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Aspect Ratio</label>
                   <div className="flex gap-1">
                     {(['1:1', '3:4', '4:3', '9:16', '16:9'] as const).map((ratio) => (
                       <button
@@ -312,7 +312,7 @@ export default function DesignPage() {
                         className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
                           aspectRatio === ratio
                             ? 'bg-[#1B4332] text-white shadow-sm'
-                            : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                            : 'bg-gray-50 dark:bg-neutral-900 text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800'
                         }`}
                       >
                         {ratio}
@@ -323,7 +323,7 @@ export default function DesignPage() {
 
                 {/* Grid Columns */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Grid Columns</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Grid Columns</label>
                   <div className="flex gap-1">
                     {[2, 3, 4].map((cols) => (
                       <button
@@ -332,7 +332,7 @@ export default function DesignPage() {
                         className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
                           viewMode === 'grid' && gridCols === cols
                             ? 'bg-[#1B4332] text-white shadow-sm'
-                            : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                            : 'bg-gray-50 dark:bg-neutral-900 text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800'
                         }`}
                       >
                         {cols}
@@ -343,7 +343,7 @@ export default function DesignPage() {
 
                 {/* View Mode */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">View</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">View</label>
                   <div className="flex gap-1">
                     <button
                       onClick={() => setViewMode('grid')}
@@ -371,7 +371,7 @@ export default function DesignPage() {
                 </div>
 
                 {/* Post Count */}
-                <div className="pt-3 border-t border-gray-100">
+                <div className="pt-3 border-t border-gray-100 dark:border-neutral-800">
                   <p className="text-xs text-gray-400">{postOrder.length} posts</p>
                 </div>
               </div>
@@ -392,7 +392,7 @@ export default function DesignPage() {
 
                 {/* Color Palettes */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Color Palette</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Color Palette</label>
                   <div className="space-y-1.5">
                     {PALETTES.map((palette, i) => {
                       const isSelected = palette.theme.primary === currentTheme.primary && palette.theme.primaryLight === currentTheme.primaryLight;
@@ -401,7 +401,7 @@ export default function DesignPage() {
                           key={palette.name}
                           onClick={() => setTheme({ ...palette.theme, font: currentTheme.font })}
                           className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left ${
-                            isSelected ? 'border-gray-900 bg-white shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-gray-300'
+                            isSelected ? 'border-gray-900 dark:border-white bg-white dark:bg-neutral-900 shadow-sm' : 'border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900 hover:border-gray-300 dark:hover:border-neutral-700'
                           }`}
                         >
                           <div className="flex gap-1 shrink-0">
@@ -409,8 +409,8 @@ export default function DesignPage() {
                               <div key={j} className="w-5 h-5 rounded" style={{ backgroundColor: c }} />
                             ))}
                           </div>
-                          <span className="text-xs font-bold text-gray-700 truncate flex-1">{palette.name}</span>
-                          {isSelected && <Check size={14} className="text-gray-900 shrink-0" />}
+                          <span className="text-xs font-bold text-gray-700 dark:text-neutral-300 truncate flex-1">{palette.name}</span>
+                          {isSelected && <Check size={14} className="text-gray-900 dark:text-white shrink-0" />}
                         </button>
                       );
                     })}
@@ -419,7 +419,7 @@ export default function DesignPage() {
 
                 {/* Edit Colors */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Edit Colors</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Edit Colors</label>
                   <div className="grid grid-cols-2 gap-2">
                     {([
                       { key: 'primary', label: 'Primary' },
@@ -431,14 +431,14 @@ export default function DesignPage() {
                       { key: 'border', label: 'Border' },
                       { key: 'primaryDark', label: 'Dark' },
                     ] as { key: keyof Theme; label: string }[]).map(({ key, label }) => (
-                      <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-100 cursor-pointer hover:border-gray-300 transition-colors">
+                      <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 cursor-pointer hover:border-gray-300 dark:hover:border-neutral-700 transition-colors">
                         <input
                           type="color"
                           value={currentTheme[key]}
                           onChange={(e) => setTheme({ ...currentTheme, [key]: e.target.value })}
                           className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch]:border-0"
                         />
-                        <span className="text-[10px] font-semibold text-gray-500">{label}</span>
+                        <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400">{label}</span>
                       </label>
                     ))}
                   </div>
@@ -446,7 +446,7 @@ export default function DesignPage() {
 
                 {/* Font Selector */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Font</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Font</label>
                   <div className="space-y-1.5">
                     {FONTS.map((font) => {
                       const isSelected = font.value === currentTheme.font;
@@ -455,11 +455,11 @@ export default function DesignPage() {
                           key={font.value}
                           onClick={() => setTheme({ ...currentTheme, font: font.value })}
                           className={`w-full flex items-center justify-between p-2.5 rounded-lg border transition-all ${
-                            isSelected ? 'border-gray-900 bg-white shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-gray-300'
+                            isSelected ? 'border-gray-900 dark:border-white bg-white dark:bg-neutral-900 shadow-sm' : 'border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900 hover:border-gray-300 dark:hover:border-neutral-700'
                           }`}
                         >
                           <span className="text-sm font-bold" style={{ fontFamily: font.value }}>{font.name}</span>
-                          {isSelected && <Check size={14} className="text-gray-900 shrink-0" />}
+                          {isSelected && <Check size={14} className="text-gray-900 dark:text-white shrink-0" />}
                         </button>
                       );
                     })}
@@ -481,10 +481,10 @@ export default function DesignPage() {
 
                 {uploadedImages.length > 0 && (
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Your Uploads</label>
+                    <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Your Uploads</label>
                     <div className="grid grid-cols-2 gap-2">
                       {uploadedImages.map((src, i) => (
-                        <div key={i} className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                        <div key={i} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-800">
                           <img src={src} alt="" className="w-full h-full object-cover" />
                         </div>
                       ))}
@@ -493,10 +493,10 @@ export default function DesignPage() {
                 )}
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Project Images</label>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Project Images</label>
                   <div className="grid grid-cols-2 gap-2">
                     {STATIC_IMAGES.map((src) => (
-                      <div key={src} className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                      <div key={src} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-800">
                         <img src={src} alt="" className="w-full h-full object-cover" />
                       </div>
                     ))}
@@ -508,12 +508,12 @@ export default function DesignPage() {
             {/* Generate Panel */}
             {activeTab === 'generate' && (
               <div className="space-y-4">
-                <p className="text-sm text-gray-500">Describe the post you want and AI will generate it live.</p>
+                <p className="text-sm text-gray-500 dark:text-neutral-400">Describe the post you want and AI will generate it live.</p>
                 <textarea
                   value={generatePrompt}
                   onChange={(e) => setGeneratePrompt(e.target.value)}
                   placeholder="e.g. A post about our new delivery tracking feature with a phone mockup showing live order status"
-                  className="w-full h-28 px-3 py-2.5 rounded-lg border border-gray-200 text-sm resize-none focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] placeholder:text-gray-500"
+                  className="w-full h-28 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white text-sm resize-none focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] placeholder:text-gray-500 dark:placeholder:text-neutral-500"
                 />
                 <button
                   onClick={handleGenerate}
@@ -531,13 +531,13 @@ export default function DesignPage() {
                 )}
                 {generatedPosts.length > 0 && (
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
                       Generated ({generatedPosts.length})
                     </label>
                     <div className="space-y-1.5">
                       {generatedPosts.map((gp) => (
-                        <div key={gp.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
-                          <span className="text-xs font-medium text-gray-600 truncate">{gp.id}</span>
+                        <div key={gp.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800">
+                          <span className="text-xs font-medium text-gray-600 dark:text-neutral-400 truncate">{gp.id}</span>
                           <button
                             onClick={() => {
                               setGeneratedPosts(prev => prev.filter(p => p.id !== gp.id));
@@ -619,7 +619,7 @@ export default function DesignPage() {
                   }}
                 >
                   {generatedPost && codeViewPosts.has(id) ? (
-                    <div className="relative w-full rounded-xl overflow-hidden border border-gray-200 bg-[#1e1e1e]" style={{ aspectRatio: aspectRatio.replace(':', ' / ') }}>
+                    <div className="relative w-full rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 bg-[#1e1e1e]" style={{ aspectRatio: aspectRatio.replace(':', ' / ') }}>
                       <textarea
                         value={generatedPost.code}
                         onChange={(e) => updateGeneratedCode(id, e.target.value)}
@@ -663,11 +663,11 @@ export default function DesignPage() {
 
       {/* Floating download bar */}
       {selectMode && selectedPosts.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 px-6 py-3 flex items-center gap-4">
-          <span className="text-sm font-bold text-gray-700">{selectedPosts.length} selected</span>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-neutral-800 px-6 py-3 flex items-center gap-4">
+          <span className="text-sm font-bold text-gray-700 dark:text-neutral-300">{selectedPosts.length} selected</span>
           <button
             onClick={() => setSelectedPosts([])}
-            className="text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-xs font-semibold text-gray-400 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors"
           >
             Clear
           </button>
