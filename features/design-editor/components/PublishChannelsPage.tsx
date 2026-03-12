@@ -14,6 +14,7 @@ import {
   Filter,
   Instagram,
   Facebook,
+  Twitter,
   Video,
   Briefcase,
   MessageCircle,
@@ -37,6 +38,7 @@ type ViewMode = "grid" | "calendar";
 const PROVIDERS = [
   { id: "instagram" as const, name: "Instagram", icon: Instagram, color: "from-pink-500 to-purple-600", available: true },
   { id: "facebook" as const, name: "Facebook", icon: Facebook, color: "from-blue-600 to-blue-700", available: true },
+  { id: "twitter" as const, name: "X (Twitter)", icon: Twitter, color: "from-neutral-800 to-neutral-900", available: true },
   { id: "tiktok" as const, name: "TikTok", icon: Video, color: "from-neutral-800 to-neutral-900", available: false },
   { id: "linkedin" as const, name: "LinkedIn", icon: Briefcase, color: "from-blue-700 to-blue-800", available: false },
   { id: "threads" as const, name: "Threads", icon: MessageCircle, color: "from-neutral-700 to-neutral-800", available: false },
@@ -76,6 +78,27 @@ export default function PublishChannelsPage({
   // Sync initialTab when sidebar tab changes
   useEffect(() => { setSubTab(initialTab); }, [initialTab]);
 
+  // Handle social_success / social_error from OAuth callback redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get("social_success");
+    const error = params.get("social_error");
+    if (success) {
+      setToast({ type: "success", message: success });
+      setSubTab("channels");
+    } else if (error) {
+      setToast({ type: "error", message: error });
+      setSubTab("channels");
+    }
+    // Clean up URL params
+    if (success || error) {
+      params.delete("social_success");
+      params.delete("social_error");
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, []);
+
   const socialAccounts = useQuery(api.socialAccounts.listByWorkspace, { workspaceId });
   const scheduledPosts = useQuery(api.publishing.listScheduled, { workspaceId });
   const cancelPost = useMutation(api.publishing.cancelScheduled);
@@ -110,7 +133,7 @@ export default function PublishChannelsPage({
     await cancelPost({ id });
   };
 
-  const handleConnect = (provider: "instagram" | "facebook") => {
+  const handleConnect = (provider: "instagram" | "facebook" | "twitter") => {
     const params = new URLSearchParams({ workspaceId, userId });
     window.location.href = `/api/social-auth/${provider}/authorize?${params.toString()}`;
   };
@@ -316,7 +339,7 @@ export default function PublishChannelsPage({
                       <button
                         key={provider.id}
                         onClick={() => {
-                          if (provider.available) handleConnect(provider.id as "instagram" | "facebook");
+                          if (provider.available) handleConnect(provider.id as "instagram" | "facebook" | "twitter");
                         }}
                         disabled={!provider.available}
                         className={`flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${

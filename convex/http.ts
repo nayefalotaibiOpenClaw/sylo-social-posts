@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import { auth } from "./auth";
 import { handlePaymentWebhook } from "./webhooks";
 import { handleMetaCallback, handleDeauthorize, handleDataDeletion } from "./socialAuth";
+import { handleTwitterCallback } from "./twitterAuth";
 
 const http = httpRouter();
 
@@ -33,6 +34,13 @@ http.route({
   path: "/social-auth/meta/data-deletion",
   method: "POST",
   handler: handleDataDeletion,
+});
+
+// Twitter/X OAuth callback
+http.route({
+  path: "/social-auth/twitter/callback",
+  method: "GET",
+  handler: handleTwitterCallback,
 });
 
 export default http;
