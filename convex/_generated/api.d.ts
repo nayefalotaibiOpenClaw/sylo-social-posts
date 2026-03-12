@@ -27,6 +27,7 @@ import type * as socialAccounts from "../socialAccounts.js";
 import type * as socialAuth from "../socialAuth.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as tokenRefresh from "../tokenRefresh.js";
+import type * as twitterAuth from "../twitterAuth.js";
 import type * as users from "../users.js";
 import type * as webhooks from "../webhooks.js";
 import type * as websiteCrawls from "../websiteCrawls.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   socialAuth: typeof socialAuth;
   subscriptions: typeof subscriptions;
   tokenRefresh: typeof tokenRefresh;
+  twitterAuth: typeof twitterAuth;
   users: typeof users;
   webhooks: typeof webhooks;
   websiteCrawls: typeof websiteCrawls;

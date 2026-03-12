@@ -57,7 +57,7 @@ export const publishToSocial = action({
     }
 
     // Validate caption length (per-platform)
-    const captionLimit = account.provider === "instagram" ? 2200 : 63206;
+    const captionLimit = account.provider === "instagram" ? 2200 : account.provider === "twitter" ? 280 : 63206;
     if (args.caption.length > captionLimit) {
       throw new Error(`Caption exceeds ${captionLimit} character limit`);
     }
@@ -92,6 +92,12 @@ export const publishToSocial = action({
         mediaUrl,
         caption: args.caption,
         contentType: args.contentType,
+      });
+    } else if (account.provider === "twitter") {
+      result = await publishToTwitter({
+        accessToken: account.accessToken,
+        mediaUrl,
+        caption: args.caption,
       });
     } else {
       throw new Error(`Publishing to ${account.provider} is not yet supported`);
@@ -345,6 +351,80 @@ async function publishToFacebook(params: {
   }
 
   throw new Error(`Facebook ${contentType} publishing not yet supported`);
+}
+
+// ─── Twitter/X Publishing ─────────────────────────────────────────────
+
+const TWITTER_MEDIA_URL = "https://api.x.com/2/media/upload";
+const TWITTER_API_URL = "https://api.x.com/2";
+
+async function publishToTwitter(params: {
+  accessToken: string;
+  mediaUrl: string;
+  caption: string;
+}): Promise<{ postId: string; postUrl?: string }> {
+  const { accessToken, mediaUrl, caption } = params;
+
+  if (caption.length > 280) {
+    throw new Error("Tweet exceeds 280 character limit");
+  }
+
+  // Step 1: Download image from Convex storage URL
+  const mediaRes = await fetch(mediaUrl);
+  if (!mediaRes.ok) throw new Error("Failed to download media for Twitter upload");
+  const mediaBuffer = await mediaRes.arrayBuffer();
+  const mediaBytes = new Uint8Array(mediaBuffer);
+
+  if (mediaBytes.length > 5 * 1024 * 1024) {
+    throw new Error("Image exceeds 5MB limit for Twitter");
+  }
+
+  // Detect media type from response headers
+  const contentType = mediaRes.headers.get("content-type") || "image/png";
+
+  // Step 2: Upload media via v2 endpoint (multipart/form-data)
+  const formData = new FormData();
+  formData.append("media", new Blob([mediaBytes], { type: contentType }));
+  formData.append("media_category", "tweet_image");
+
+  const uploadRes = await fetch(TWITTER_MEDIA_URL, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${accessToken}` },
+    body: formData,
+  });
+  if (!uploadRes.ok) {
+    const err = await uploadRes.text();
+    throw new Error(`Twitter media upload failed: ${err}`);
+  }
+  const uploadData = await uploadRes.json();
+  const mediaId = uploadData.id || uploadData.media_id_string;
+
+  if (!mediaId) {
+    throw new Error("Twitter media upload returned no media ID");
+  }
+
+  // Step 3: Create tweet with media
+  const tweetRes = await fetch(`${TWITTER_API_URL}/tweets`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      text: caption,
+      media: { media_ids: [String(mediaId)] },
+    }),
+  });
+  const tweetData = await tweetRes.json();
+
+  if (!tweetRes.ok || tweetData.errors) {
+    throw new Error(`Twitter tweet creation failed: ${tweetData.errors?.[0]?.message || tweetData.detail || "Unknown error"}`);
+  }
+
+  return {
+    postId: tweetData.data.id,
+    postUrl: `https://x.com/i/status/${tweetData.data.id}`,
+  };
 }
 
 // ─── Internal helpers ────────────────────────────────────────────────
@@ -654,6 +734,12 @@ export const processScheduledPosts = internalAction({
             mediaUrl: mediaUrls[0],
             caption: post.caption,
             contentType: post.contentType,
+          });
+        } else if (account.provider === "twitter") {
+          result = await publishToTwitter({
+            accessToken: account.accessToken,
+            mediaUrl: mediaUrls[0],
+            caption: post.caption,
           });
         } else {
           throw new Error(`Provider ${account.provider} not supported`);

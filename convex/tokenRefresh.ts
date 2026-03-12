@@ -43,6 +43,38 @@ export const refreshSingle = internalAction({
         accessToken: data.access_token,
         tokenExpiresAt: Date.now() + (data.expires_in || 5184000) * 1000,
       });
+    } else if (account.provider === "twitter") {
+      const clientId = process.env.TWITTER_CLIENT_ID;
+      const clientSecret = process.env.TWITTER_CLIENT_SECRET;
+      if (!clientId || !clientSecret) throw new Error("Twitter credentials not configured");
+      if (!account.refreshToken) throw new Error("No refresh token for Twitter account");
+
+      const basicAuth = btoa(`${clientId}:${clientSecret}`);
+      const res = await fetch("https://api.x.com/2/oauth2/token", {
+        method: "POST",
+        headers: {
+          "Authorization": `Basic ${basicAuth}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: account.refreshToken,
+        }),
+      });
+      if (!res.ok) throw new Error(`Twitter token refresh failed: HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error_description || data.error);
+
+      // X rotates refresh tokens — must store both new tokens
+      if (!data.refresh_token) {
+        throw new Error("Twitter refresh response missing new refresh_token");
+      }
+      await ctx.runMutation(internal.socialAccounts.updateTokenWithRefresh, {
+        id: args.accountId,
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        tokenExpiresAt: Date.now() + (data.expires_in || 7200) * 1000,
+      });
     }
   },
 });
@@ -116,6 +148,61 @@ export const refreshExpiring = internalAction({
           });
 
           console.log(`Refreshed Facebook token for account ${account._id}`);
+        } else if (account.provider === "twitter") {
+          const clientId = process.env.TWITTER_CLIENT_ID;
+          const clientSecret = process.env.TWITTER_CLIENT_SECRET;
+
+          if (!clientId || !clientSecret) {
+            console.error("Twitter credentials not configured for token refresh");
+            continue;
+          }
+
+          if (!account.refreshToken) {
+            console.error(`No refresh token for Twitter account ${account._id}`);
+            await ctx.runMutation(internal.socialAccounts.markExpired, {
+              id: account._id,
+            });
+            continue;
+          }
+
+          const basicAuth = btoa(`${clientId}:${clientSecret}`);
+          const res = await fetch("https://api.x.com/2/oauth2/token", {
+            method: "POST",
+            headers: {
+              "Authorization": `Basic ${basicAuth}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              grant_type: "refresh_token",
+              refresh_token: account.refreshToken,
+            }),
+          });
+          const data = await res.json();
+
+          if (data.error) {
+            console.error(`Twitter token refresh failed for ${account._id}:`, data.error_description || data.error);
+            await ctx.runMutation(internal.socialAccounts.markExpired, {
+              id: account._id,
+            });
+            continue;
+          }
+
+          // X rotates refresh tokens — must store both new tokens
+          if (!data.refresh_token) {
+            console.error(`Twitter refresh response missing new refresh_token for ${account._id}`);
+            await ctx.runMutation(internal.socialAccounts.markExpired, {
+              id: account._id,
+            });
+            continue;
+          }
+          await ctx.runMutation(internal.socialAccounts.updateTokenWithRefresh, {
+            id: account._id,
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token,
+            tokenExpiresAt: Date.now() + (data.expires_in || 7200) * 1000,
+          });
+
+          console.log(`Refreshed Twitter token for account ${account._id}`);
         }
       } catch (error) {
         console.error(`Token refresh error for ${account._id}:`, error);

@@ -10,10 +10,10 @@ crons.interval(
   internal.subscriptions.expireStale
 );
 
-// Refresh social account tokens expiring within 7 days (daily)
+// Refresh social account tokens expiring soon (hourly — covers X's 2hr tokens and Meta's 60-day tokens)
 crons.interval(
   "refresh social tokens",
-  { hours: 24 },
+  { hours: 1 },
   internal.tokenRefresh.refreshExpiring
 );
 

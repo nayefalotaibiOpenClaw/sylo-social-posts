@@ -155,6 +155,23 @@ export const updateToken = internalMutation({
   },
 });
 
+// Internal: update token with refresh token (for providers like X that rotate refresh tokens)
+export const updateTokenWithRefresh = internalMutation({
+  args: {
+    id: v.id("socialAccounts"),
+    accessToken: v.string(),
+    refreshToken: v.string(),
+    tokenExpiresAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, {
+      accessToken: args.accessToken,
+      refreshToken: args.refreshToken,
+      tokenExpiresAt: args.tokenExpiresAt,
+    });
+  },
+});
+
 // Internal: mark account as expired
 export const markExpired = internalMutation({
   args: { id: v.id("socialAccounts") },
@@ -172,12 +189,14 @@ export const touchLastUsed = internalMutation({
 });
 
 // Internal: find accounts with tokens expiring soon (for cron refresh)
+// Uses 7-day window for Meta tokens and 3-hour window for X tokens.
+// Since this runs hourly, we use the larger window to catch both.
 export const findExpiringSoon = internalQuery({
   args: {},
   handler: async (ctx) => {
     const sevenDaysFromNow = Date.now() + 7 * 24 * 60 * 60 * 1000;
 
-    // Get all active accounts and filter those expiring within 7 days
+    // Get all active accounts and filter those expiring within 7 days (covers both Meta 60-day and X 2-hour tokens)
     const accounts = await ctx.db
       .query("socialAccounts")
       .filter((q) =>
