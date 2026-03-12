@@ -106,6 +106,13 @@ export default function PostName() {
 }
 \`\`\`
 
+## OVERLAP AWARENESS
+- Text must NEVER be hidden behind mockups or other elements — readability is non-negotiable.
+- Use flex column layouts to naturally separate sections (text area → mockup area). Avoid absolute positioning that causes collisions.
+- In tight ratios (1:1), keep mockup in one half and text in the other. Shrink elements rather than letting them overlap.
+- Intentional decorative overlaps are OK (FloatingCards/badges overlapping mockup edges = fine by design).
+- Text z-index must always be above background decorations.
+
 ## RULES
 1. \`useTheme()\` and \`useAspectRatio()\` must be the first lines in your component
 2. ALL colors via theme — never hardcode hex values
