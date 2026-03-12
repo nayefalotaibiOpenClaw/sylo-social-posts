@@ -49,7 +49,7 @@ export const publishToSocial = action({
           const refreshed = await ctx.runQuery(internal.socialAccounts.getWithTokens, { id: args.socialAccountId });
           if (refreshed) account = refreshed;
         } catch {
-          if (account.tokenExpiresAt < Date.now()) {
+          if (account.tokenExpiresAt !== undefined && account.tokenExpiresAt < Date.now()) {
             throw new Error("Access token has expired. Please reconnect the account.");
           }
         }

@@ -262,11 +262,11 @@ describe("Publishing: Carousel Validation", () => {
     expect(result.error).toContain("at most 10");
   });
 
-  it.each([2, 3, 5, 7, 10])("accepts carousel with %d items", (count) => {
+  it.each([2, 3, 5, 7, 10])("accepts carousel with %d items", (count: number) => {
     expect(validateCarousel(count).valid).toBe(true);
   });
 
-  it.each([0, 1, 11, 20, 100])("rejects carousel with %d items", (count) => {
+  it.each([0, 1, 11, 20, 100])("rejects carousel with %d items", (count: number) => {
     expect(validateCarousel(count).valid).toBe(false);
   });
 });
@@ -358,7 +358,7 @@ describe("Publishing: Claim Scheduled Post", () => {
 
   it.each(["publishing", "published", "failed", "cancelled"])(
     "only 'scheduled' can be claimed, not '%s'",
-    (status) => {
+    (status: string) => {
       expect(claimScheduledPost(status)).toBe(false);
     }
   );
@@ -469,15 +469,15 @@ describe("Publishing: Content Type Support", () => {
   const fbSupported: ContentType[] = ["image", "reel"];
   const fbUnsupported: ContentType[] = ["carousel", "story"];
 
-  it.each(igSupported)("Instagram supports %s", (type) => {
+  it.each(igSupported)("Instagram supports %s", (type: ContentType) => {
     expect(igSupported).toContain(type);
   });
 
-  it.each(fbSupported)("Facebook supports %s", (type) => {
+  it.each(fbSupported)("Facebook supports %s", (type: ContentType) => {
     expect(fbSupported).toContain(type);
   });
 
-  it.each(fbUnsupported)("Facebook does not yet support %s", (type) => {
+  it.each(fbUnsupported)("Facebook does not yet support %s", (type: ContentType) => {
     expect(fbSupported).not.toContain(type);
   });
 

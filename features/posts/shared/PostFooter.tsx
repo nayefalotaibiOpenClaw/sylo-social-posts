@@ -8,8 +8,9 @@ import { useTheme } from "@/contexts/ThemeContext";
 interface PostFooterProps {
   id: string;
   label: string;
-  text: string;
+  text?: string;
   icon?: React.ReactNode;
+  className?: string;
   /** "dark" = light text on dark bg, "light" = dark text on light bg */
   variant?: "dark" | "light";
 }
@@ -31,6 +32,7 @@ export default function PostFooter({
   label,
   text,
   icon,
+  className,
   variant = "dark",
 }: PostFooterProps) {
   const t = useTheme();
@@ -40,7 +42,7 @@ export default function PostFooter({
     <div
       className={`mt-auto flex justify-between items-end pt-6 border-t ${
         isDark ? "border-white/10" : ""
-      }`}
+      } ${className || ""}`}
       style={!isDark ? { borderColor: t.primary + "1a" } : undefined}
       dir="rtl"
     >
@@ -52,12 +54,14 @@ export default function PostFooter({
         >
           {label}
         </EditableText>
-        <EditableText
-          className="text-sm font-bold"
-          style={{ color: isDark ? t.primaryLight : t.primary }}
-        >
-          {text}
-        </EditableText>
+        {text && (
+          <EditableText
+            className="text-sm font-bold"
+            style={{ color: isDark ? t.primaryLight : t.primary }}
+          >
+            {text}
+          </EditableText>
+        )}
       </DraggableWrapper>
 
       {icon && (

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { prompt, context, count = 1, version = 1, allLayouts = false, targetRatio } = await req.json();
+    const { prompt, context, count = 1, version = 1, allLayouts = false, targetRatio, referenceImages } = await req.json();
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
@@ -215,10 +215,23 @@ Creative direction: ${mood}${featuredAssetHint}
 Write UNIQUE headline text and copy — do NOT reuse generic phrases. Invent a fresh, specific headline that fits the topic and mood above. Every post must have completely different text content.${distinctNote}${ratioNote}`;
     }
 
+    // Build inline image parts for reference/inspiration images
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const refImageParts: any[] = [];
+    if (referenceImages && Array.isArray(referenceImages) && referenceImages.length > 0) {
+      refImageParts.push({ text: "\n\n## REFERENCE IMAGES\nThe user uploaded the following images as visual reference/inspiration. Study the style, layout, colors, typography, and mood of these images and use them as inspiration for the post design. Do NOT reproduce them exactly — use them as creative direction." });
+      for (const img of referenceImages.slice(0, 4)) {
+        if (img.base64 && img.mimeType) {
+          refImageParts.push({ inlineData: { data: img.base64, mimeType: img.mimeType } });
+        }
+      }
+    }
+
     if (postCount === 1) {
       const sysPrompt = engineVersion === 4 ? buildWildSystemPrompt(0) : systemPrompt;
       const result = await model.generateContent([
         { text: sysPrompt },
+        ...refImageParts,
         { text: buildUserPrompt(0) },
       ]);
 
@@ -245,6 +258,7 @@ Write UNIQUE headline text and copy — do NOT reuse generic phrases. Invent a f
       const sysPrompt = engineVersion === 4 ? buildWildSystemPrompt(i) : systemPrompt;
       return model.generateContent([
         { text: sysPrompt },
+        ...refImageParts,
         { text: buildUserPrompt(i) },
       ]).then(r => {
         const usage = r.response.usageMetadata;

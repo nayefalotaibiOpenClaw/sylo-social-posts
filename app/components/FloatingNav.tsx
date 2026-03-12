@@ -21,8 +21,8 @@ interface FloatingNavProps {
 const NAV_LINKS: { key: ActivePage; href: string; labelKey: TranslationKey; enabled: boolean }[] = [
   { key: "home", href: "/", labelKey: "nav.home", enabled: true },
   { key: "workspaces", href: "/workspaces", labelKey: "nav.workspaces", enabled: true },
-  { key: "channels", href: "/channels", labelKey: "nav.channels", enabled: true },
-  { key: "publish", href: "/publish", labelKey: "nav.publish", enabled: true },
+  { key: "channels", href: "/channels", labelKey: "nav.channels", enabled: false },
+  { key: "publish", href: "/publish", labelKey: "nav.publish", enabled: false },
   { key: "pricing", href: "/pricing", labelKey: "nav.pricing", enabled: true },
   { key: "blogs", href: "/blogs", labelKey: "nav.blogs", enabled: false },
   { key: "contact", href: "/contact", labelKey: "nav.contact", enabled: false },

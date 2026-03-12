@@ -12,8 +12,7 @@ export const SIDEBAR_ITEMS: { id: SidebarTab; icon: React.ComponentType<{ size?:
   // theme tab removed — included in Brand page
   { id: 'assets', icon: Upload, label: 'Assets', fullPage: true },
   // generate is now a sub-tab inside Design page
-  { id: 'publish', icon: Send, label: 'Publish', fullPage: true },
-  { id: 'channels', icon: LinkIcon, label: 'Channels', fullPage: true },
+  // publish and channels hidden for now
 ];
 
 interface WorkspaceItem {

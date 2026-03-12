@@ -762,7 +762,7 @@ describe("Expiry Warning Thresholds", () => {
     { days: 6, expected: false },
     { days: 10, expected: false },
     { days: 30, expected: false },
-  ])("$days days left → isExpiringSoon=$expected", ({ days, expected }) => {
+  ])("$days days left → isExpiringSoon=$expected", ({ days, expected }: { days: number; expected: boolean }) => {
     expect(computeUsage(makeSub(days), now).isExpiringSoon).toBe(expected);
   });
 });

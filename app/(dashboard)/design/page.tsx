@@ -153,6 +153,8 @@ export default function DesignPage() {
   const [fetchingWebsite, setFetchingWebsite] = useState(false);
   const [websiteScreenshot, setWebsiteScreenshot] = useState<string | null>(null);
   const websiteScreenshotRef = useRef<HTMLInputElement>(null);
+  const [chatImages, setChatImages] = useState<{ base64: string; mimeType: string; preview: string }[]>([]);
+  const chatImageInputRef = useRef<HTMLInputElement>(null);
   const [targetRatios, setTargetRatios] = useState<AspectRatioType[]>(['1:1']);
   const [adaptingRatios, setAdaptingRatios] = useState(false);
 
@@ -248,6 +250,22 @@ export default function DesignPage() {
     e.target.value = "";
   };
 
+  const handleChatImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(",")[1] || result;
+        setChatImages(prev => [...prev, { base64, mimeType: file.type, preview: result }]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
   // Subscription status
   const usage = useQuery(api.subscriptions.getUsage);
 
@@ -304,7 +322,13 @@ export default function DesignPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: generatePrompt, context, count: generateCount, version: generateVersion }),
+        body: JSON.stringify({
+          prompt: generatePrompt,
+          context,
+          count: generateCount,
+          version: generateVersion,
+          referenceImages: chatImages.length > 0 ? chatImages.map(img => ({ base64: img.base64, mimeType: img.mimeType })) : undefined,
+        }),
       });
 
       let data;
@@ -392,6 +416,7 @@ export default function DesignPage() {
         setGeneratedPosts(prev => [...newEntries, ...prev]);
         setLocalOrder(prev => [...newEntries.map(e => e.id), ...prev]);
       }
+      setChatImages([]);
     } catch (err) {
       setGenerateError(err instanceof Error ? err.message : 'Something went wrong. Please try again or contact support.');
     } finally {
@@ -1489,11 +1514,27 @@ export default function DesignPage() {
                 rows={2}
                 className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
               />
+              {/* Image previews */}
+              {chatImages.length > 0 && (
+                <div className="flex items-center gap-2 px-4 pb-2 pt-1 overflow-x-auto">
+                  {chatImages.map((img, i) => (
+                    <div key={i} className="relative flex-shrink-0 group">
+                      <img src={img.preview} alt={`Reference ${i + 1}`} className="w-14 h-14 rounded-lg object-cover border border-slate-200" />
+                      <button
+                        onClick={() => setChatImages(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex items-center justify-between px-4 pb-3">
                 {/* Left: attachment */}
                 <label className="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 cursor-pointer transition-colors">
                   <Paperclip size={16} />
-                  <input ref={websiteScreenshotRef} type="file" accept="image/*" onChange={handleWebsiteScreenshot} className="hidden" />
+                  <input ref={chatImageInputRef} type="file" accept="image/*" multiple onChange={handleChatImageUpload} className="hidden" />
                 </label>
 
                 {/* Right: options + send */}
