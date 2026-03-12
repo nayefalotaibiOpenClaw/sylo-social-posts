@@ -1,13 +1,44 @@
 "use client";
 
 import React, { memo, useCallback, useRef, useState } from "react";
-import { Code, Eye, Trash2, Scaling, Loader2, Check } from "lucide-react";
+import { Code, Eye, Trash2, Scaling, Loader2, Check, Paintbrush, ImagePlus } from "lucide-react";
 import { AspectRatioType, PostScopeContext } from "@/contexts/EditContext";
 import DynamicPost from "@/app/components/DynamicPost";
 import PostWrapper from "@/app/components/PostWrapper";
 import { Id } from "@/convex/_generated/dataModel";
 
 const ALL_RATIOS: AspectRatioType[] = ['1:1', '9:16', '3:4', '4:3', '16:9'];
+
+/* ── Image utilities ── */
+
+/** Extract all unique image URLs from post code */
+function extractImageUrls(code: string): string[] {
+  const urlPattern = /https?:\/\/[^\s"'`)\]}>]+\.(?:png|jpg|jpeg|gif|webp|svg|avif)(?:[^\s"'`)\]}>]*)?|https?:\/\/[^\s"'`)\]}>]*\/api\/storage\/[^\s"'`)\]}>]+|https?:\/\/images\.unsplash\.com\/[^\s"'`)\]}>]+/gi;
+  const matches = code.match(urlPattern) || [];
+  return [...new Set(matches)];
+}
+
+/** Replace one URL with another everywhere in the code */
+function replaceImageUrl(code: string, oldUrl: string, newUrl: string): string {
+  return code.split(oldUrl).join(newUrl);
+}
+
+/** Replace first backgroundColor value */
+function replaceBackgroundColor(code: string, newColor: string): string {
+  return code.replace(
+    /(backgroundColor:\s*)(?:t\.\w+|['"]?#[0-9a-fA-F]{3,8}['"]?)/,
+    `$1'${newColor}'`
+  );
+}
+
+/** Detect the root div background color */
+function detectBgColor(code: string): string | null {
+  const themeMatch = code.match(/backgroundColor:\s*(t\.\w+)/);
+  if (themeMatch) return themeMatch[1];
+  const hexMatch = code.match(/backgroundColor:\s*['"]?(#[0-9a-fA-F]{3,8})['"]?/);
+  if (hexMatch) return hexMatch[1];
+  return null;
+}
 
 const MemoizedPostContent = memo(function MemoizedPostContent({ code, aspectRatio, filename }: { code: string; aspectRatio: AspectRatioType; filename: string }) {
   return (
@@ -47,6 +78,7 @@ interface PostGridProps {
   selectedPostId: string | null;
   onSelectPost: (id: string | null) => void;
   onAdaptRatio?: (postId: Id<"posts">, baseCode: string, targetRatio: AspectRatioType) => Promise<void>;
+  assets?: { _id: string; url: string | null; type: string; fileName: string }[];
 }
 
 export default function PostGrid({
@@ -60,6 +92,7 @@ export default function PostGrid({
   onUpdatePostCode, onUpdatePostCodeForRatio, onRemovePost,
   selectedPostId, onSelectPost,
   onAdaptRatio,
+  assets,
 }: PostGridProps) {
   // Store modes in refs so handlers never need to be recreated
   const modeRef = useRef({ reorderMode, selectMode, selectedPostId });
@@ -68,6 +101,60 @@ export default function PostGrid({
   // Resize dropdown state
   const [resizeOpenId, setResizeOpenId] = useState<string | null>(null);
   const [adaptingMap, setAdaptingMap] = useState<Record<string, Set<string>>>({});
+  // Background/image editor state
+  const [bgOpenId, setBgOpenId] = useState<string | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const bgFileRef = useRef<HTMLInputElement>(null);
+  const bgTargetRef = useRef<{ postId: string; oldUrl: string } | null>(null);
+  // Track all URLs that have ever been used in each post (so user can swap back)
+  const [imageHistory, setImageHistory] = useState<Record<string, Set<string>>>({});
+
+  const updateCode = useCallback((id: string, newCode: string) => {
+    const post = posts?.find((p: PostRecord) => p._id === id);
+    if (post) {
+      if (onUpdatePostCodeForRatio && aspectRatio !== '1:1') {
+        onUpdatePostCodeForRatio({ id: post._id, ratio: aspectRatio, componentCode: newCode });
+      } else {
+        onUpdatePostCode({ id: post._id, componentCode: newCode });
+      }
+    } else {
+      setGeneratedPosts(prev => prev.map(p => p.id === id ? { ...p, code: newCode } : p));
+    }
+  }, [posts, aspectRatio, onUpdatePostCode, onUpdatePostCodeForRatio, setGeneratedPosts]);
+
+  const handleSwapImage = useCallback((postId: string, code: string, oldUrl: string, newUrl: string) => {
+    // Save the old URL to history before replacing
+    setImageHistory(prev => {
+      const set = new Set(prev[postId] || []);
+      set.add(oldUrl);
+      set.add(newUrl);
+      return { ...prev, [postId]: set };
+    });
+    updateCode(postId, replaceImageUrl(code, oldUrl, newUrl));
+    setSelectedImageUrl(newUrl);
+  }, [updateCode]);
+
+  const handleBgColor = useCallback((id: string, code: string, color: string) => {
+    updateCode(id, replaceBackgroundColor(code, color));
+  }, [updateCode]);
+
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const target = bgTargetRef.current;
+    if (!file || !target) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const post = posts?.find((p: PostRecord) => p._id === target.postId);
+      const gen = generatedPosts.find(gp => gp.id === target.postId);
+      const code = post
+        ? (aspectRatio !== '1:1' && post.ratioOverrides?.["r" + aspectRatio.replace(":", "_")]) || post.componentCode
+        : gen?.code;
+      if (!code) return;
+      updateCode(target.postId, replaceImageUrl(code, target.oldUrl, reader.result as string));
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }, [posts, generatedPosts, aspectRatio, updateCode]);
 
   const handleAdapt = useCallback(async (postId: string, baseCode: string, ratio: AspectRatioType) => {
     if (!onAdaptRatio) return;
@@ -178,85 +265,228 @@ export default function PostGrid({
             className={`relative group post-card ${isPostSelected ? 'ring-2 ring-blue-500 rounded-xl' : ''}`}
             style={draggingId === id ? { opacity: 0.4, transition: 'opacity 0.2s' } : undefined}
           >
-            {/* Post toolbar - above the post */}
-            <div className="flex items-center justify-between mb-1 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity h-7">
-              <div className="flex gap-1">
+            {/* Post toolbar — floating pill, matches DraggableWrapper toolbar style */}
+            <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-0.5 bg-white rounded-2xl shadow-xl border border-gray-200 px-1.5 py-1"
+                   onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={(e) => { e.stopPropagation(); onToggleCodeView(id); }}
-                  className="text-gray-500 p-1 rounded hover:bg-gray-100 hover:text-gray-700 transition-all"
+                  className="p-2 rounded-xl hover:bg-gray-100 text-gray-600 transition-colors"
                   title={codeViewPosts.has(id) ? 'Show Preview' : 'Show Code'}
                 >
                   {codeViewPosts.has(id) ? <Eye size={14} /> : <Code size={14} />}
                 </button>
-                {/* Resize — adapt to other ratios */}
-                {post && onAdaptRatio && (
-                  <div className="relative">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setResizeOpenId(resizeOpenId === id ? null : id);
-                      }}
-                      className={`p-1 rounded transition-all ${
-                        resizeOpenId === id
-                          ? 'text-[#1B4332] bg-green-50'
-                          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                      }`}
-                      title="Resize — adapt to other sizes"
-                    >
-                      <Scaling size={14} />
-                    </button>
-                    {resizeOpenId === id && (
-                      <div
-                        className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1.5 z-30 min-w-[140px]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <p className="px-3 pb-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider">Adapt to</p>
-                        {ALL_RATIOS.filter(r => r !== '1:1').map((r) => {
-                          const hasIt = existingRatios.has(r);
-                          const isAdapting = adaptingMap[id]?.has(r);
-                          return (
-                            <button
-                              key={r}
-                              onClick={() => {
-                                if (!isAdapting && !hasIt) {
-                                  handleAdapt(id, post.componentCode, r);
-                                }
-                              }}
-                              disabled={isAdapting}
-                              className={`w-full flex items-center justify-between px-3 py-1.5 text-xs transition-colors ${
-                                hasIt
-                                  ? 'text-green-600 bg-green-50/50'
-                                  : isAdapting
-                                    ? 'text-gray-400'
-                                    : 'text-gray-700 hover:bg-gray-50'
-                              }`}
-                            >
-                              <span className="font-semibold">{r}</span>
-                              {isAdapting && <Loader2 size={12} className="animate-spin text-gray-400" />}
-                              {hasIt && !isAdapting && <Check size={12} className="text-green-500" />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-                {post && (
+
+                {/* Background editor */}
+                <div className="w-px h-5 bg-gray-200" />
+                <div className="relative">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm('Delete this post?')) {
-                        onRemovePost({ id: post._id });
+                      const opening = bgOpenId !== id;
+                      setBgOpenId(opening ? id : null);
+                      if (!opening) setSelectedImageUrl(null);
+                      // Seed history with current URLs when opening
+                      if (opening) {
+                        const urls = extractImageUrls(code);
+                        if (urls.length > 0) {
+                          setImageHistory(prev => {
+                            const set = new Set(prev[id] || []);
+                            urls.forEach(u => set.add(u));
+                            return { ...prev, [id]: set };
+                          });
+                        }
                       }
                     }}
-                    className="text-red-400 p-1 rounded hover:bg-red-50 hover:text-red-500 transition-all"
-                    title="Delete post"
+                    className={`p-2 rounded-xl transition-colors ${
+                      bgOpenId === id ? 'bg-purple-50 text-purple-600' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                    title="Change background"
                   >
-                    <Trash2 size={14} />
+                    <Paintbrush size={14} />
                   </button>
+                  {bgOpenId === id && (() => {
+                    const imageUrls = extractImageUrls(code);
+                    const bgColor = detectBgColor(code);
+                    const activeUrl = selectedImageUrl && imageUrls.includes(selectedImageUrl) ? selectedImageUrl : null;
+                    const availableAssets = assets?.filter(a => a.url) || [];
+                    // Previous URLs no longer in code (swapped out) — user can pick them to swap back
+                    const historyUrls = Array.from(imageHistory[id] || []).filter(u => !imageUrls.includes(u));
+                    return (
+                      <div
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 p-3 z-30 w-[280px] max-h-[420px] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* Background color */}
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-2">Background Color</p>
+                        <div className="flex items-center gap-2 mb-3">
+                          <input
+                            type="color"
+                            defaultValue={bgColor?.startsWith('#') ? bgColor : '#1B4332'}
+                            onChange={(e) => handleBgColor(id, code, e.target.value)}
+                            className="w-8 h-8 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                          />
+                          <span className="text-[11px] text-gray-500 font-mono">{bgColor || 'Theme'}</span>
+                        </div>
+
+                        {/* Images in this post */}
+                        {imageUrls.length > 0 && (
+                          <>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                              Images in Post — {activeUrl ? 'select replacement below' : 'tap to replace'}
+                            </p>
+                            <div className="grid grid-cols-3 gap-1.5 mb-3">
+                              {imageUrls.map((url, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setSelectedImageUrl(activeUrl === url ? null : url)}
+                                  className={`rounded-lg overflow-hidden border-2 transition-all aspect-square ${
+                                    activeUrl === url
+                                      ? 'border-blue-500 ring-2 ring-blue-200'
+                                      : 'border-gray-200 hover:border-gray-400'
+                                  }`}
+                                >
+                                  <img src={url} alt="" className="w-full h-full object-cover" />
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        {/* Replace with: assets or upload */}
+                        {activeUrl && (
+                          <>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-2">Replace With</p>
+
+                            {/* Upload */}
+                            <button
+                              onClick={() => {
+                                bgTargetRef.current = { postId: id, oldUrl: activeUrl };
+                                bgFileRef.current?.click();
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors mb-2"
+                            >
+                              <ImagePlus size={14} />
+                              Upload Image
+                            </button>
+
+                            {/* Previous images (history) */}
+                            {historyUrls.length > 0 && (
+                              <>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Previous</p>
+                                <div className="grid grid-cols-3 gap-1.5 mb-2">
+                                  {historyUrls.map((url, i) => (
+                                    <button
+                                      key={i}
+                                      onClick={() => handleSwapImage(id, code, activeUrl, url)}
+                                      className="rounded-lg overflow-hidden border border-amber-300 hover:border-amber-500 hover:shadow-sm transition-all aspect-square"
+                                      title="Restore this image"
+                                    >
+                                      <img src={url} alt="" className="w-full h-full object-cover" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+
+                            {/* Assets */}
+                            {availableAssets.length > 0 && (
+                              <div className="grid grid-cols-3 gap-1.5">
+                                {availableAssets.map((asset) => (
+                                  <button
+                                    key={asset._id}
+                                    onClick={() => {
+                                      handleSwapImage(id, code, activeUrl, asset.url!);
+                                      setSelectedImageUrl(asset.url!);
+                                    }}
+                                    className="rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all aspect-square"
+                                    title={asset.fileName}
+                                  >
+                                    <img src={asset.url!} alt={asset.fileName} className="w-full h-full object-cover" />
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Resize — adapt to other ratios */}
+                {post && onAdaptRatio && (
+                  <>
+                    <div className="w-px h-5 bg-gray-200" />
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setResizeOpenId(resizeOpenId === id ? null : id);
+                        }}
+                        className={`p-2 rounded-xl transition-colors ${
+                          resizeOpenId === id
+                            ? 'bg-green-50 text-[#1B4332]'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                        title="Resize — adapt to other sizes"
+                      >
+                        <Scaling size={14} />
+                      </button>
+                      {resizeOpenId === id && (
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 py-1.5 z-30 min-w-[140px]">
+                          <p className="px-3 pb-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider">Adapt to</p>
+                          {ALL_RATIOS.filter(r => r !== '1:1').map((r) => {
+                            const hasIt = existingRatios.has(r);
+                            const isAdapting = adaptingMap[id]?.has(r);
+                            return (
+                              <button
+                                key={r}
+                                onClick={() => {
+                                  if (!isAdapting && !hasIt) {
+                                    handleAdapt(id, post.componentCode, r);
+                                  }
+                                }}
+                                disabled={isAdapting}
+                                className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-colors ${
+                                  hasIt
+                                    ? 'text-green-600 bg-green-50/50'
+                                    : isAdapting
+                                      ? 'text-gray-400'
+                                      : 'text-gray-700 hover:bg-gray-50'
+                                }`}
+                              >
+                                <span className="font-semibold">{r}</span>
+                                {isAdapting && <Loader2 size={12} className="animate-spin text-gray-400" />}
+                                {hasIt && !isAdapting && <Check size={12} className="text-green-500" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Delete post */}
+                {post && (
+                  <>
+                    <div className="w-px h-5 bg-gray-200" />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Delete this post?')) {
+                          onRemovePost({ id: post._id });
+                        }
+                      }}
+                      className="p-2 rounded-xl hover:bg-red-50 text-red-500 transition-colors"
+                      title="Delete post"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </>
                 )}
               </div>
-              <div className="flex gap-1" data-toolbar-right />
             </div>
             {codeViewPosts.has(id) ? (
               <div className="relative w-full rounded-xl overflow-hidden border border-gray-200 bg-[#1e1e1e]" style={{ aspectRatio: aspectRatio.replace(':', ' / ') }}>
@@ -295,6 +525,7 @@ export default function PostGrid({
           </div>
         );
       })}
+      <input ref={bgFileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
     </div>
   );
 }

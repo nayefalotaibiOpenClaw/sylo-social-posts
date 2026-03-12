@@ -1231,6 +1231,7 @@ export default function DesignPage() {
               selectedPostId={selectedPostId}
               onSelectPost={setSelectedPostId}
               onAdaptRatio={handleAdaptSingleRatio}
+              assets={assets as { _id: string; url: string | null; type: string; fileName: string }[]}
             />
           </SetHiddenComponentsContext.Provider>
           </HiddenComponentsContext.Provider>
