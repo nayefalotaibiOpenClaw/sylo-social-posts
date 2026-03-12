@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       count: body.count,
       targetRatio: body.targetRatio,
       referenceImages: body.referenceImages,
+      model: body.model,
     };
 
     switch (engineVersion) {

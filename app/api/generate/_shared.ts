@@ -10,6 +10,7 @@ export interface GenerateRequest {
   count?: number;
   targetRatio?: string;
   referenceImages?: { base64: string; mimeType: string }[];
+  model?: string;
 }
 
 export interface EngineResult {
@@ -33,11 +34,19 @@ export interface GenerateResponse {
 }
 
 // ─── Gemini Client ───────────────────────────────────────────────
-export function getModel() {
+const ALLOWED_MODELS = [
+  "gemini-3.1-flash-lite-preview",
+  "gemini-3.1-flash-preview",
+  "gemini-3.1-pro-preview",
+];
+const DEFAULT_MODEL = "gemini-3.1-pro-preview";
+
+export function getModel(modelId?: string) {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) throw new Error("API key not configured");
   const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
+  const model = modelId && ALLOWED_MODELS.includes(modelId) ? modelId : DEFAULT_MODEL;
+  return { client: genAI.getGenerativeModel({ model }), modelId: model };
 }
 
 // ─── Reference Images ────────────────────────────────────────────
@@ -64,8 +73,9 @@ export async function runGeneration(
   buildSystemPrompt: (i: number) => string,
   buildUserPrompt: (i: number) => string,
   referenceImages?: { base64: string; mimeType: string }[],
+  modelId?: string,
 ): Promise<NextResponse> {
-  const model = getModel();
+  const { client: model, modelId: resolvedModel } = getModel(modelId);
   const refImageParts = buildRefImageParts(referenceImages);
 
   let totalTokensUsed = 0;
@@ -91,7 +101,7 @@ export async function runGeneration(
         totalTokens: totalTokensUsed,
         promptTokens: usage?.promptTokenCount ?? 0,
         completionTokens: usage?.candidatesTokenCount ?? 0,
-        model: "gemini-3.1-flash-lite-preview",
+        model: resolvedModel,
         postsGenerated: 1,
       },
     } satisfies GenerateResponse);
@@ -133,7 +143,7 @@ export async function runGeneration(
       totalTokens: totalTokensUsed,
       promptTokens: totalPromptTokens,
       completionTokens: totalCompletionTokens,
-      model: "gemini-3.1-flash-lite-preview",
+      model: resolvedModel,
       postsGenerated: parsed.length,
     },
   } satisfies GenerateResponse);

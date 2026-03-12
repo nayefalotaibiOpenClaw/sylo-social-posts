@@ -17,7 +17,7 @@ import {
 
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
-    const { prompt, context, count = 1, targetRatio, referenceImages } = req;
+    const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
     const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
 
     const dynamicSection = context ? buildDynamicPrompt(context as GenerationContext) : "";
@@ -55,6 +55,7 @@ You have complete creative freedom for layout, decorations, and visual approach.
 You have complete creative freedom. Choose your own layout, decorations, copy angle, and visual approach. Surprise me with something stunning and original. The only rules are the component structure and theme system from the instructions above.${buildDistinctNote(i, postCount)}${buildRatioNote(targetRatio)}`;
       },
       referenceImages,
+      model,
     );
   } catch (error) {
     return handleGenerationError(error);

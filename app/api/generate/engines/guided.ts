@@ -20,7 +20,7 @@ import {
 
 export async function generate(req: GenerateRequest & { allLayouts?: boolean }): Promise<NextResponse> {
   try {
-    const { prompt, context, count = 1, targetRatio, referenceImages, allLayouts } = req;
+    const { prompt, context, count = 1, targetRatio, referenceImages, allLayouts, model } = req;
 
     // allLayouts mode: one post per layout blueprint
     const postCount = allLayouts
@@ -55,6 +55,7 @@ ${angle.instruction}
 Create something stunning and original. Match the quality of the reference examples.${buildDistinctNote(i, postCount)}${buildRatioNote(targetRatio)}`;
       },
       referenceImages,
+      model,
     );
   } catch (error) {
     return handleGenerationError(error);

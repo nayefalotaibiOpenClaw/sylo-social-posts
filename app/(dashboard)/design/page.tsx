@@ -148,6 +148,7 @@ export default function DesignPage() {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [generateCount, setGenerateCount] = useState(2);
   const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3 | 4 | 5 | 6>(5);
+  const [generateModel, setGenerateModel] = useState('gemini-3.1-pro-preview');
   const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [fetchingWebsite, setFetchingWebsite] = useState(false);
@@ -327,6 +328,7 @@ export default function DesignPage() {
           context,
           count: generateCount,
           version: generateVersion,
+          model: generateModel,
           referenceImages: chatImages.length > 0 ? chatImages.map(img => ({ base64: img.base64, mimeType: img.mimeType })) : undefined,
         }),
       });
@@ -470,7 +472,7 @@ export default function DesignPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: generatePrompt, context, allLayouts: true }),
+        body: JSON.stringify({ prompt: generatePrompt, context, allLayouts: true, model: generateModel }),
       });
 
       let data;
@@ -620,6 +622,7 @@ export default function DesignPage() {
               context,
               count: 1,
               version: v,
+              model: generateModel,
               referenceImages: refImgs,
             }),
           }).then(async res => {
@@ -1681,11 +1684,22 @@ export default function DesignPage() {
                 </div>
               )}
               <div className="flex items-center justify-between px-4 pb-3">
-                {/* Left: attachment */}
-                <label className="w-9 h-9 rounded-full border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 hover:border-slate-300 dark:hover:border-neutral-600 cursor-pointer transition-colors">
-                  <Paperclip size={16} />
-                  <input ref={chatImageInputRef} type="file" accept="image/*" multiple onChange={handleChatImageUpload} className="hidden" />
-                </label>
+                {/* Left: attachment + model */}
+                <div className="flex items-center gap-1.5">
+                  <label className="w-9 h-9 rounded-full border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 hover:border-slate-300 dark:hover:border-neutral-600 cursor-pointer transition-colors">
+                    <Paperclip size={16} />
+                    <input ref={chatImageInputRef} type="file" accept="image/*" multiple onChange={handleChatImageUpload} className="hidden" />
+                  </label>
+                  <select
+                    value={generateModel}
+                    onChange={(e) => setGenerateModel(e.target.value)}
+                    className="h-7 px-2 rounded-full bg-slate-100 dark:bg-neutral-800 text-[10px] font-bold text-slate-500 dark:text-neutral-400 border-none outline-none cursor-pointer hover:text-slate-700 dark:hover:text-neutral-200 transition-colors"
+                  >
+                    <option value="gemini-3.1-flash-lite-preview">Flash Lite</option>
+                    <option value="gemini-3.1-flash-preview">Flash</option>
+                    <option value="gemini-3.1-pro-preview">Pro</option>
+                  </select>
+                </div>
 
                 {/* Right: options + send */}
                 <div className="flex items-center gap-1">

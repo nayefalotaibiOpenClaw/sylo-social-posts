@@ -19,7 +19,7 @@ import {
 
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
-    const { prompt, context, count = 1, targetRatio, referenceImages } = req;
+    const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
     const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
 
     const dynamicSection = context ? buildDynamicPrompt(context as GenerationContext) : "";
@@ -44,6 +44,7 @@ ${angle.instruction}
 Choose your own layout, decorations, and visual approach. Be creative and original — you are NOT restricted to any specific layout template. Use mockups, cards, typography, images, or any combination that best fits the prompt. Match the quality of the reference examples.${buildDistinctNote(i, postCount)}${buildRatioNote(targetRatio)}`;
       },
       referenceImages,
+      model,
     );
   } catch (error) {
     return handleGenerationError(error);

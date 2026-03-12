@@ -20,7 +20,7 @@ import {
 
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
-    const { prompt, context, count = 1, targetRatio, referenceImages } = req;
+    const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
     const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
 
     // System prompt: classic + dynamic brand context
@@ -52,6 +52,7 @@ ${angle.instruction}
 Create something stunning and original. Match the quality of the reference examples.${postCount > 1 ? `\nPost ${i + 1}/${postCount} — MUST be visually distinct from other posts. Different layout, different copy angle, different decorations.` : ''}${buildRatioNote(targetRatio)}`;
       },
       referenceImages,
+      model,
     );
   } catch (error) {
     return handleGenerationError(error);

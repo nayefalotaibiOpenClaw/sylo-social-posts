@@ -28,7 +28,7 @@ const WILD_MOODS = [
 
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
-    const { prompt, context, count = 1, targetRatio, referenceImages } = req;
+    const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
     const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
 
     const shuffledMoods = shuffle(WILD_MOODS);
@@ -83,6 +83,7 @@ Creative direction: ${mood}${featuredAssetHint}
 Write UNIQUE headline text and copy — do NOT reuse generic phrases. Invent a fresh, specific headline that fits the topic and mood above. Every post must have completely different text content.${buildDistinctNote(i, postCount)}${buildRatioNote(targetRatio)}`;
       },
       referenceImages,
+      model,
     );
   } catch (error) {
     return handleGenerationError(error);
