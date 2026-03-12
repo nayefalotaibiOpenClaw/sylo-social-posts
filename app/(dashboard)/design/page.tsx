@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles, EyeOff, Eye } from "lucide-react";
+import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles, EyeOff, Eye, X, Zap, Clock, ChevronRight } from "lucide-react";
 import MobileNavMenu from "@/features/design-editor/components/MobileNavMenu";
 import { downloadPostsAsZip, downloadPostsMultiRatio } from "@/lib/export/download";
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext, HiddenComponentsContext, SetHiddenComponentsContext } from "@/contexts/EditContext";
@@ -145,6 +145,7 @@ export default function DesignPage() {
   const [generatedPosts, setGeneratedPosts] = useState<{ id: string; code: string }[]>([]);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [usageWarning, setUsageWarning] = useState<string | null>(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [generateCount, setGenerateCount] = useState(2);
   const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3 | 4 | 5>(5);
   const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
@@ -246,7 +247,7 @@ export default function DesignPage() {
 
     // Check subscription limits before calling the API
     if (canGenerateCheck && !canGenerateCheck.allowed) {
-      setGenerateError(canGenerateCheck.reason || "Generation not allowed. Please check your subscription.");
+      setShowLimitModal(true);
       return;
     }
 
@@ -310,15 +311,16 @@ export default function DesignPage() {
       setUsageWarning(null);
       if (data.usage) {
         try {
-          await incrementUsage({
+          const usageResult = await incrementUsage({
             tokensUsed: data.usage.totalTokens || 0,
             postsGenerated: data.usage.postsGenerated || codes.length,
           });
+          if (usageResult?.limitReached) {
+            setShowLimitModal(true);
+          }
         } catch (e) {
           const msg = e instanceof Error ? e.message : '';
-          if (msg.includes('limit exceeded') || msg.includes('limit reached')) {
-            setUsageWarning("You've reached your subscription limit. Upgrade your plan to continue generating.");
-          } else if (msg.includes('expired')) {
+          if (msg.includes('expired')) {
             setUsageWarning("Your subscription has expired. Please renew to continue generating.");
           } else if (msg.includes('No active subscription')) {
             setUsageWarning("No active subscription found. Please subscribe to continue generating.");
@@ -382,7 +384,7 @@ export default function DesignPage() {
   const handleGenerateAllLayouts = async () => {
     if (!generatePrompt.trim() || generating) return;
     if (canGenerateCheck && !canGenerateCheck.allowed) {
-      setGenerateError(canGenerateCheck.reason || "Generation not allowed.");
+      setShowLimitModal(true);
       return;
     }
     setGenerating(true);
@@ -443,15 +445,16 @@ export default function DesignPage() {
       setUsageWarning(null);
       if (data.usage) {
         try {
-          await incrementUsage({
+          const usageResult = await incrementUsage({
             tokensUsed: data.usage.totalTokens || 0,
             postsGenerated: data.usage.postsGenerated || codes.length,
           });
+          if (usageResult?.limitReached) {
+            setShowLimitModal(true);
+          }
         } catch (e) {
           const msg = e instanceof Error ? e.message : '';
-          if (msg.includes('limit exceeded') || msg.includes('limit reached')) {
-            setUsageWarning("You've reached your subscription limit. Upgrade your plan to continue generating.");
-          } else if (msg.includes('expired')) {
+          if (msg.includes('expired')) {
             setUsageWarning("Your subscription has expired. Please renew to continue generating.");
           } else if (msg.includes('No active subscription')) {
             setUsageWarning("No active subscription found. Please subscribe to continue generating.");
@@ -1573,6 +1576,106 @@ export default function DesignPage() {
           onClear={() => setSelectedPosts([])}
           onDownload={handleDownloadSelected}
         />
+      )}
+
+      {/* Usage Limit Modal */}
+      {showLimitModal && usage && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-md" onClick={() => setShowLimitModal(false)} />
+          <div className="relative bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.12)] max-w-sm w-full overflow-hidden">
+
+            {/* Close */}
+            <button
+              onClick={() => setShowLimitModal(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors z-10"
+            >
+              <X size={14} className="text-slate-500" />
+            </button>
+
+            {/* Content */}
+            <div className="px-7 pt-8 pb-7">
+              {/* Icon + Title */}
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
+                  <Zap size={18} className="text-white" />
+                </div>
+                <h2 className="text-xl font-black tracking-tight text-slate-900">Limit reached</h2>
+              </div>
+              <p className="text-sm text-slate-500 mt-2 mb-6">
+                Your <span className="font-semibold text-slate-700 capitalize">{usage.plan === "trial" ? "Free Trial" : usage.plan}</span> plan credits have been used up.
+              </p>
+
+              {/* Usage cards */}
+              <div className="space-y-3 mb-5">
+                {/* AI Tokens */}
+                <div className="bg-slate-50 rounded-2xl px-4 py-3.5">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-[13px] font-semibold text-slate-700">AI Tokens</span>
+                    <span className={`text-[13px] font-bold tabular-nums ${usage.aiTokensUsed >= usage.aiTokensLimit ? 'text-red-500' : 'text-slate-500'}`}>
+                      {(usage.aiTokensUsed).toLocaleString()} <span className="text-slate-300 font-normal">/</span> {(usage.aiTokensLimit).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        usage.aiTokensUsed >= usage.aiTokensLimit ? 'bg-red-400' : 'bg-slate-900'
+                      }`}
+                      style={{ width: `${Math.min(100, (usage.aiTokensUsed / usage.aiTokensLimit) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Posts */}
+                <div className="bg-slate-50 rounded-2xl px-4 py-3.5">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-[13px] font-semibold text-slate-700">Posts</span>
+                    <span className={`text-[13px] font-bold tabular-nums ${usage.postsUsed >= usage.postsLimit ? 'text-red-500' : 'text-slate-500'}`}>
+                      {usage.postsUsed} <span className="text-slate-300 font-normal">/</span> {usage.postsLimit}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        usage.postsUsed >= usage.postsLimit ? 'bg-red-400' : 'bg-slate-900'
+                      }`}
+                      style={{ width: `${Math.min(100, (usage.postsUsed / usage.postsLimit) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Renewal info */}
+              {usage.expiresAt && usage.daysLeft > 0 && (
+                <div className="flex items-center gap-2.5 bg-slate-50 rounded-xl px-4 py-3 mb-6">
+                  <Clock size={14} className="text-slate-400 shrink-0" />
+                  <p className="text-[13px] text-slate-500">
+                    Resets in <span className="font-bold text-slate-700">{usage.daysLeft}d</span>
+                    <span className="text-slate-300 mx-1.5">&middot;</span>
+                    {new Date(usage.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <Link
+                href="/pricing"
+                onClick={() => setShowLimitModal(false)}
+                className="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Upgrade Plan
+                <ChevronRight size={16} />
+              </Link>
+              {usage.daysLeft > 0 && (
+                <button
+                  onClick={() => setShowLimitModal(false)}
+                  className="w-full py-2.5 text-slate-400 hover:text-slate-600 text-[13px] font-semibold transition-colors mt-1"
+                >
+                  Wait for renewal ({usage.daysLeft}d left)
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

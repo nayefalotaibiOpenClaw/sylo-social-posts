@@ -367,7 +367,7 @@ export default function PostGrid({
                     const historyUrls = Array.from(imageHistory[id] || []).filter(u => !imageUrls.includes(u));
                     return (
                       <div
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 p-3 z-30 w-[280px] max-h-[420px] overflow-y-auto"
+                        className="absolute top-full left-1/2 mt-2 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 p-3 z-30 w-[360px] max-h-[420px] overflow-y-auto -translate-x-1/2"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {/* Background color */}
@@ -545,7 +545,7 @@ export default function PostGrid({
                                           href={photo.photographerUrl}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white/90 px-1 py-0.5 truncate opacity-0 group-hover/photo:opacity-100 transition-opacity"
+                                          className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-[8px] text-white/90 px-1.5 pt-3 pb-1 truncate"
                                           onClick={(e) => e.stopPropagation()}
                                         >
                                           {photo.photographer}
@@ -591,7 +591,7 @@ export default function PostGrid({
                       </button>
                       {captionOpenId === id && (
                         <div
-                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 p-3 z-30 w-[280px]"
+                          className="absolute top-full left-1/2 mt-2 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 p-3 z-30 w-[360px] -translate-x-1/2"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {/* Caption */}

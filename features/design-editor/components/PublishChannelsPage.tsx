@@ -125,6 +125,18 @@ export default function PublishChannelsPage({
     }
   };
 
+  // When scheduling, render the schedule page as the full content
+  if (showBulkModal) {
+    return (
+      <BulkScheduleModal
+        workspaceId={workspaceId}
+        accounts={activeAccounts}
+        onClose={() => setShowBulkModal(false)}
+        inline
+      />
+    );
+  }
+
   return (
     <div className="flex-1 bg-white flex flex-col overflow-hidden">
       {/* Toast */}
@@ -337,13 +349,6 @@ export default function PublishChannelsPage({
         </div>
       </div>
 
-      {showBulkModal && (
-        <BulkScheduleModal
-          workspaceId={workspaceId}
-          accounts={activeAccounts}
-          onClose={() => setShowBulkModal(false)}
-        />
-      )}
     </div>
   );
 }
