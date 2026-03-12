@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo, useCallback, useRef, useState } from "react";
-import { Code, Eye, Trash2, Scaling, Loader2, Check, Paintbrush, ImagePlus } from "lucide-react";
+import { Code, Eye, Trash2, Scaling, Loader2, Check, Paintbrush, ImagePlus, Search } from "lucide-react";
 import { AspectRatioType, PostScopeContext } from "@/contexts/EditContext";
 import DynamicPost from "@/app/components/DynamicPost";
 import PostWrapper from "@/app/components/PostWrapper";
@@ -38,6 +38,33 @@ function detectBgColor(code: string): string | null {
   const hexMatch = code.match(/backgroundColor:\s*['"]?(#[0-9a-fA-F]{3,8})['"]?/);
   if (hexMatch) return hexMatch[1];
   return null;
+}
+
+/** Unsplash photo result */
+interface UnsplashPhoto {
+  id: string;
+  thumb: string;
+  regular: string;
+  url: string;
+  photographer: string;
+  photographerUrl: string;
+  downloadLocation: string;
+  alt: string;
+}
+
+async function searchUnsplash(query: string): Promise<UnsplashPhoto[]> {
+  const res = await fetch(`/api/unsplash?query=${encodeURIComponent(query)}&per_page=12`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.photos || [];
+}
+
+function trackUnsplashDownload(downloadLocation: string) {
+  fetch("/api/unsplash", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ downloadLocation }),
+  }).catch(() => {});
 }
 
 const MemoizedPostContent = memo(function MemoizedPostContent({ code, aspectRatio, filename }: { code: string; aspectRatio: AspectRatioType; filename: string }) {
@@ -108,6 +135,11 @@ export default function PostGrid({
   const bgTargetRef = useRef<{ postId: string; oldUrl: string } | null>(null);
   // Track all URLs that have ever been used in each post (so user can swap back)
   const [imageHistory, setImageHistory] = useState<Record<string, Set<string>>>({});
+  // Unsplash search
+  const [unsplashQuery, setUnsplashQuery] = useState("");
+  const [unsplashResults, setUnsplashResults] = useState<UnsplashPhoto[]>([]);
+  const [unsplashLoading, setUnsplashLoading] = useState(false);
+  const [imageTab, setImageTab] = useState<'assets' | 'unsplash'>('assets');
 
   const updateCode = useCallback((id: string, newCode: string) => {
     const post = posts?.find((p: PostRecord) => p._id === id);
@@ -122,7 +154,19 @@ export default function PostGrid({
     }
   }, [posts, aspectRatio, onUpdatePostCode, onUpdatePostCodeForRatio, setGeneratedPosts]);
 
-  const handleSwapImage = useCallback((postId: string, code: string, oldUrl: string, newUrl: string) => {
+  const handleUnsplashSearch = useCallback(async (query: string) => {
+    if (!query.trim()) return;
+    setUnsplashLoading(true);
+    const results = await searchUnsplash(query);
+    setUnsplashResults(results);
+    setUnsplashLoading(false);
+  }, []);
+
+  const handleSwapImage = useCallback((postId: string, code: string, oldUrl: string, newUrl: string, unsplashDownloadLocation?: string) => {
+    // Track Unsplash download if applicable (required by API Terms Section 6)
+    if (unsplashDownloadLocation) {
+      trackUnsplashDownload(unsplashDownloadLocation);
+    }
     // Save the old URL to history before replacing
     setImageHistory(prev => {
       const set = new Set(prev[postId] || []);
@@ -353,22 +397,22 @@ export default function PostGrid({
                           </>
                         )}
 
-                        {/* Replace with: assets or upload */}
+                        {/* Replace with: tabs + content */}
                         {activeUrl && (
                           <>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-2">Replace With</p>
-
-                            {/* Upload */}
-                            <button
-                              onClick={() => {
-                                bgTargetRef.current = { postId: id, oldUrl: activeUrl };
-                                bgFileRef.current?.click();
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors mb-2"
-                            >
-                              <ImagePlus size={14} />
-                              Upload Image
-                            </button>
+                            {/* Upload + Previous */}
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <button
+                                onClick={() => {
+                                  bgTargetRef.current = { postId: id, oldUrl: activeUrl };
+                                  bgFileRef.current?.click();
+                                }}
+                                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors"
+                              >
+                                <ImagePlus size={12} />
+                                Upload
+                              </button>
+                            </div>
 
                             {/* Previous images (history) */}
                             {historyUrls.length > 0 && (
@@ -389,22 +433,104 @@ export default function PostGrid({
                               </>
                             )}
 
-                            {/* Assets */}
-                            {availableAssets.length > 0 && (
+                            {/* Tabs: Assets / Unsplash */}
+                            <div className="flex gap-0.5 bg-gray-100 rounded-lg p-0.5 mb-2">
+                              <button
+                                onClick={() => setImageTab('assets')}
+                                className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${
+                                  imageTab === 'assets' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                              >
+                                Assets
+                              </button>
+                              <button
+                                onClick={() => setImageTab('unsplash')}
+                                className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${
+                                  imageTab === 'unsplash' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                              >
+                                Unsplash
+                              </button>
+                            </div>
+
+                            {/* Assets tab */}
+                            {imageTab === 'assets' && availableAssets.length > 0 && (
                               <div className="grid grid-cols-3 gap-1.5">
                                 {availableAssets.map((asset) => (
                                   <button
                                     key={asset._id}
-                                    onClick={() => {
-                                      handleSwapImage(id, code, activeUrl, asset.url!);
-                                      setSelectedImageUrl(asset.url!);
-                                    }}
+                                    onClick={() => handleSwapImage(id, code, activeUrl, asset.url!)}
                                     className="rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all aspect-square"
                                     title={asset.fileName}
                                   >
                                     <img src={asset.url!} alt={asset.fileName} className="w-full h-full object-cover" />
                                   </button>
                                 ))}
+                              </div>
+                            )}
+                            {imageTab === 'assets' && (!availableAssets.length) && (
+                              <p className="text-[11px] text-gray-400 text-center py-4">No assets uploaded yet</p>
+                            )}
+
+                            {/* Unsplash tab */}
+                            {imageTab === 'unsplash' && (
+                              <div>
+                                {/* Search input */}
+                                <div className="flex gap-1 mb-2">
+                                  <div className="flex-1 flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-2">
+                                    <Search size={12} className="text-gray-400 shrink-0" />
+                                    <input
+                                      type="text"
+                                      value={unsplashQuery}
+                                      onChange={(e) => setUnsplashQuery(e.target.value)}
+                                      onKeyDown={(e) => { if (e.key === 'Enter') handleUnsplashSearch(unsplashQuery); }}
+                                      placeholder="Search photos..."
+                                      className="w-full py-1.5 text-[11px] bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
+                                    />
+                                  </div>
+                                  <button
+                                    onClick={() => handleUnsplashSearch(unsplashQuery)}
+                                    disabled={unsplashLoading}
+                                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                                  >
+                                    {unsplashLoading ? <Loader2 size={12} className="animate-spin" /> : 'Go'}
+                                  </button>
+                                </div>
+
+                                {/* Results */}
+                                {unsplashResults.length > 0 && (
+                                  <div className="grid grid-cols-3 gap-1.5">
+                                    {unsplashResults.map((photo) => (
+                                      <div key={photo.id} className="relative group/photo">
+                                        <button
+                                          onClick={() => handleSwapImage(id, code, activeUrl, photo.url, photo.downloadLocation)}
+                                          className="rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all aspect-square w-full"
+                                          title={`Photo by ${photo.photographer}`}
+                                        >
+                                          <img src={photo.thumb} alt={photo.alt} className="w-full h-full object-cover" />
+                                        </button>
+                                        {/* Attribution — required by Unsplash API Terms Section 9 */}
+                                        <a
+                                          href={photo.photographerUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white/90 px-1 py-0.5 truncate opacity-0 group-hover/photo:opacity-100 transition-opacity"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {photo.photographer}
+                                        </a>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {unsplashResults.length === 0 && !unsplashLoading && (
+                                  <p className="text-[11px] text-gray-400 text-center py-4">Search Unsplash for free photos</p>
+                                )}
+
+                                {/* Unsplash attribution */}
+                                <p className="text-[8px] text-gray-400 text-center mt-2">
+                                  Photos by <a href="https://unsplash.com/?utm_source=sylo&utm_medium=referral" target="_blank" rel="noopener noreferrer" className="underline">Unsplash</a>
+                                </p>
                               </div>
                             )}
                           </>
