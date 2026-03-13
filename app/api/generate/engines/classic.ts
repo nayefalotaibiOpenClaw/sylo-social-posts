@@ -21,7 +21,7 @@ import {
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
     const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
-    const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
+    const postCount = Math.min(Math.max(1, Number(count) || 1), 8);
 
     // System prompt: classic + dynamic brand context
     const dynamicSection = context ? buildDynamicPrompt(context as GenerationContext) : "";

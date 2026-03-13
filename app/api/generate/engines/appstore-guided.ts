@@ -207,11 +207,11 @@ ${HOOKS}
          style={{ backgroundColor: t.primary, fontFamily: t.font }}>
       ${BACKGROUNDS[c.background] || ''}
 
-      <div className="relative z-10 w-full h-full flex ${isTall ? 'flex-col' : 'flex-row'}"
+      <div className={\`relative z-10 w-full h-full flex \${isTall ? 'flex-col' : 'flex-row'}\`}
            style={{ padding: isTall ? '1.5rem' : '1.25rem' }}>
 
         <DraggableWrapper id="headline"
-          className="${isTall ? 'shrink-0 mb-3' : 'w-[42%] shrink-0 pr-3'} flex flex-col items-start text-left justify-center">
+          className={\`\${isTall ? 'shrink-0 mb-3' : 'w-[42%] shrink-0 pr-3'} flex flex-col items-start text-left justify-center\`}>
           <EditableText as="h2" className="font-bold leading-[0.95]"
             style={{ fontSize: 'clamp(1.8rem, 5vw, 3.2rem)', color: t.primaryLight }}>
             ${esc(c.headline)}
@@ -224,7 +224,7 @@ ${HOOKS}
 
         <DraggableWrapper id="mockup-area"
           className="flex-1 min-h-0 relative flex items-center justify-center">
-          <div className="${isTall ? 'translate-y-[10%]' : 'translate-x-[15%]'}">
+          <div className={isTall ? 'translate-y-[10%]' : 'translate-x-[15%]'}>
             <MockupFrame id="mockup" src="${src}" />
           </div>
 ${buildBadges(c.badges)}
@@ -454,7 +454,7 @@ function parseContent(text: string): AIContent | null {
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
     const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
-    const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
+    const postCount = Math.min(Math.max(1, Number(count) || 1), 8);
 
     const { client: gemini, modelId: resolvedModel } = getModel(model);
     const refImageParts = buildRefImageParts(referenceImages);

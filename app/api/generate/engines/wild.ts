@@ -29,7 +29,7 @@ const WILD_MOODS = [
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
     const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
-    const postCount = Math.min(Math.max(1, Number(count) || 1), 4);
+    const postCount = Math.min(Math.max(1, Number(count) || 1), 8);
 
     const shuffledMoods = shuffle(WILD_MOODS);
     const availableAssets = context?.assets?.filter(a => a.type !== 'logo') || [];

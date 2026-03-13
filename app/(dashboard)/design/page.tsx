@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles, EyeOff, Eye, X, Zap, Clock, ChevronRight } from "lucide-react";
+import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, Columns3, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles, EyeOff, Eye, X, Zap, Clock, ChevronRight } from "lucide-react";
 import MobileNavMenu from "@/features/design-editor/components/MobileNavMenu";
 import { downloadPostsAsZip, downloadPostsMultiRatio } from "@/lib/export/download";
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext, HiddenComponentsContext, SetHiddenComponentsContext } from "@/contexts/EditContext";
@@ -147,7 +147,7 @@ export default function DesignPage() {
   const [usageWarning, setUsageWarning] = useState<string | null>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [generateCount, setGenerateCount] = useState(2);
-  const [generateVersion, setGenerateVersion] = useState<1 | 2 | 3 | 4 | 5 | 6>(5);
+  const [generateVersion, setGenerateVersion] = useState<4 | 5 | 7>(7);
   const [generateModel, setGenerateModel] = useState('gemini-3.1-pro-preview');
   const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
@@ -328,6 +328,7 @@ export default function DesignPage() {
           context,
           count: generateCount,
           version: generateVersion,
+          targetRatio: aspectRatio,
           model: generateModel,
           referenceImages: chatImages.length > 0 ? chatImages.map(img => ({ base64: img.base64, mimeType: img.mimeType })) : undefined,
         }),
@@ -426,293 +427,7 @@ export default function DesignPage() {
     }
   };
 
-  const handleGenerateAllLayouts = async () => {
-    if (!generatePrompt.trim() || generating) return;
-    if (canGenerateCheck && !canGenerateCheck.allowed) {
-      setShowLimitModal(true);
-      return;
-    }
-    setGenerating(true);
-    setGenerateError(null);
-    setUsageWarning(null);
-    try {
-      const context = {
-        brandName: branding?.brandName || workspace?.name,
-        tagline: branding?.tagline,
-        website: workspace?.website,
-        industry: workspace?.industry,
-        language: workspace?.defaultLanguage || 'ar' as const,
-        logoUrl: logoUrl || undefined,
-        websiteInfo: workspace?.websiteInfo ? (() => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const wi = workspace.websiteInfo as any;
-          return {
-            companyName: wi.companyName || wi.title || "",
-            description: wi.description || "",
-            industry: wi.industry || "",
-            features: wi.features || [],
-            targetAudience: wi.targetAudience,
-            tone: wi.tone,
-            contact: wi.contact,
-            content: wi.rawContent || wi.content || "",
-          };
-        })() : undefined,
-        assets: (assets || [])
-          .filter(a => a.url)
-          .map(a => ({
-            id: a._id,
-            url: a.url || '',
-            type: a.type,
-            label: a.label || a.fileName,
-            description: a.description,
-            aiAnalysis: a.aiAnalysis,
-          })),
-      };
-
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: generatePrompt, context, allLayouts: true, model: generateModel }),
-      });
-
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        throw new Error('Something went wrong while generating. Please try again or contact support.');
-      }
-      if (!res.ok) throw new Error(data.error || 'Something went wrong while generating. Please try again or contact support.');
-
-      const codes: string[] = data.codes || [data.code];
-      const captionsAll: string[] = data.captions || [];
-      const keywordsAll: string[][] = data.imageKeywords || [];
-
-      setUsageWarning(null);
-      if (data.usage) {
-        try {
-          const usageResult = await logAndIncrement({
-            workspaceId: workspaceId || undefined,
-            category: "generation",
-            model: "gemini-3.1-flash-lite-preview",
-            promptTokens: data.usage.promptTokens || 0,
-            completionTokens: data.usage.completionTokens || 0,
-            totalTokens: data.usage.totalTokens || 0,
-            endpoint: "/api/generate",
-            postsGenerated: data.usage.postsGenerated || codes.length,
-          });
-          if (usageResult?.limitReached) {
-            setShowLimitModal(true);
-          }
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : '';
-          if (msg.includes('expired')) {
-            setUsageWarning("Your subscription has expired. Please renew to continue generating.");
-          } else if (msg.includes('No active subscription')) {
-            setUsageWarning("No active subscription found. Please subscribe to continue generating.");
-          }
-        }
-      }
-
-      if (workspaceId && user) {
-        let collectionId = activeCollectionId;
-        if (!collectionId) {
-          collectionId = await createCollection({
-            workspaceId,
-            userId: user._id,
-            name: "All Layouts",
-            mode: "social_grid",
-            language: workspace?.defaultLanguage || "ar",
-            aspectRatio: "1:1",
-          });
-        }
-        const newPostIds = await createPostBatch({
-          collectionId,
-          workspaceId,
-          userId: user._id,
-          language: workspace?.defaultLanguage || "ar",
-          posts: codes.map((code, i) => ({
-            title: `${generatePrompt.slice(0, 60)} — Layout ${i + 1}/${codes.length}`,
-            componentCode: code,
-            device: "none" as const,
-            caption: captionsAll[i] || undefined,
-            imageKeywords: keywordsAll[i]?.length ? keywordsAll[i] : undefined,
-          })),
-        });
-
-        // Adapt to additional ratios in background
-        const extraRatios = targetRatios.filter(r => r !== '1:1');
-        if (extraRatios.length > 0 && newPostIds.length > 0) {
-          setAdaptingRatios(true);
-          Promise.all(
-            newPostIds.map((id, i) => adaptPostToRatios(id, codes[i], targetRatios))
-          ).catch(err => console.error('Ratio adaptation failed:', err))
-            .finally(() => setAdaptingRatios(false));
-        }
-      } else {
-        const newEntries = codes.map((code, i) => ({
-          id: `generated-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
-          code,
-        }));
-        setGeneratedPosts(prev => [...newEntries, ...prev]);
-        setLocalOrder(prev => [...newEntries.map(e => e.id), ...prev]);
-      }
-    } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : 'Something went wrong. Please try again or contact support.');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  // Compare all engines: fire 1 post per engine in parallel, save with engine label
-  const ENGINE_LABELS: Record<number, string> = { 1: 'G (Guided)', 2: 'Cr (Creative)', 3: 'F (Free)', 4: 'W (Wild)', 5: 'C (Classic)', 6: 'A (App Store)', 7: 'AG (App Store Guided)' };
-  const handleCompareEngines = async () => {
-    if (!generatePrompt.trim() || generating) return;
-    if (canGenerateCheck && !canGenerateCheck.allowed) {
-      setShowLimitModal(true);
-      return;
-    }
-    setGenerating(true);
-    setGenerateError(null);
-    setUsageWarning(null);
-    try {
-      const context = {
-        brandName: branding?.brandName || workspace?.name,
-        tagline: branding?.tagline,
-        website: workspace?.website,
-        industry: workspace?.industry,
-        language: workspace?.defaultLanguage || 'ar' as const,
-        logoUrl: logoUrl || undefined,
-        websiteInfo: workspace?.websiteInfo ? (() => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const wi = workspace.websiteInfo as any;
-          return {
-            companyName: wi.companyName || wi.title || "",
-            description: wi.description || "",
-            industry: wi.industry || "",
-            features: wi.features || [],
-            targetAudience: wi.targetAudience,
-            tone: wi.tone,
-            contact: wi.contact,
-            content: wi.rawContent || wi.content || "",
-          };
-        })() : undefined,
-        assets: (assets || [])
-          .filter(a => a.url)
-          .map(a => ({
-            id: a._id,
-            url: a.url || '',
-            type: a.type,
-            label: a.label || a.fileName,
-            description: a.description,
-            aiAnalysis: a.aiAnalysis,
-          })),
-      };
-
-      const versions = [5, 1, 2, 3, 4, 6]; // C, G, Cr, F, W, A
-      const refImgs = chatImages.length > 0 ? chatImages.map(img => ({ base64: img.base64, mimeType: img.mimeType })) : undefined;
-
-      // Fire all engines in parallel, 1 post each
-      const results = await Promise.allSettled(
-        versions.map(v =>
-          fetch('/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              prompt: generatePrompt,
-              context,
-              count: 1,
-              version: v,
-              model: generateModel,
-              referenceImages: refImgs,
-            }),
-          }).then(async res => {
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed');
-            return { version: v, code: (data.codes?.[0] || data.code) as string, usage: data.usage };
-          })
-        )
-      );
-
-      // Collect successful results
-      const succeeded: { version: number; code: string; usage?: { promptTokens: number; completionTokens: number; totalTokens: number; postsGenerated: number } }[] = [];
-      for (const r of results) {
-        if (r.status === 'fulfilled') succeeded.push(r.value);
-      }
-
-      if (succeeded.length === 0) {
-        throw new Error('All engine generations failed');
-      }
-
-      // Log combined usage
-      const totalUsage = succeeded.reduce((acc, s) => {
-        if (s.usage) {
-          acc.promptTokens += s.usage.promptTokens || 0;
-          acc.completionTokens += s.usage.completionTokens || 0;
-          acc.totalTokens += s.usage.totalTokens || 0;
-          acc.postsGenerated += s.usage.postsGenerated || 1;
-        }
-        return acc;
-      }, { promptTokens: 0, completionTokens: 0, totalTokens: 0, postsGenerated: 0 });
-
-      if (totalUsage.totalTokens > 0) {
-        try {
-          const usageResult = await logAndIncrement({
-            workspaceId: workspaceId || undefined,
-            category: "generation",
-            model: "gemini-3.1-flash-lite-preview",
-            promptTokens: totalUsage.promptTokens,
-            completionTokens: totalUsage.completionTokens,
-            totalTokens: totalUsage.totalTokens,
-            endpoint: "/api/generate",
-            postsGenerated: totalUsage.postsGenerated,
-          });
-          if (usageResult?.limitReached) setShowLimitModal(true);
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : '';
-          if (msg.includes('expired')) setUsageWarning("Your subscription has expired. Please renew to continue generating.");
-          else if (msg.includes('No active subscription')) setUsageWarning("No active subscription found. Please subscribe to continue generating.");
-        }
-      }
-
-      // Save to Convex with engine label in title
-      if (workspaceId && user) {
-        let collectionId = activeCollectionId;
-        if (!collectionId) {
-          collectionId = await createCollection({
-            workspaceId,
-            userId: user._id,
-            name: "Engine Comparison",
-            mode: "social_grid",
-            language: workspace?.defaultLanguage || "ar",
-            aspectRatio: "1:1",
-          });
-        }
-        await createPostBatch({
-          collectionId,
-          workspaceId,
-          userId: user._id,
-          language: workspace?.defaultLanguage || "ar",
-          posts: succeeded.map(s => ({
-            title: `[${ENGINE_LABELS[s.version]}] ${generatePrompt.slice(0, 60)}`,
-            componentCode: s.code,
-            device: "none" as const,
-          })),
-        });
-      } else {
-        const newEntries = succeeded.map(s => ({
-          id: `compare-${s.version}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          code: s.code,
-        }));
-        setGeneratedPosts(prev => [...newEntries, ...prev]);
-        setLocalOrder(prev => [...newEntries.map(e => e.id), ...prev]);
-      }
-      setChatImages([]);
-    } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : 'Something went wrong. Please try again or contact support.');
-    } finally {
-      setGenerating(false);
-    }
-  };
+  const ENGINE_LABELS: Record<number, string> = { 4: 'W (Wild)', 5: 'C (Classic)', 7: 'AG (App Store Guided)' };
 
   // After generating posts, adapt each to the additional selected ratios
   const adaptPostToRatios = async (postId: Id<"posts">, baseCode: string, ratios: AspectRatioType[]) => {
@@ -1347,49 +1062,185 @@ export default function DesignPage() {
       {activeTab !== 'brand' && activeTab !== 'publish' && activeTab !== 'channels' && activeTab !== 'assets' && <div className="flex-1 flex flex-col overflow-hidden">
         {/* Nav Header with Design/Generate sub-tab switcher */}
         <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-          <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
-            <MobileNavMenu activeTab={activeTab} onTabClick={handleTabClick} workspaces={workspaces?.map(w => ({ _id: w._id, name: w.name }))} currentWorkspaceId={workspaceId ?? undefined} currentWorkspaceName={workspace?.name} />
-            <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700 md:hidden" />
-
-            {/* Sub-tab switcher: Design | Generate — active shows label, inactive icon-only */}
-            <div className="flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5">
-              <button
-                onClick={() => setActiveTab(null)}
-                title="Design"
-                className={`group flex items-center gap-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                  activeTab !== 'generate'
-                    ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm px-3 py-1.5'
-                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 p-1.5'
-                }`}
-              >
-                <LayoutGrid size={14} />
-                {activeTab !== 'generate' && <span>Design</span>}
-              </button>
-              <button
-                onClick={() => setActiveTab('generate')}
-                title="Generate"
-                className={`group flex items-center gap-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                  activeTab === 'generate'
-                    ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm px-3 py-1.5'
-                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 p-1.5'
-                }`}
-              >
-                <Sparkles size={14} />
-                {activeTab === 'generate' && <span>Generate</span>}
-              </button>
+          <nav ref={toolbarRef} className="max-w-5xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-3">
+            {/* Mobile: nav menu / Desktop: Design label — single element */}
+            <div className="md:hidden">
+              <MobileNavMenu activeTab={activeTab} onTabClick={handleTabClick} workspaces={workspaces?.map(w => ({ _id: w._id, name: w.name }))} currentWorkspaceId={workspaceId ?? undefined} currentWorkspaceName={workspace?.name} />
             </div>
+            <span className="hidden md:flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
+              <LayoutGrid size={14} />
+              Design
+            </span>
 
             <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700" />
 
             {posts && <span className="text-xs font-medium text-slate-400">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>}
 
             <div className="flex-1" />
+
+            {/* Editing toolbar controls */}
+            <div className="flex items-center gap-0.5">
+              {/* Cursor / default mode */}
+              <button
+                onClick={() => { setActiveMode('default'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
+                title="Select"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${activeMode === 'default' ? 'bg-slate-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-600 dark:hover:text-neutral-300'}`}
+              >
+                <MousePointer2 size={15} />
+              </button>
+
+              {/* Edit mode */}
+              <button
+                onClick={() => { setActiveMode(activeMode === 'edit' ? 'default' : 'edit'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
+                title="Edit"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${activeMode === 'edit' ? 'bg-slate-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-600 dark:hover:text-neutral-300'}`}
+              >
+                <Pencil size={15} />
+              </button>
+
+              {/* Hidden components restore — only in edit mode with hidden items */}
+              {editMode && hiddenComponents.size > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => setToolbarDropdown(toolbarDropdown === 'hidden' ? null : 'hidden')}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all relative ${toolbarDropdown === 'hidden' ? 'bg-red-50 text-red-500' : 'text-red-400 hover:bg-red-50'}`}
+                    title={`${hiddenComponents.size} hidden component${hiddenComponents.size > 1 ? 's' : ''}`}
+                  >
+                    <EyeOff size={15} />
+                    <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                      {hiddenComponents.size}
+                    </span>
+                  </button>
+                  {toolbarDropdown === 'hidden' && (
+                    <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[200px] max-h-[300px] overflow-y-auto z-50">
+                      <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hidden Components</div>
+                      {Array.from(hiddenComponents).map((cid) => (
+                        <button
+                          key={cid}
+                          onClick={() => {
+                            setHiddenComponents(prev => {
+                              const next = new Set(prev);
+                              next.delete(cid);
+                              return next;
+                            });
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+                        >
+                          <Eye size={12} className="text-gray-400 shrink-0" />
+                          <span className="font-mono truncate">{cid}</span>
+                        </button>
+                      ))}
+                      <div className="border-t border-gray-100 dark:border-neutral-800 mt-1 pt-1">
+                        <button
+                          onClick={() => { setHiddenComponents(new Set()); setToolbarDropdown(null); }}
+                          className="w-full px-3 py-2 text-[12px] font-bold text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+                        >
+                          Restore All
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="w-px h-4 bg-slate-200/80 dark:bg-neutral-700/80 mx-1" />
+
+              {/* Aspect Ratio */}
+              <div className="relative">
+                <button
+                  onClick={() => setToolbarDropdown(toolbarDropdown === 'ratio' ? null : 'ratio')}
+                  title="Aspect Ratio"
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${toolbarDropdown === 'ratio' ? 'bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-600 dark:hover:text-neutral-300'}`}
+                >
+                  <Proportions size={15} />
+                </button>
+                {toolbarDropdown === 'ratio' && (
+                  <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[140px] z-50">
+                    {(['1:1', '3:4', '4:3', '9:16', '16:9'] as const).map((r) => (
+                      <button key={r} onClick={() => { setAspectRatio(r); setToolbarDropdown(null); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${aspectRatio === r ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Device */}
+              <div className="relative">
+                <button
+                  onClick={() => setToolbarDropdown(toolbarDropdown === 'device' ? null : 'device')}
+                  title="Device"
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${toolbarDropdown === 'device' ? 'bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-600 dark:hover:text-neutral-300'}`}
+                >
+                  <Smartphone size={15} />
+                </button>
+                {toolbarDropdown === 'device' && (
+                  <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[150px] z-50">
+                    {([['iphone', 'iPhone'], ['android', 'Android'], ['ipad', 'iPad'], ['android_tablet', 'Tab'], ['desktop', 'Desktop']] as const).map(([key, label]) => (
+                      <button key={key} onClick={() => { setDeviceType(key as typeof deviceType); setToolbarDropdown(null); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${deviceType === key ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Grid columns */}
+              <div className="relative">
+                <button
+                  onClick={() => setToolbarDropdown(toolbarDropdown === 'grid' ? null : 'grid')}
+                  title="Grid Columns"
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${toolbarDropdown === 'grid' ? 'bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-600 dark:hover:text-neutral-300'}`}
+                >
+                  <Columns3 size={15} />
+                </button>
+                {toolbarDropdown === 'grid' && (
+                  <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[140px] z-50">
+                    {[1, 2, 3, 4].map((n) => (
+                      <button key={n} onClick={() => { setGridCols(n); setToolbarDropdown(null); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${gridCols === n ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                      >
+                        {n} {n === 1 ? 'Column' : 'Columns'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="w-px h-4 bg-slate-200/80 dark:bg-neutral-700/80 mx-1" />
+
+              {/* Reorder */}
+              <button
+                onClick={() => { setActiveMode(activeMode === 'reorder' ? 'default' : 'reorder'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
+                title="Reorder"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${reorderMode ? 'bg-slate-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-600 dark:hover:text-neutral-300'}`}
+              >
+                <ArrowUpDown size={15} />
+              </button>
+
+              {/* Select & Download */}
+              <button
+                onClick={() => {
+                  if (selectMode) { setSelectedPosts([]); setActiveMode('default'); }
+                  else { setActiveMode('select'); }
+                  setToolbarDropdown(null);
+                }}
+                title="Select & Download"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${selectMode ? 'bg-slate-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-600 dark:hover:text-neutral-300'}`}
+              >
+                <Download size={15} />
+              </button>
+            </div>
           </nav>
         </div>
 
         <div className="flex-1 relative overflow-hidden">
         <main
-        className={`h-full overflow-y-auto p-3 md:p-6 ${activeTab === 'generate' ? 'pb-40' : 'pb-24'}`}
+        className="h-full overflow-y-auto p-3 md:p-6 pb-40"
         onClick={(e) => {
           if ((e.target as HTMLElement).closest?.('[data-toolbar-portal]')) return;
           if ((e.target as HTMLElement).closest?.('[data-contextual-toolbar]')) return;
@@ -1496,162 +1347,7 @@ export default function DesignPage() {
           </DeviceContext.Provider>
         )}
 
-        {/* Bottom toolbar — only visible in Design mode */}
-        {activeTab !== 'generate' && (
-        <div ref={toolbarRef} className="fixed bottom-[64px] md:bottom-4 left-1/2 -translate-x-1/2 z-[60]">
-          <div className="flex items-center bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border border-gray-200/60 dark:border-neutral-700/60 px-1.5 py-1.5 gap-0.5">
-
-            {/* Cursor / default mode */}
-            <button
-              onClick={() => { setActiveMode('default'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeMode === 'default' ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
-            >
-              <MousePointer2 size={18} />
-            </button>
-
-            {/* Edit mode */}
-            <button
-              onClick={() => { setActiveMode(activeMode === 'edit' ? 'default' : 'edit'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${activeMode === 'edit' ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
-            >
-              <Pencil size={18} />
-            </button>
-
-            {/* Hidden components restore — only in edit mode with hidden items */}
-            {editMode && hiddenComponents.size > 0 && (
-              <div className="relative">
-                <button
-                  onClick={() => setToolbarDropdown(toolbarDropdown === 'hidden' ? null : 'hidden')}
-                  className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all relative ${toolbarDropdown === 'hidden' ? 'bg-red-50 text-red-500' : 'text-red-400 hover:bg-red-50'}`}
-                  title={`${hiddenComponents.size} hidden component${hiddenComponents.size > 1 ? 's' : ''}`}
-                >
-                  <EyeOff size={18} />
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {hiddenComponents.size}
-                  </span>
-                </button>
-                {toolbarDropdown === 'hidden' && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[200px] max-h-[300px] overflow-y-auto">
-                    <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hidden Components</div>
-                    {Array.from(hiddenComponents).map((cid) => (
-                      <button
-                        key={cid}
-                        onClick={() => {
-                          setHiddenComponents(prev => {
-                            const next = new Set(prev);
-                            next.delete(cid);
-                            return next;
-                          });
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
-                      >
-                        <Eye size={12} className="text-gray-400 shrink-0" />
-                        <span className="font-mono truncate">{cid}</span>
-                      </button>
-                    ))}
-                    <div className="border-t border-gray-100 dark:border-neutral-800 mt-1 pt-1">
-                      <button
-                        onClick={() => { setHiddenComponents(new Set()); setToolbarDropdown(null); }}
-                        className="w-full px-3 py-2 text-[12px] font-bold text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
-                      >
-                        Restore All
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Aspect Ratio */}
-            <div className="relative">
-              <button
-                onClick={() => setToolbarDropdown(toolbarDropdown === 'ratio' ? null : 'ratio')}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'ratio' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
-              >
-                <Proportions size={18} />
-              </button>
-              {toolbarDropdown === 'ratio' && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[140px]">
-                  {(['1:1', '3:4', '4:3', '9:16', '16:9'] as const).map((r) => (
-                    <button key={r} onClick={() => { setAspectRatio(r); setToolbarDropdown(null); }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${aspectRatio === r ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
-                    >
-                      {r}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Device */}
-            <div className="relative">
-              <button
-                onClick={() => setToolbarDropdown(toolbarDropdown === 'device' ? null : 'device')}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'device' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
-              >
-                <Smartphone size={18} />
-              </button>
-              {toolbarDropdown === 'device' && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[150px]">
-                  {([['iphone', 'iPhone'], ['android', 'Android'], ['ipad', 'iPad'], ['android_tablet', 'Tab'], ['desktop', 'Desktop']] as const).map(([key, label]) => (
-                    <button key={key} onClick={() => { setDeviceType(key as typeof deviceType); setToolbarDropdown(null); }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${deviceType === key ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Grid columns */}
-            <div className="relative">
-              <button
-                onClick={() => setToolbarDropdown(toolbarDropdown === 'grid' ? null : 'grid')}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${toolbarDropdown === 'grid' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
-              >
-                <LayoutGrid size={18} />
-              </button>
-              {toolbarDropdown === 'grid' && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[140px]">
-                  {[1, 2, 3, 4].map((n) => (
-                    <button key={n} onClick={() => { setGridCols(n); setToolbarDropdown(null); }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${gridCols === n ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
-                    >
-                      {n} {n === 1 ? 'Column' : 'Columns'}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="w-px h-5 bg-gray-200/80 dark:bg-neutral-700/80 mx-0.5" />
-
-            {/* Reorder */}
-            <button
-              onClick={() => { setActiveMode(activeMode === 'reorder' ? 'default' : 'reorder'); setToolbarDropdown(null); if (selectMode) setSelectedPosts([]); }}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${reorderMode ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
-            >
-              <ArrowUpDown size={18} />
-            </button>
-
-            {/* Select & Download */}
-            <button
-              onClick={() => {
-                if (selectMode) { setSelectedPosts([]); setActiveMode('default'); }
-                else { setActiveMode('select'); }
-                setToolbarDropdown(null);
-              }}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${selectMode ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
-            >
-              <Download size={18} />
-            </button>
-          </div>
-        </div>
-        )}
-
-        {/* Floating chat input — only visible in Generate mode */}
-        {activeTab === 'generate' && (
+        {/* Floating chat input — always visible */}
           <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] md:w-full max-w-3xl px-0 md:px-4 z-[60]">
             <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-neutral-700/80 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
               <textarea
@@ -1705,11 +1401,11 @@ export default function DesignPage() {
                 <div className="flex items-center gap-1">
                   {/* Post count */}
                   <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5">
-                    {[1, 2, 3, 4].map((n) => (
+                    {[1, 2, 4, 6, 8].map((n) => (
                       <button
                         key={n}
                         onClick={() => setGenerateCount(n)}
-                        className={`w-7 h-7 rounded-full text-xs font-bold transition-colors ${
+                        className={`w-6 h-7 rounded-full text-xs font-bold transition-colors ${
                           generateCount === n
                             ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300'
@@ -1724,11 +1420,7 @@ export default function DesignPage() {
                   <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
                     {([
                       { v: 5 as const, label: 'C', title: 'Classic' },
-                      { v: 1 as const, label: 'G', title: 'Guided' },
-                      { v: 2 as const, label: 'Cr', title: 'Creative' },
-                      { v: 3 as const, label: 'F', title: 'Free' },
                       { v: 4 as const, label: 'W', title: 'Wild' },
-                      { v: 6 as const, label: 'A', title: 'App Store Preview' },
                       { v: 7 as const, label: 'AG', title: 'App Store Guided' },
                     ]).map(({ v, label, title }) => (
                       <button
@@ -1748,44 +1440,21 @@ export default function DesignPage() {
 
                   {/* Ratio selector */}
                   <div className="flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
-                    {(['1:1', '9:16', '3:4', '4:3', '16:9'] as AspectRatioType[]).map((r) => {
-                      const isSelected = targetRatios.includes(r);
-                      const isBase = r === '1:1';
-                      return (
-                        <button
-                          key={r}
-                          onClick={() => {
-                            if (isBase) return;
-                            setTargetRatios(prev =>
-                              prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]
-                            );
-                          }}
-                          title={isBase ? '1:1 (base — always included)' : `${isSelected ? 'Remove' : 'Add'} ${r} variant`}
-                          className={`px-1.5 h-7 rounded-full text-[10px] font-bold transition-colors ${
-                            isSelected
-                              ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm'
-                              : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300'
-                          } ${isBase ? 'opacity-100' : ''}`}
-                        >
-                          {r}
-                        </button>
-                      );
-                    })}
+                    {(['1:1', '9:16', '3:4', '4:3', '16:9'] as AspectRatioType[]).map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => setAspectRatio(r)}
+                        title={r}
+                        className={`px-1.5 h-7 rounded-full text-[10px] font-bold transition-colors ${
+                          aspectRatio === r
+                            ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300'
+                        }`}
+                      >
+                        {r}
+                      </button>
+                    ))}
                   </div>
-
-                  {/* Compare All Engines */}
-                  <button
-                    onClick={handleCompareEngines}
-                    disabled={generating || !generatePrompt.trim()}
-                    title="Compare all engines (1 post each)"
-                    className={`hidden sm:flex w-7 h-7 rounded-full items-center justify-center text-[10px] font-bold transition-colors ml-1 ${
-                      generating || !generatePrompt.trim()
-                        ? 'bg-slate-200 dark:bg-neutral-700 text-slate-400'
-                        : 'bg-amber-500 text-white hover:bg-amber-600'
-                    }`}
-                  >
-                    {generating ? <Loader2 size={10} className="animate-spin" /> : <Zap size={12} />}
-                  </button>
 
                   {/* Send */}
                   <button
@@ -1814,7 +1483,6 @@ export default function DesignPage() {
               <p className="text-xs text-amber-600 font-medium mt-2 text-center">{usageWarning}</p>
             )}
           </div>
-        )}
 
       </main>
       </div>
