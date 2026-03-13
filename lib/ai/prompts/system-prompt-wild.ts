@@ -16,8 +16,22 @@ import EditableText from './EditableText';       // Wrap ALL visible text (props
 import DraggableWrapper from './DraggableWrapper'; // Wrap ALL content sections (props: id, className, style, dir)
 import { useAspectRatio } from './EditContext';   // Returns '1:1' | '9:16' | '16:9' | '3:4' | '4:3'
 import { useTheme } from './ThemeContext';         // Theme colors
+import { MockupFrame, PostHeader, PostFooter, FloatingCard } from './shared';
 // You can import any icon from 'lucide-react'
 \`\`\`
+
+## DEVICE MOCKUPS
+Use \`<MockupFrame id="mockup" src={imageUrl} />\` for ALL device screenshots.
+- Auto-detects device type (phone/tablet/desktop) and auto-sizes based on aspect ratio.
+- NO manual sizing needed. Just provide id and src.
+- Place inside a flex-1 container:
+\`\`\`tsx
+<DraggableWrapper id="mockup-area" className="flex-1 min-h-0 relative flex items-center justify-center">
+  <MockupFrame id="mockup" src={url} />
+</DraggableWrapper>
+\`\`\`
+- When an asset is a screenshot (iphone/ipad/desktop type), ALWAYS use MockupFrame to display it.
+- FloatingCards can be placed next to the mockup using absolute positioning within the same container.
 
 ## THEME — NEVER hardcode colors
 \`\`\`tsx

@@ -19,7 +19,7 @@ import EditableText from './EditableText';
 import DraggableWrapper from './DraggableWrapper';
 import { useAspectRatio } from './EditContext';
 import { useTheme } from './ThemeContext';
-import { IPhoneMockup, IPadMockup, DesktopMockup, PostHeader, PostFooter, FloatingCard } from './shared';
+import { MockupFrame, PostHeader, PostFooter, FloatingCard } from './shared';
 // Import only the lucide-react icons you use:
 // import { Heart, Star, ... } from 'lucide-react';
 \`\`\`
@@ -38,30 +38,33 @@ const t = useTheme();
 \`\`\`tsx
 const ratio = useAspectRatio();
 const isTall = ratio === '9:16' || ratio === '3:4';
-// USE isTall to conditionally size mockups, images, and spacing:
-// className={isTall ? 'w-[300px] h-[580px]' : 'w-[230px] h-[360px]'}  // iPhone
-// className={isTall ? 'w-[340px] h-[230px]' : 'w-[300px] h-[200px]'}  // Desktop
-// className={isTall ? 'w-[400px] h-[400px]' : 'w-[320px] h-[320px]'}  // Circular image
+const isWide = ratio === '16:9' || ratio === '4:3';
+// USE isTall/isWide to conditionally size spacing and content
 \`\`\`
 
 ## SHARED COMPONENTS
+- **<MockupFrame>** — Unified device mockup. Props: id, src (image URL). Auto-detects device type (phone/tablet/desktop) and auto-sizes based on aspect ratio. Just use: \`<MockupFrame id="mockup" src={url} />\`. NO manual sizing needed — it handles everything.
 - **<PostHeader>** — Props: id, title (brand name), subtitle, badge (JSX), variant ("dark"|"light"), logoUrl
 - **<PostFooter>** — Props: id, label (BRAND NAME), text, icon (JSX), variant ("dark"|"light")
 - **<FloatingCard>** — Props: id, icon, label, value, className (use absolute positioning), rotate (number), borderColor, animation ("float"|"float-slow"|"none")
-- **<IPhoneMockup>** — Props: src (image URL), alt, notch ("pill"|"notch"). Wrap in: className={isTall ? 'w-[200px] h-[400px]' : 'w-[180px] h-[340px]'}
-- **<IPadMockup>** — Props: src, alt, orientation. Landscape: isTall ? 'w-[320px] h-[230px]' : 'w-[280px] h-[200px]'
-- **<DesktopMockup>** — Props: src, alt, url, trafficLights. Size: isTall ? 'w-[340px] h-[230px]' : 'w-[300px] h-[200px]'
 - **<EditableText>** — Props: as ("h2"|"p"|"span"|"h3"), className, style. Wrap ALL visible text.
 - **<DraggableWrapper>** — Props: id (unique), className, variant ("mockup"), dir ("rtl" for Arabic). Wrap ALL sections.
 
 ## ASSET RULES
 - **background** → \`<img src={url} className="absolute inset-0 w-full h-full object-cover" />\` + gradient overlay. NEVER in mockups.
-- **screenshot/iphone** → ONLY inside <IPhoneMockup>
-- **screenshot/ipad** → ONLY inside <IPadMockup>
-- **screenshot/desktop** → ONLY inside <DesktopMockup>
+- **screenshot/iphone/ipad/desktop** → Use \`<MockupFrame id="mockup" src={url} />\`. It auto-detects the right device frame.
 - **product** → \`<img className="w-64 h-64 object-contain drop-shadow-2xl" />\`
 - **logo** → Pass to PostHeader via logoUrl prop
 - NEVER put background images in device mockups.
+
+## MOCKUP LAYOUT PATTERN
+When using MockupFrame, place it inside a flex-1 container:
+\`\`\`tsx
+<DraggableWrapper id="mockup-area" className="flex-1 min-h-0 relative flex items-center justify-center">
+  <MockupFrame id="mockup" src={screenshotUrl} />
+  {/* Optional FloatingCards positioned with absolute */}
+</DraggableWrapper>
+\`\`\`
 
 ## DECORATION TOOLKIT (pick 1-3 per post, combine creatively)
 \`\`\`tsx

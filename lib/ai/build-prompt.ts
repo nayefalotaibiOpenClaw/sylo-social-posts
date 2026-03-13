@@ -103,13 +103,13 @@ export function buildDynamicPrompt(context: GenerationContext): string {
           break;
         case "iphone":
         case "screenshot":
-          usage = "USE AS: Inside <DeviceMockup src={url} />. Use the DEVICE-AWARE MOCKUPS pattern with useDeviceType() to pick the correct mockup component. Wrap in isTall-responsive div with device-aware sizing.";
+          usage = "USE AS: <MockupFrame id=\"mockup\" src={url} /> — auto-detects device type and sizes itself.";
           break;
         case "ipad":
-          usage = "USE AS: Inside <DeviceMockup src={url} />. Use the DEVICE-AWARE MOCKUPS pattern with useDeviceType() to pick the correct mockup component. Wrap in isTall-responsive div with device-aware sizing.";
+          usage = "USE AS: <MockupFrame id=\"mockup\" src={url} /> — auto-detects device type and sizes itself.";
           break;
         case "desktop":
-          usage = "USE AS: Inside <DesktopMockup src={url} /> only. Wrap in isTall-responsive div.";
+          usage = "USE AS: <MockupFrame id=\"mockup\" src={url} /> — auto-detects device type and sizes itself.";
           break;
         case "product":
           usage = "USE AS: Hero product <img> with drop-shadow, positioned creatively.";
