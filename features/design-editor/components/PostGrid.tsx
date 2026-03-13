@@ -28,25 +28,28 @@ function hasMockup(code: string): boolean {
   return /MockupFrame|IPhoneMockup|IPadMockup|DesktopMockup|AndroidPhoneMockup|AndroidTabletMockup/.test(code);
 }
 
-/** Inject a MockupFrame into post code before PostFooter or before last closing tags */
+/** Inject a MockupFrame into post code — absolute positioned so it overlays without breaking layout */
 function injectMockup(code: string, src: string): string {
-  const mockupSnippet = `
-        {/* Mockup */}
-        <div className="flex-1 min-h-0 flex items-center justify-center relative">
-          <MockupFrame id="mockup" src="${src}" />
-        </div>`;
+  // Absolute-positioned mockup that overlays the post center — won't break existing layout
+  const mockupSnippet = '\n        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">\n          <div className="pointer-events-auto">\n            <MockupFrame id="mockup" src="' + src + '" />\n          </div>\n        </div>\n';
 
-  // Try to insert before <PostFooter
-  const footerIdx = code.lastIndexOf('<PostFooter');
-  if (footerIdx !== -1) {
-    return code.slice(0, footerIdx) + mockupSnippet + '\n\n        ' + code.slice(footerIdx);
+  // Insert inside the first "relative z-10" content wrapper (the main content div)
+  const contentWrapperMatch = code.match(/className="[^"]*relative\s+z-10[^"]*"/);
+  if (contentWrapperMatch && contentWrapperMatch.index !== undefined) {
+    // Find the closing > of this div tag
+    const tagClose = code.indexOf('>', contentWrapperMatch.index);
+    if (tagClose !== -1) {
+      return code.slice(0, tagClose + 1) + mockupSnippet + code.slice(tagClose + 1);
+    }
   }
 
-  // Fallback: insert before the last two closing </div> tags (content wrapper + root)
-  const closingPattern = /(\s*<\/div>\s*<\/div>\s*)$/;
-  const match = code.match(closingPattern);
-  if (match && match.index !== undefined) {
-    return code.slice(0, match.index) + mockupSnippet + '\n' + code.slice(match.index);
+  // Fallback: insert after the first opening child of root (after second >)
+  let firstChild = code.indexOf('>');
+  if (firstChild !== -1) {
+    const secondTag = code.indexOf('>', firstChild + 1);
+    if (secondTag !== -1) {
+      return code.slice(0, secondTag + 1) + mockupSnippet + code.slice(secondTag + 1);
+    }
   }
 
   return code;
@@ -610,7 +613,9 @@ export default function PostGrid({
                         // Find first screenshot asset URL, or use placeholder
                         const screenshotAsset = assets?.find(a => a.url && ['iphone', 'ipad', 'desktop', 'screenshot'].includes(a.type));
                         const mockupSrc = screenshotAsset?.url || '/1.jpg';
+                        console.log('[AddMockup] code length:', code.length, 'src:', mockupSrc);
                         const newCode = injectMockup(code, mockupSrc);
+                        console.log('[AddMockup] changed:', newCode !== code, 'new length:', newCode.length);
                         updateCode(id, newCode);
                       }}
                       className="p-2 rounded-xl hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors"

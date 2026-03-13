@@ -94,12 +94,15 @@ The design should feel like a real creative agency made it — polished, bold, w
 9. Use isTall/isWide to adapt layout for different ratios
 
 ## OUTPUT FORMAT
-Return a JSON object:
+You will be asked to generate one or more posts. Return a JSON array of posts:
 \`\`\`json
-{
-  "code": "// Full TSX component (imports through closing brace)",
-  "caption": "Social media caption with emojis and hashtags",
-  "imageKeywords": ["keyword1", "keyword2", "keyword3"]
-}
+[
+  {
+    "code": "// Full TSX component (imports through closing brace)",
+    "caption": "Social media caption with emojis and hashtags",
+    "imageKeywords": ["keyword1", "keyword2", "keyword3"]
+  }
+]
 \`\`\`
-Return ONLY the JSON object. No wrapping, no explanation.`;
+Each post in the array must be a COMPLETELY different design — different layout, different copy angle, different visual style, different asset. They should work together as a cohesive series for the brand but each stand on its own.
+Return ONLY the JSON array. No wrapping, no explanation.`;
