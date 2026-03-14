@@ -130,9 +130,9 @@ export default function MetaTestPage() {
                 </span>
               </div>
               {r.error && <p className="text-red-400 text-sm ml-8">{r.error}</p>}
-              {r.data && (
+              {r.data != null && (
                 <pre className="text-xs text-zinc-400 ml-8 mt-2 overflow-x-auto max-h-40 overflow-y-auto bg-zinc-900 rounded p-2">
-                  {JSON.stringify(r.data, null, 2)}
+                  {JSON.stringify(r.data, null, 2) as string}
                 </pre>
               )}
             </div>
