@@ -158,6 +158,7 @@ export default function DesignPage() {
   const chatImageInputRef = useRef<HTMLInputElement>(null);
   const [targetRatios, setTargetRatios] = useState<AspectRatioType[]>(['1:1']);
   const [adaptingRatios, setAdaptingRatios] = useState(false);
+  const [contextPosts, setContextPosts] = useState<{ id: string; code: string }[]>([]);
 
   // Local order state for drag-and-drop (syncs with Convex)
   const [localOrder, setLocalOrder] = useState<string[]>([]);
@@ -331,6 +332,7 @@ export default function DesignPage() {
           targetRatio: aspectRatio,
           model: generateModel,
           referenceImages: chatImages.length > 0 ? chatImages.map(img => ({ base64: img.base64, mimeType: img.mimeType })) : undefined,
+          contextPosts: contextPosts.length > 0 ? contextPosts.map(p => p.code) : undefined,
         }),
       });
 
@@ -888,6 +890,26 @@ export default function DesignPage() {
     );
   }, []);
 
+  const handleAddToContext = useCallback(() => {
+    if (selectedPosts.length === 0) return;
+    const newContextPosts = selectedPosts
+      .map(id => {
+        const post = posts?.find(p => p._id === id);
+        if (post) return { id, code: post.componentCode };
+        const gen = generatedPosts.find(gp => gp.id === id);
+        if (gen) return { id, code: gen.code };
+        return null;
+      })
+      .filter((p): p is { id: string; code: string } => p !== null);
+    setContextPosts(prev => {
+      const existingIds = new Set(prev.map(p => p.id));
+      const unique = newContextPosts.filter(p => !existingIds.has(p.id));
+      return [...prev, ...unique];
+    });
+    setSelectedPosts([]);
+    setActiveMode('default');
+  }, [selectedPosts, posts, generatedPosts]);
+
   const handleDownloadSelected = useCallback(async (ratios: string[]) => {
     if (selectedPosts.length === 0) return;
     setDownloading(true);
@@ -1363,6 +1385,30 @@ export default function DesignPage() {
                 rows={2}
                 className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 dark:text-white resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
               />
+              {/* Context posts chips */}
+              {contextPosts.length > 0 && (
+                <div className="flex items-center gap-1.5 px-4 pb-1 pt-1 overflow-x-auto">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Context:</span>
+                  {contextPosts.map((cp) => (
+                    <span key={cp.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">
+                      <Sparkles size={9} />
+                      Post
+                      <button
+                        onClick={() => setContextPosts(prev => prev.filter(p => p.id !== cp.id))}
+                        className="ml-0.5 hover:text-red-500 transition-colors"
+                      >
+                        <X size={10} />
+                      </button>
+                    </span>
+                  ))}
+                  <button
+                    onClick={() => setContextPosts([])}
+                    className="text-[10px] font-semibold text-slate-400 hover:text-red-500 transition-colors shrink-0"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
               {/* Image previews */}
               {chatImages.length > 0 && (
                 <div className="flex items-center gap-2 px-4 pb-2 pt-1 overflow-x-auto">
@@ -1529,6 +1575,7 @@ export default function DesignPage() {
           currentRatio={aspectRatio}
           onClear={() => setSelectedPosts([])}
           onDownload={handleDownloadSelected}
+          onAddToContext={handleAddToContext}
         />
       )}
 

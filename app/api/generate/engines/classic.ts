@@ -16,19 +16,22 @@ import {
   shuffle,
   buildRatioNote,
   buildDistinctNote,
+  buildContextPostsSection,
 } from "../_shared";
 
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
-    const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
+    const { prompt, context, count = 1, targetRatio, referenceImages, model, contextPosts } = req;
     const postCount = Math.min(Math.max(1, Number(count) || 1), 8);
 
-    // System prompt: classic + dynamic brand context
+    // System prompt: classic + dynamic brand context + reference posts
     const dynamicSection = context ? buildDynamicPrompt(context as GenerationContext) : "";
-    const systemPrompt = dynamicSection
-      ? `${CLASSIC_SYSTEM_PROMPT}\n\n${dynamicSection}`
-      : CLASSIC_SYSTEM_PROMPT;
+    const contextPostsSection = buildContextPostsSection(contextPosts);
+    const systemPrompt = [CLASSIC_SYSTEM_PROMPT, dynamicSection, contextPostsSection]
+      .filter(Boolean)
+      .join('\n\n');
 
+    const hasContext = contextPosts && contextPosts.length > 0;
     const shuffledAngles = shuffle(COPY_ANGLES);
     const shuffledLayouts = shuffle(LAYOUT_BLUEPRINTS);
 
@@ -36,6 +39,21 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
       postCount,
       () => systemPrompt,
       (i) => {
+        if (hasContext) {
+          const postLabel = postCount > 1 ? ` (Post ${i + 1}/${postCount})` : '';
+          return `Generate a social media post for: ${prompt}${postLabel}
+
+## CRITICAL: FOLLOW THE REFERENCE POSTS
+The user selected reference posts in the system prompt above. You MUST closely replicate their EXACT style:
+- Same layout structure (image placement, text positioning, spacing, flex direction)
+- Same visual mood (colors, background treatment, border style, decorations)
+- Same typography approach (font size, weight, case, letter-spacing)
+- Same content pattern and copy tone
+- Same component usage patterns
+
+Create a NEW post that looks like it belongs in the SAME series. Fresh headline and content, but IDENTICAL design language.${buildRatioNote(targetRatio)}`;
+        }
+
         const angle = shuffledAngles[i % shuffledAngles.length];
         const layout = shuffledLayouts[i % shuffledLayouts.length];
         const postLabel = postCount > 1 ? ` (Post ${i + 1}/${postCount})` : '';

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Download, Loader2, ChevronUp, ChevronDown } from "lucide-react";
+import { Download, Loader2, ChevronUp, ChevronDown, Sparkles } from "lucide-react";
 
 const ALL_RATIOS = ["1:1", "3:4", "4:3", "9:16", "16:9"] as const;
 
@@ -12,9 +12,10 @@ interface DownloadBarProps {
   currentRatio: string;
   onClear: () => void;
   onDownload: (ratios: string[]) => void;
+  onAddToContext?: () => void;
 }
 
-export default function DownloadBar({ selectedCount, downloading, downloadProgress, currentRatio, onClear, onDownload }: DownloadBarProps) {
+export default function DownloadBar({ selectedCount, downloading, downloadProgress, currentRatio, onClear, onDownload, onAddToContext }: DownloadBarProps) {
   const [expanded, setExpanded] = useState(false);
   const [selectedRatios, setSelectedRatios] = useState<Set<string>>(new Set([currentRatio]));
 
@@ -68,6 +69,15 @@ export default function DownloadBar({ selectedCount, downloading, downloadProgre
               <span className="bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{selectedRatios.size}</span>
             )}
           </button>
+          {onAddToContext && (
+            <button
+              onClick={onAddToContext}
+              className="px-3 py-1.5 rounded-xl text-[12px] font-semibold text-[#1B4332] dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all flex items-center gap-1"
+            >
+              <Sparkles size={12} />
+              Use as Context
+            </button>
+          )}
           <button
             onClick={onClear}
             className="px-3 py-1.5 rounded-xl text-[12px] font-semibold text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300 transition-all"

@@ -15,6 +15,8 @@ import {
   handleGenerationError,
   shuffle,
   buildRatioNote,
+  buildContextPostsSection,
+  buildContextPostsSummary,
 } from "../_shared";
 
 /* ── AI Content Schema ─────────────────────────────────────────── */
@@ -453,7 +455,7 @@ function parseContent(text: string): AIContent | null {
 
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
-    const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
+    const { prompt, context, count = 1, targetRatio, referenceImages, model, contextPosts } = req;
     const postCount = Math.min(Math.max(1, Number(count) || 1), 8);
 
     const { client: gemini, modelId: resolvedModel } = getModel(model);
@@ -491,6 +493,8 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
     let totalPrompt = 0;
     let totalCompletion = 0;
 
+    const contextPostsSection = buildContextPostsSummary(contextPosts) + buildContextPostsSection(contextPosts);
+
     const promises = Array.from({ length: postCount }, async (_, i) => {
       const template = shuffledTemplates[i % shuffledTemplates.length];
       const mood = shuffledMoods[i % shuffledMoods.length];
@@ -503,8 +507,13 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
       const screenshotUrl = asset?.url || '';
       const screenshotUrl2 = asset2?.url || '';
 
-      const systemPrompt = buildSystemPrompt(template) + brandContext;
-      const userPrompt = `Create App Store preview content for: ${prompt}
+      const hasContext = contextPosts && contextPosts.length > 0;
+      const systemPrompt = buildSystemPrompt(template) + brandContext + contextPostsSection;
+      const userPrompt = hasContext
+        ? `Create App Store preview content for: ${prompt}
+
+CRITICAL: The user selected reference posts they love. Match the SAME headline style, copy tone, and mood. Study the reference posts above and generate content that feels like it belongs in the same series.${asset?.aiAnalysis ? `\nThe app screenshot shows: ${asset.aiAnalysis}` : ''}${buildRatioNote(targetRatio)}`
+        : `Create App Store preview content for: ${prompt}
 
 Creative mood: ${mood}${asset?.aiAnalysis ? `\nThe app screenshot shows: ${asset.aiAnalysis}` : ''}${buildRatioNote(targetRatio)}`;
 

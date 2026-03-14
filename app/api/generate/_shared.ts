@@ -11,6 +11,7 @@ export interface GenerateRequest {
   targetRatio?: string;
   referenceImages?: { base64: string; mimeType: string }[];
   model?: string;
+  contextPosts?: string[];
 }
 
 export interface EngineResult {
@@ -186,4 +187,86 @@ ${targetRatio === '16:9' ? 'This is a WIDE landscape post (960×540). Use horizo
 export function buildDistinctNote(i: number, total: number): string {
   if (total <= 1) return '';
   return `\nThis is post ${i + 1} of ${total}. Make it COMPLETELY different from the others — different layout structure, different visual style, different mood.`;
+}
+
+/** Extract visible text (EditableText content) from TSX code */
+function extractVisibleText(code: string): string[] {
+  const texts: string[] = [];
+  const editablePattern = /<EditableText[^>]*>\s*([\s\S]*?)\s*<\/EditableText>/g;
+  let match;
+  while ((match = editablePattern.exec(code)) !== null) {
+    const text = match[1]
+      .replace(/\{[^}]*\}/g, '')
+      .replace(/<[^>]+>/g, '')
+      .trim();
+    if (text.length > 0) texts.push(text);
+  }
+  return texts;
+}
+
+/** Extract style info from TSX */
+function extractStyleInfo(code: string): string[] {
+  const info: string[] = [];
+  if (/MockupFrame/.test(code)) info.push('Uses device mockup');
+  if (/FloatingCard/.test(code)) info.push('Has floating stat cards');
+  if (/PostHeader/.test(code)) info.push('Has brand header with logo');
+  if (/PostFooter/.test(code)) info.push('Has footer');
+  if (/background.*gradient|linear-gradient/i.test(code)) info.push('Gradient background');
+  if (/blur-\[/.test(code)) info.push('Blur/glow decorations');
+  if (/uppercase/.test(code)) info.push('Uppercase headline style');
+  if (/<img\s/.test(code)) info.push('Contains imagery');
+  if (/flex-col/.test(code) && /items-center/.test(code)) info.push('Centered vertical layout');
+  if (/text-left/.test(code)) info.push('Left-aligned text');
+  return info;
+}
+
+const MAX_CONTEXT_POSTS = 5;
+const MAX_CONTEXT_CHARS = 15000;
+
+export function buildContextPostsSection(contextPosts?: string[]): string {
+  if (!contextPosts || contextPosts.length === 0) return '';
+
+  let totalChars = 0;
+  const limited = contextPosts.slice(0, MAX_CONTEXT_POSTS).filter(code => {
+    if (totalChars + code.length > MAX_CONTEXT_CHARS) return false;
+    totalChars += code.length;
+    return true;
+  });
+  if (limited.length === 0) return '';
+
+  const postsSection = limited
+    .map((code, i) => `### Reference Post ${i + 1}\n\`\`\`tsx\n${code}\n\`\`\``)
+    .join('\n\n');
+  return `\n\n## USER-SELECTED REFERENCE POSTS
+The user selected these existing posts as reference. You MUST study and closely follow their:
+- **Layout structure** (where elements are positioned, spacing, flex direction)
+- **Visual style** (background treatment, decorations, typography scale)
+- **Copy tone** (headline style — bold/elegant/playful, subtitle style, word choices)
+- **Component usage** (mockups, floating cards, headers, imagery)
+
+Generate new posts that match the same STYLE, MOOD, and QUALITY. Use similar layout patterns and copy tone — but with FRESH content and headlines. The user loved these posts and wants MORE LIKE THEM.
+
+${postsSection}`;
+}
+
+/** Lighter version for template-based engines (AG) that only need copy/style direction */
+export function buildContextPostsSummary(contextPosts?: string[]): string {
+  if (!contextPosts || contextPosts.length === 0) return '';
+
+  const limited = contextPosts.slice(0, MAX_CONTEXT_POSTS);
+  const summaries = limited.map((code, i) => {
+    const texts = extractVisibleText(code);
+    const style = extractStyleInfo(code);
+    const lines: string[] = [`### Reference Post ${i + 1}`];
+    if (texts.length > 0) lines.push(`**Copy:** ${texts.map(t => `"${t}"`).join(' | ')}`);
+    if (style.length > 0) lines.push(`**Style:** ${style.join(', ')}`);
+    return lines.join('\n');
+  });
+
+  return `\n\n## USER-SELECTED REFERENCE POSTS
+The user selected existing posts they love and wants MORE LIKE THEM. Match the same headline style, copy tone, mood, and visual approach. Here is what those posts contain:
+
+${summaries.join('\n\n')}
+
+Generate content that captures the SAME creative energy, headline style, and mood as these references.`;
 }

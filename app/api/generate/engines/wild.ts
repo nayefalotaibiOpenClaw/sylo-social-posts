@@ -14,6 +14,7 @@ import {
   handleGenerationError,
   shuffle,
   buildRatioNote,
+  buildContextPostsSection,
 } from "../_shared";
 
 const WILD_MOODS = [
@@ -29,7 +30,7 @@ const WILD_MOODS = [
 
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
   try {
-    const { prompt, context, count = 1, targetRatio, referenceImages, model } = req;
+    const { prompt, context, count = 1, targetRatio, referenceImages, model, contextPosts } = req;
     const postCount = Math.min(Math.max(1, Number(count) || 1), 8);
 
     const { client: gemini, modelId: resolvedModel } = getModel(model);
@@ -50,9 +51,12 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
       if (ctx.logoUrl) brandContext.push(`Logo URL: ${ctx.logoUrl}`);
     }
 
-    const systemPrompt = brandContext.length > 0
-      ? `${WILD_SYSTEM_PROMPT}\n\n## BRAND CONTEXT\n${brandContext.join('\n')}`
-      : WILD_SYSTEM_PROMPT;
+    const contextPostsSection = buildContextPostsSection(contextPosts);
+    const systemPrompt = [
+      WILD_SYSTEM_PROMPT,
+      brandContext.length > 0 ? `## BRAND CONTEXT\n${brandContext.join('\n')}` : '',
+      contextPostsSection,
+    ].filter(Boolean).join('\n\n');
 
     // Build asset list
     const allAssets = context?.assets || [];
@@ -66,12 +70,26 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
       ? `\n\nAvailable images (use different ones across posts — each post should pick ONE):\n${assetLines.join('\n')}`
       : '';
 
-    // Pick moods for variety
-    const moods = shuffle(WILD_MOODS).slice(0, postCount);
+    const hasContext = contextPosts && contextPosts.length > 0;
+
+    // When context posts are provided, skip random moods — follow the reference style instead
+    const moods = hasContext ? [] : shuffle(WILD_MOODS).slice(0, postCount);
     const moodList = moods.map((m, i) => `Post ${i + 1}: ${m}`).join('\n');
 
     // Single user prompt for all posts
-    const userPrompt = `Generate ${postCount} social media posts for: ${prompt}
+    const userPrompt = hasContext
+      ? `Generate ${postCount} social media posts for: ${prompt}
+
+## CRITICAL: FOLLOW THE REFERENCE POSTS
+The user selected reference posts above. You MUST closely replicate their EXACT style:
+- Same layout structure (image placement, text positioning, spacing)
+- Same visual mood (colors, background treatment, border style)
+- Same typography approach (font size, weight, case, tracking)
+- Same content pattern (short elegant headlines, minimal text, image-forward)
+- Same component usage (if they use <img> with borders, you use <img> with borders)
+
+Create ${postCount} NEW posts that look like they belong in the SAME series as the reference posts. Vary the headlines and images, but keep the design language IDENTICAL.${assetSection}${buildRatioNote(targetRatio)}`
+      : `Generate ${postCount} social media posts for: ${prompt}
 
 ## CREATIVE MOODS (one per post)
 ${moodList}

@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
       targetRatio: body.targetRatio,
       referenceImages: body.referenceImages,
       model: body.model,
+      contextPosts: body.contextPosts,
     };
 
     switch (Number(version)) {
