@@ -564,6 +564,7 @@ export default function DesignPage() {
           industry: wi.industry || undefined,
           tone: wi.tone || undefined,
           targetAudience: wi.targetAudience || undefined,
+          logoUrl: wi.logoUrl || undefined,
         },
         sections,
         discoveredProducts: homepageProducts,

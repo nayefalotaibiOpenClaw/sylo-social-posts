@@ -73,6 +73,7 @@ interface CrawlData {
     industry?: string;
     tone?: string;
     targetAudience?: string;
+    logoUrl?: string;
   };
   sections: CrawlSection[];
   discoveredProducts: Array<{
@@ -241,6 +242,7 @@ export default function BrandPanel({
     tone: websiteInfo.tone,
     targetAudience: websiteInfo.targetAudience,
   } : null);
+  const discoveredLogoUrl = crawlData?.businessInfo?.logoUrl;
 
   return (
     <div className="flex-1 bg-white dark:bg-[#0a0a0a] flex flex-col overflow-hidden">

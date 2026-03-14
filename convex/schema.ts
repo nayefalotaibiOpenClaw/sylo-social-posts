@@ -448,6 +448,7 @@ export default defineSchema({
       industry: v.optional(v.string()),
       tone: v.optional(v.string()),
       targetAudience: v.optional(v.string()),
+      logoUrl: v.optional(v.string()),
     })),
     // Discovered browsable sections (categories, collections, etc)
     sections: v.array(v.object({

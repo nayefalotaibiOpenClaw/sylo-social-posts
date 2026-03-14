@@ -153,6 +153,7 @@ Return a JSON object with this exact structure (no markdown fences, just raw JSO
   "targetAudience": "Who their customers are",
   "tone": "Brand voice/tone",
   "language": "primary language of the website (en, ar, etc.)",
+  "logoUrl": "absolute URL to the company/brand logo image found in the markdown (look for images with 'logo' in alt text or URL path), or null if not found",
   "contact": {
     "phone": "phone if found or null",
     "email": "email if found or null",

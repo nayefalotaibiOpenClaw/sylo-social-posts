@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { useState, useEffect, useCallback } from "react";
 import { Check, Sparkles, Zap, Crown, Loader2, X, AlertCircle, ArrowDown, ArrowUp, Gift } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n/context";
 import FloatingNav from "@/app/components/FloatingNav";
 import type { TranslationKey } from "@/lib/i18n/types";
@@ -66,9 +67,10 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
 
 export default function PricingPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
-  const user = useQuery(api.users.currentUser);
-  const usage = useQuery(api.subscriptions.getUsage);
-  const activeSub = useQuery(api.subscriptions.getActive);
+  const router = useRouter();
+  const user = useQuery(api.users.currentUser, isAuthenticated ? undefined : "skip");
+  const usage = useQuery(api.subscriptions.getUsage, isAuthenticated ? undefined : "skip");
+  const activeSub = useQuery(api.subscriptions.getActive, isAuthenticated ? undefined : "skip");
   const createPayment = useMutation(api.payments.createPending);
   const downgradeMut = useMutation(api.subscriptions.downgrade);
   const startTrialMut = useMutation(api.subscriptions.startTrial);
@@ -79,33 +81,6 @@ export default function PricingPage() {
   const [toast, setToast] = useState<string | null>(null);
   const dismissToast = useCallback(() => setToast(null), []);
   const { t, locale } = useLocale();
-
-  // Auth handled by dashboard layout
-
-  if (authLoading || user === undefined) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-3">{t("pricing.pleaseLogIn")}</h1>
-          <p className="text-neutral-400 mb-6">{t("pricing.needLogin")}</p>
-          <Link
-            href="/login"
-            className="bg-white text-black px-6 py-3 rounded-xl font-medium hover:bg-neutral-200 transition"
-          >
-            {t("pricing.goToLogin")}
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   // Determine plan change type (accounts for same-plan period changes)
   const getPlanChangeType = (planId: "starter" | "pro") => {
@@ -135,7 +110,10 @@ export default function PricingPage() {
   };
 
   const handleSubscribe = async (planId: "starter" | "pro") => {
-    if (!user) return;
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
 
     const changeType = getPlanChangeType(planId);
 
@@ -218,6 +196,10 @@ export default function PricingPage() {
   };
 
   const handleStartTrial = async () => {
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
     setStartingTrial(true);
     try {
       await startTrialMut();
