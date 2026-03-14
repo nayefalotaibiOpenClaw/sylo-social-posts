@@ -102,6 +102,7 @@ export default function PublishChannelsPage({
   const socialAccounts = useQuery(api.socialAccounts.listByWorkspace, { workspaceId });
   const scheduledPosts = useQuery(api.publishing.listScheduled, { workspaceId });
   const cancelPost = useMutation(api.publishing.cancelScheduled);
+  const updatePost = useMutation(api.publishing.updateScheduled);
   const disconnectAccount = useMutation(api.socialAccounts.disconnect);
 
   const activeAccounts = socialAccounts?.filter((a) => a.status === "active") || [];
@@ -130,6 +131,10 @@ export default function PublishChannelsPage({
   const handleCancel = async (id: Id<"scheduledPosts">) => {
     if (!confirm("Cancel this scheduled post?")) return;
     await cancelPost({ id });
+  };
+
+  const handleUpdate = async (id: Id<"scheduledPosts">, caption: string) => {
+    await updatePost({ id, caption });
   };
 
   const handleConnect = (provider: "instagram" | "facebook" | "twitter" | "threads") => {
@@ -254,7 +259,7 @@ export default function PublishChannelsPage({
             ) : (
               <div className="space-y-8">
                 {queued.length > 0 && (
-                  <PostSection title="Queued" posts={queued} accounts={activeAccounts} onCancel={handleCancel} />
+                  <PostSection title="Queued" posts={queued} accounts={activeAccounts} onCancel={handleCancel} onUpdate={handleUpdate} />
                 )}
                 {publishing.length > 0 && (
                   <PostSection title="Publishing" posts={publishing} accounts={activeAccounts} onCancel={handleCancel} />
@@ -378,6 +383,7 @@ function PostSection({
   posts,
   accounts,
   onCancel,
+  onUpdate,
 }: {
   title: string;
   posts: Array<{
@@ -388,6 +394,7 @@ function PostSection({
     scheduledFor: number;
     status: ScheduleStatus;
     errorMessage?: string;
+    imageUrl?: string | null;
   }>;
   accounts: Array<{
     _id: Id<"socialAccounts">;
@@ -395,6 +402,7 @@ function PostSection({
     providerAccountName: string;
   }>;
   onCancel: (id: Id<"scheduledPosts">) => void;
+  onUpdate?: (id: Id<"scheduledPosts">, caption: string) => void;
 }) {
   return (
     <div>
@@ -408,6 +416,7 @@ function PostSection({
             post={post}
             accounts={accounts}
             onCancel={onCancel}
+            onUpdate={onUpdate}
           />
         ))}
       </div>

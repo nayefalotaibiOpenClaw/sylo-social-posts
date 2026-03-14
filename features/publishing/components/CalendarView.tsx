@@ -11,6 +11,7 @@ interface ScheduledPost {
   caption: string;
   scheduledFor: number;
   status: ScheduleStatus;
+  imageUrl?: string | null;
 }
 
 interface SocialAccount {
@@ -175,18 +176,25 @@ export default function CalendarView({
               {selectedPosts.map((post) => {
                 const acct = accounts.find((a) => a._id === post.socialAccountId);
                 return (
-                  <div key={post._id} className="bg-neutral-800 rounded-lg p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-neutral-400">{formatTime(post.scheduledFor)}</span>
-                      <StatusBadge status={post.status} />
-                    </div>
-                    <p className="text-sm text-neutral-300 line-clamp-2">{post.caption || "No caption"}</p>
-                    {acct && (
-                      <div className="flex items-center gap-1.5 text-xs text-neutral-500">
-                        {getProviderIcon(acct.provider)}
-                        <span>{acct.providerAccountName}</span>
+                  <div key={post._id} className="bg-neutral-800 rounded-lg overflow-hidden">
+                    {post.imageUrl && (
+                      <div className="h-20 overflow-hidden">
+                        <img src={post.imageUrl} alt="" className="w-full h-full object-cover" />
                       </div>
                     )}
+                    <div className="p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-neutral-400">{formatTime(post.scheduledFor)}</span>
+                        <StatusBadge status={post.status} />
+                      </div>
+                      <p className="text-sm text-neutral-300 line-clamp-2">{post.caption || "No caption"}</p>
+                      {acct && (
+                        <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+                          {getProviderIcon(acct.provider)}
+                          <span>{acct.providerAccountName}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}

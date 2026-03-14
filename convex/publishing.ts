@@ -628,8 +628,16 @@ export const listScheduledByMonth = query({
       .query("scheduledPosts")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .take(200);
-    return all.filter(
+    const filtered = all.filter(
       (p) => p.scheduledFor >= args.monthStart && p.scheduledFor < args.monthEnd
+    );
+    return Promise.all(
+      filtered.map(async (post) => {
+        const imageUrl = post.mediaFileIds?.[0]
+          ? await ctx.storage.getUrl(post.mediaFileIds[0])
+          : post.mediaUrls?.[0] || null;
+        return { ...post, imageUrl };
+      })
     );
   },
 });
@@ -651,6 +659,28 @@ export const cancelScheduled = mutation({
   },
 });
 
+export const updateScheduled = mutation({
+  args: {
+    id: v.id("scheduledPosts"),
+    caption: v.optional(v.string()),
+    scheduledFor: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const post = await ctx.db.get(args.id);
+    if (!post || post.userId !== userId) throw new Error("Not found");
+    if (post.status !== "scheduled") throw new Error("Can only edit scheduled posts");
+
+    const updates: Record<string, unknown> = { updatedAt: Date.now() };
+    if (args.caption !== undefined) updates.caption = args.caption;
+    if (args.scheduledFor !== undefined) updates.scheduledFor = args.scheduledFor;
+
+    await ctx.db.patch(args.id, updates);
+  },
+});
+
 export const listScheduled = query({
   args: { workspaceId: v.id("workspaces") },
   handler: async (ctx, args) => {
@@ -661,10 +691,19 @@ export const listScheduled = query({
     const workspace = await ctx.db.get(args.workspaceId);
     if (!workspace || workspace.userId !== userId) return [];
 
-    return await ctx.db
+    const posts = await ctx.db
       .query("scheduledPosts")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
       .take(200);
+
+    return Promise.all(
+      posts.map(async (post) => {
+        const imageUrl = post.mediaFileIds?.[0]
+          ? await ctx.storage.getUrl(post.mediaFileIds[0])
+          : post.mediaUrls?.[0] || null;
+        return { ...post, imageUrl };
+      })
+    );
   },
 });
 
