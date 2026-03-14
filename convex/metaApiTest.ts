@@ -42,12 +42,21 @@ export const runAllTests = action({
       // 1. public_profile — GET /me
       results.push(await testApi("public_profile", `${META_GRAPH_URL}/me?fields=id,name&access_token=${token}`));
 
-      // 2. business_management — GET /me/businesses
-      results.push(await testApi("business_management", `${META_GRAPH_URL}/me/businesses?access_token=${token}`));
+      // 2. business_management — GET /{page-id}?fields=business
+      if (fbAccount.providerPageId) {
+        results.push(await testApi(
+          "business_management",
+          `${META_GRAPH_URL}/${fbAccount.providerPageId}?fields=id,name,business&access_token=${token}`
+        ));
+      }
 
-      // 3. pages_show_list — GET /me/accounts
-      const pagesResult = await testApi("pages_show_list", `${META_GRAPH_URL}/me/accounts?fields=id,name&access_token=${token}`);
-      results.push(pagesResult);
+      // 3. pages_show_list — GET /{page-id}?fields=id,name,category
+      if (fbAccount.providerPageId) {
+        results.push(await testApi(
+          "pages_show_list",
+          `${META_GRAPH_URL}/${fbAccount.providerPageId}?fields=id,name,category&access_token=${token}`
+        ));
+      }
 
       // 4. pages_read_engagement — GET /{page-id}?fields=engagement
       if (fbAccount.providerPageId) {
@@ -57,11 +66,11 @@ export const runAllTests = action({
         ));
       }
 
-      // 5. pages_manage_posts — GET /{page-id}/feed
+      // 5. pages_manage_posts — GET /{page-id}/published_posts
       if (fbAccount.providerPageId) {
         results.push(await testApi(
           "pages_manage_posts",
-          `${META_GRAPH_URL}/${fbAccount.providerPageId}/feed?limit=1&access_token=${token}`
+          `${META_GRAPH_URL}/${fbAccount.providerPageId}/published_posts?limit=1&access_token=${token}`
         ));
       }
 
