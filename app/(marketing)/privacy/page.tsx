@@ -8,37 +8,36 @@ export default function PrivacyPolicyPage() {
   const isAr = locale === "ar";
 
   return (
-    <div dir={dir} className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-800 dark:text-neutral-200">
+    <div dir={dir} className="min-h-screen bg-[#0a0a0a] text-white">
       <FloatingNav activePage="home" />
 
-      {/* Hero */}
-      <section className="pt-36 pb-16 bg-slate-900 text-white">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight">
+      <div className="max-w-3xl mx-auto px-6 pt-32 pb-24">
+        {/* Header */}
+        <div className="mb-16">
+          <p className="text-sm uppercase tracking-widest text-neutral-500 mb-4">
+            {isAr ? "قانوني" : "Legal"}
+          </p>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
             {isAr ? "سياسة الخصوصية" : "Privacy Policy"}
           </h1>
-          <p className="mt-4 text-white/50 font-bold text-sm uppercase tracking-widest">
+          <p className="text-neutral-400 text-lg">
             {isAr ? "آخر تحديث: مارس ٢٠٢٦" : "Last updated: March 2026"}
           </p>
         </div>
-      </section>
 
-      {/* Content */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-3xl mx-auto px-6 space-y-12">
+        {/* Content */}
+        <div className="space-y-10">
           {isAr ? <ArabicContent /> : <EnglishContent />}
         </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="py-16 border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
-        <div className="max-w-3xl mx-auto px-6 text-center text-slate-400 font-bold text-sm">
-          <p>
+        {/* Footer divider */}
+        <div className="mt-20 pt-8 border-t border-neutral-800">
+          <p className="text-neutral-500 text-sm">
             &copy; {new Date().getFullYear()} oDesigns.{" "}
             {isAr ? "جميع الحقوق محفوظة." : "All rights reserved."}
           </p>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
@@ -47,7 +46,7 @@ export default function PrivacyPolicyPage() {
 function Bullet({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-3">
-      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-neutral-500 shrink-0" />
       <span>{children}</span>
     </li>
   );
@@ -59,10 +58,10 @@ function EnglishContent() {
     <>
       {/* 1. Introduction */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           1. Introduction
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <p className="text-neutral-400 leading-relaxed text-[15px]">
           oDesigns is an AI-powered social media post generator and design
           editor that helps businesses create professional, on-brand social
           media content. This Privacy Policy explains how we collect, use,
@@ -74,10 +73,10 @@ function EnglishContent() {
 
       {/* 2. Information We Collect */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           2. Information We Collect
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           We collect the following types of information to provide and
           improve our services:
         </p>
@@ -114,10 +113,10 @@ function EnglishContent() {
 
       {/* 3. How We Use Your Information */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           3. How We Use Your Information
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           We use your information for the following purposes:
         </p>
         <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
@@ -150,10 +149,10 @@ function EnglishContent() {
 
       {/* 4. Data Storage & Security */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           4. Data Storage &amp; Security
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           We take the security of your data seriously and implement
           appropriate measures to protect it:
         </p>
@@ -180,10 +179,10 @@ function EnglishContent() {
 
       {/* 5. Third-Party Services */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           5. Third-Party Services
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           oDesigns integrates with the following third-party services:
         </p>
         <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
@@ -279,10 +278,10 @@ function EnglishContent() {
 
       {/* 6. Your Rights */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           6. Your Rights
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           You have the following rights regarding your personal data:
         </p>
         <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
@@ -312,10 +311,10 @@ function EnglishContent() {
 
       {/* 7. Cookies */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           7. Cookies
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <p className="text-neutral-400 leading-relaxed text-[15px]">
           oDesigns uses minimal cookies that are essential for the
           operation of our service. These include authentication session
           cookies required to keep you signed in and basic preference
@@ -326,10 +325,10 @@ function EnglishContent() {
 
       {/* 8. Changes to This Policy */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           8. Changes to This Policy
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <p className="text-neutral-400 leading-relaxed text-[15px]">
           We may update this Privacy Policy from time to time to reflect
           changes in our practices, technology, or legal requirements. When
           we make material changes, we will notify you by updating the
@@ -341,10 +340,10 @@ function EnglishContent() {
 
       {/* 9. Contact */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           9. Contact
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <p className="text-neutral-400 leading-relaxed text-[15px]">
           If you have any questions, concerns, or requests regarding this
           Privacy Policy or your personal data, please contact us at{" "}
           <a
@@ -366,10 +365,10 @@ function ArabicContent() {
     <>
       {/* 1. المقدمة */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ١. المقدمة
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <p className="text-neutral-400 leading-relaxed text-[15px]">
           oDesigns هي منصة مدعومة بالذكاء الاصطناعي لإنشاء منشورات وسائل
           التواصل الاجتماعي وتحرير التصاميم، تساعد الشركات على إنشاء محتوى
           احترافي ومتوافق مع هويتها البصرية. توضح سياسة الخصوصية هذه كيفية
@@ -381,10 +380,10 @@ function ArabicContent() {
 
       {/* 2. المعلومات التي نجمعها */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ٢. المعلومات التي نجمعها
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           نجمع الأنواع التالية من المعلومات لتقديم خدماتنا وتحسينها:
         </p>
         <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
@@ -420,10 +419,10 @@ function ArabicContent() {
 
       {/* 3. كيف نستخدم معلوماتك */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ٣. كيف نستخدم معلوماتك
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           نستخدم معلوماتك للأغراض التالية:
         </p>
         <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
@@ -453,10 +452,10 @@ function ArabicContent() {
 
       {/* 4. تخزين البيانات والأمان */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ٤. تخزين البيانات والأمان
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           نأخذ أمان بياناتك على محمل الجد ونطبق التدابير المناسبة
           لحمايتها:
         </p>
@@ -483,10 +482,10 @@ function ArabicContent() {
 
       {/* 5. خدمات الطرف الثالث */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ٥. خدمات الطرف الثالث
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           تتكامل oDesigns مع خدمات الطرف الثالث التالية:
         </p>
         <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
@@ -581,10 +580,10 @@ function ArabicContent() {
 
       {/* 6. حقوقك */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ٦. حقوقك
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed mb-4">
+        <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           لديك الحقوق التالية فيما يتعلق ببياناتك الشخصية:
         </p>
         <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
@@ -613,10 +612,10 @@ function ArabicContent() {
 
       {/* 7. ملفات تعريف الارتباط */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ٧. ملفات تعريف الارتباط
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <p className="text-neutral-400 leading-relaxed text-[15px]">
           تستخدم oDesigns الحد الأدنى من ملفات تعريف الارتباط الضرورية
           لتشغيل خدمتنا. تشمل هذه ملفات تعريف ارتباط جلسة المصادقة
           المطلوبة لإبقائك مسجلاً للدخول وملفات تعريف ارتباط التفضيلات
@@ -627,10 +626,10 @@ function ArabicContent() {
 
       {/* 8. التغييرات على هذه السياسة */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ٨. التغييرات على هذه السياسة
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <p className="text-neutral-400 leading-relaxed text-[15px]">
           قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر لتعكس التغييرات
           في ممارساتنا أو التقنية أو المتطلبات القانونية. عندما نجري
           تغييرات جوهرية، سنخطرك عن طريق تحديث تاريخ &quot;آخر
@@ -642,10 +641,10 @@ function ArabicContent() {
 
       {/* 9. التواصل */}
       <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-3">
           ٩. التواصل
         </h2>
-        <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <p className="text-neutral-400 leading-relaxed text-[15px]">
           إذا كانت لديك أي أسئلة أو مخاوف أو طلبات بخصوص سياسة
           الخصوصية هذه أو بياناتك الشخصية، يرجى التواصل معنا على{" "}
           <a
