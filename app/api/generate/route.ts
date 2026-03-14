@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
 import { handleGenerationError } from "./_shared";
 import { generate as generateWild } from "./engines/wild";
 import { generate as generateClassic } from "./engines/classic";
@@ -15,6 +18,26 @@ import { generate as generateAppstoreGuided } from "./engines/appstore-guided";
  */
 export async function POST(req: NextRequest) {
   try {
+    // Verify authentication and active subscription
+    const token = await convexAuthNextjsToken();
+    if (!token) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    const subscription = await fetchQuery(
+      api.subscriptions.getActive,
+      {},
+      { token }
+    );
+
+    if (!subscription) {
+      return NextResponse.json({ error: "Active subscription required" }, { status: 403 });
+    }
+
+    if (subscription.aiTokensUsed >= subscription.aiTokensLimit) {
+      return NextResponse.json({ error: "AI token limit reached for current billing period" }, { status: 403 });
+    }
+
     const body = await req.json();
     const { prompt, version = 7 } = body;
 

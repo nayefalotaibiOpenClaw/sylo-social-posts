@@ -32,7 +32,8 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
   const stateParam = url.searchParams.get("state");
   const error = url.searchParams.get("error");
 
-  const appUrl = process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.APP_URL;
+  if (!appUrl) throw new Error("APP_URL environment variable must be configured");
 
   // Helper to build redirect URL back to the design page channels tab
   const designUrl = (workspaceId: string | null, params: string) => {
@@ -81,7 +82,16 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
       .replace(/\//g, "_")
       .replace(/=+$/, "");
 
-    if (receivedSig !== expectedSig) throw new Error("Invalid state signature");
+    // Constant-time comparison to prevent timing attacks
+    const sigEncoder = new TextEncoder();
+    const sigBytes = sigEncoder.encode(receivedSig);
+    const expectedBytes = sigEncoder.encode(expectedSig);
+    if (sigBytes.length !== expectedBytes.length) throw new Error("Invalid state signature");
+    let mismatch = 0;
+    for (let i = 0; i < sigBytes.length; i++) {
+      mismatch |= sigBytes[i] ^ expectedBytes[i];
+    }
+    if (mismatch !== 0) throw new Error("Invalid state signature");
 
     state = JSON.parse(atob(statePayload));
   } catch {

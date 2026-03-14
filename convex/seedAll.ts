@@ -1,9 +1,9 @@
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // Seed workspace, branding, collection, and posts for a specific user.
 // Run via: npx convex run seedAll:run '{"userId":"...", "posts":[...]}'
-export const run = mutation({
+export const run = internalMutation({
   args: {
     userId: v.id("users"),
     posts: v.array(

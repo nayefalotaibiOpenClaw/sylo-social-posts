@@ -44,6 +44,34 @@ export const create = mutation({
     if (args.scope === "workspace" && !args.workspaceId) {
       throw new Error("workspaceId required for workspace-scoped assets");
     }
+
+    // Validate file type and size
+    const fileMeta = await ctx.storage.getMetadata(args.fileId);
+    if (!fileMeta) {
+      throw new Error("File not found in storage");
+    }
+
+    // Enforce max file size: 10MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (fileMeta.size > MAX_FILE_SIZE) {
+      await ctx.storage.delete(args.fileId);
+      throw new Error("File exceeds maximum size of 10MB");
+    }
+
+    // Validate MIME type is an image
+    const allowedMimeTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "image/svg+xml",
+      "image/avif",
+    ];
+    if (!fileMeta.contentType || !allowedMimeTypes.includes(fileMeta.contentType)) {
+      await ctx.storage.delete(args.fileId);
+      throw new Error(`Invalid file type: ${fileMeta.contentType ?? "unknown"}. Only image files are allowed.`);
+    }
+
     return await ctx.db.insert("assets", {
       ...args,
       analyzingStatus: "pending",

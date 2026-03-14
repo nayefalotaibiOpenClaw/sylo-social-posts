@@ -1,5 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
 import { cleanCode } from "@/lib/ai/clean-code";
 
 const ADAPT_SYSTEM_PROMPT = `You are a social media post layout adapter. You will receive an existing React/TSX post component and a target aspect ratio. Your job is to REWRITE the component so it looks perfect at the target ratio.
@@ -26,6 +29,26 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "API key not configured" }, { status: 500 });
+  }
+
+  // Verify authentication and active subscription
+  const token = await convexAuthNextjsToken();
+  if (!token) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  const subscription = await fetchQuery(
+    api.subscriptions.getActive,
+    {},
+    { token }
+  );
+
+  if (!subscription) {
+    return NextResponse.json({ error: "Active subscription required" }, { status: 403 });
+  }
+
+  if (subscription.aiTokensUsed >= subscription.aiTokensLimit) {
+    return NextResponse.json({ error: "AI token limit reached for current billing period" }, { status: 403 });
   }
 
   try {

@@ -13,14 +13,57 @@ interface DynamicPostProps {
   code: string;
 }
 
-// NOTE: This component intentionally uses dynamic code evaluation (new Function)
-// to render AI-generated React components at runtime. The code comes from our own
-// API route which calls Google Gemini - not from untrusted user input.
-// This is the standard approach for live code playgrounds (like CodeSandbox, MDX, etc.)
+// Strip string literals and JSX text content so validation only checks actual code
+function stripStringsAndJSXText(code: string): string {
+  return code
+    // Remove template literals (including nested expressions is imperfect, but good enough)
+    .replace(/`[^`]*`/g, '""')
+    // Remove double-quoted strings
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""')
+    // Remove single-quoted strings
+    .replace(/'(?:[^'\\]|\\.)*'/g, "''")
+    // Remove JSX text content (text between > and <)
+    .replace(/>([^<]*)</g, '><');
+}
+
+// Validate code doesn't contain dangerous patterns before evaluation
+function validateCode(code: string): string | null {
+  const strippedCode = stripStringsAndJSXText(code);
+
+  const dangerousPatterns = [
+    { pattern: /\bwindow\s*[.[]/,    reason: "Access to 'window' is not allowed" },
+    { pattern: /\bdocument\s*[.[]/,  reason: "Access to 'document' is not allowed" },
+    { pattern: /\bfetch\s*\(/,       reason: "Network requests are not allowed" },
+    { pattern: /\blocalStorage\b/,   reason: "Access to 'localStorage' is not allowed" },
+    { pattern: /\bsessionStorage\b/, reason: "Access to 'sessionStorage' is not allowed" },
+    { pattern: /\beval\s*\(/,        reason: "Use of 'eval' is not allowed" },
+    { pattern: /\bFunction\s*\(/,    reason: "Dynamic Function construction is not allowed" },
+    { pattern: /\bimportScripts\b/,  reason: "Script imports are not allowed" },
+    { pattern: /\bXMLHttpRequest\b/, reason: "XHR requests are not allowed" },
+    { pattern: /\bnew\s+WebSocket\b/,reason: "WebSocket connections are not allowed" },
+    { pattern: /\bdocument\.cookie\b/,reason: "Cookie access is not allowed" },
+    { pattern: /\b__proto__\b/,      reason: "Prototype manipulation is not allowed" },
+    { pattern: /\bconstructor\s*\[/, reason: "Constructor access is not allowed" },
+    { pattern: /\bglobalThis\b/,     reason: "Access to 'globalThis' is not allowed" },
+    { pattern: /\bprocess\.env\b/,   reason: "Access to 'process.env' is not allowed" },
+  ];
+
+  for (const { pattern, reason } of dangerousPatterns) {
+    if (pattern.test(strippedCode)) return reason;
+  }
+  return null;
+}
 
 export default function DynamicPost({ code }: DynamicPostProps) {
   const Component = useMemo(() => {
     try {
+      // Validate code for dangerous patterns before evaluation
+      const validationError = validateCode(code);
+      if (validationError) {
+        console.error("Code validation failed:", validationError);
+        return null;
+      }
+
       // Remove import statements and strip all 'export' keywords
       let codeWithoutImports = code
         .replace(/^import\s+.*?from\s+['"].*?['"];?\s*$/gm, '')
@@ -60,6 +103,11 @@ export default function DynamicPost({ code }: DynamicPostProps) {
         "DesktopMockup",
         "LucideIcons",
         `
+        // Shadow dangerous globals to prevent access
+        var window = undefined, document = undefined, globalThis = undefined,
+            fetch = undefined, localStorage = undefined, sessionStorage = undefined,
+            XMLHttpRequest = undefined, WebSocket = undefined, eval = undefined,
+            process = undefined, require = undefined, importScripts = undefined;
         const { ${Object.keys(LucideIcons).join(", ")} } = LucideIcons;
         ${jsCode}
         return typeof __Component__ !== 'undefined' ? __Component__ : null;

@@ -26,7 +26,8 @@ export const handleTwitterCallback = httpAction(async (ctx, request) => {
   const stateParam = url.searchParams.get("state");
   const error = url.searchParams.get("error");
 
-  const appUrl = process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.APP_URL;
+  if (!appUrl) throw new Error("APP_URL environment variable must be configured");
 
   // Helper to build redirect URL back to the design page channels tab
   const designUrl = (workspaceId: string | null, params: string) => {

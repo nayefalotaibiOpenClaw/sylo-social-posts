@@ -65,7 +65,7 @@
 - **Files:** `features/posts/editor/DynamicPost.tsx`, `features/design-editor/components/PostGrid.tsx`
 - **Issue:** `DynamicPost` dynamically evaluates TSX code at runtime. PostGrid has a textarea letting users edit raw code. Any authenticated user can execute arbitrary JavaScript. In shared workspaces, this is stored XSS.
 - **Fix:** (a) Sandbox code execution using an `<iframe>` with `sandbox` attribute. (b) Restrict evaluation scope to prevent access to `window`, `document`, `fetch`, `localStorage`. (c) Add server-side validation of `componentCode` — reject dangerous patterns.
-- [ ] Fixed
+- [x] Fixed
 
 ### 11. Unauthenticated File Upload
 - **File:** `convex/assets.ts` (lines 19-21)
@@ -87,13 +87,13 @@
 - **File:** `next.config.ts` (empty config)
 - **Issue:** No CSP, X-Frame-Options, HSTS, X-Content-Type-Options, or Referrer-Policy configured anywhere.
 - **Fix:** Add `headers()` function in `next.config.ts` with all standard security headers.
-- [ ] Fixed
+- [x] Fixed
 
 ### 14. Subscription Enforcement is Client-Side Only
 - **Files:** `app/api/generate/route.ts`, `convex/subscriptions.ts`
 - **Issue:** API routes don't check subscription status before calling Gemini. Users can bypass subscription checks by calling the API directly.
 - **Fix:** Verify subscription status server-side in the API route before making AI calls.
-- [ ] Fixed
+- [x] Fixed
 
 ### 15. `branding.updateField` Accepts Arbitrary Field Names
 - **File:** `convex/branding.ts` (lines 62-85)
@@ -105,25 +105,25 @@
 - **File:** `convex/assets.ts`
 - **Issue:** `generateUploadUrl` creates upload URLs with no restrictions. Client-side `accept="image/*"` is trivially bypassed.
 - **Fix:** Validate file MIME type and size server-side after upload. Verify file header/magic bytes match expected image types.
-- [ ] Fixed
+- [x] Fixed
 
 ### 17. Workspace Deletion Doesn't Cascade
 - **File:** `convex/workspaces.ts` (lines 58-63)
 - **Issue:** `workspaces.remove` only deletes the workspace document. Does NOT cascade delete collections, posts, branding, assets, social accounts, generations, etc. Orphaned OAuth tokens remain.
 - **Fix:** Implement cascading deletion that removes all dependent records.
-- [ ] Fixed
+- [x] Fixed
 
 ### 18. Blog `seed` Mutation is Public and Destructive
 - **File:** `convex/blogs.ts` (lines 38-171)
 - **Issue:** Public mutation with no auth. Any client can delete all blog posts and replace them with seed data.
 - **Fix:** Convert to `internalMutation`.
-- [ ] Fixed
+- [x] Fixed
 
 ### 19. `seedAll.run` is Unauthenticated
 - **File:** `convex/seedAll.ts` (lines 6-129)
 - **Issue:** Public mutation that accepts any `userId` and creates workspaces/data for that user with no auth.
 - **Fix:** Convert to `internalMutation`.
-- [ ] Fixed
+- [x] Fixed
 
 ### 20. Payment Creation API Trusts Client-Supplied `userId`
 - **File:** `app/api/payments/create/route.ts`
@@ -141,7 +141,7 @@
 - **File:** `convex/socialAuth.ts` (line 84)
 - **Issue:** Uses `!==` for HMAC comparison, vulnerable to timing attacks. The `verifySignedRequest` function correctly uses constant-time comparison, but callback handlers don't.
 - **Fix:** Use `crypto.timingSafeEqual` for all HMAC verifications.
-- [ ] Fixed
+- [x] Fixed
 
 ### 23. PKCE `codeVerifier` Embedded in URL State (Twitter)
 - **File:** `app/api/social-auth/twitter/authorize/route.ts` (lines 36-44)
@@ -153,7 +153,7 @@
 - **Files:** `convex/socialAuth.ts`, `convex/threadsAuth.ts`, `convex/twitterAuth.ts`
 - **Issue:** Fall back to `http://localhost:3000` if `APP_URL` env var is not set. Could cause token leakage in production.
 - **Fix:** Throw an error if `APP_URL` is not configured.
-- [ ] Fixed
+- [x] Fixed
 
 ### 25. Unvalidated Redirect via `checkoutUrl`
 - **File:** `app/(dashboard)/pricing/page.tsx` (line 189)

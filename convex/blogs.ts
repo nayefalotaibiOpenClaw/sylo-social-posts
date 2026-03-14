@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // List all published blogs, optionally filtered by language
@@ -35,7 +35,7 @@ export const getBySlug = query({
 });
 
 // Seed 4 sample blog posts (2 English + 2 Arabic)
-export const seed = mutation({
+export const seed = internalMutation({
   args: {},
   handler: async (ctx) => {
     // Delete all existing blogs and re-seed
