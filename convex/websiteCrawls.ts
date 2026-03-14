@@ -36,6 +36,7 @@ const businessInfoValidator = v.object({
   industry: v.optional(v.string()),
   tone: v.optional(v.string()),
   targetAudience: v.optional(v.string()),
+  logoUrl: v.optional(v.string()),
 });
 
 // ─── Queries ─────────────────────────────────────────────────────────

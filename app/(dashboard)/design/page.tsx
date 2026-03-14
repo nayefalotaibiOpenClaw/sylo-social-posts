@@ -1107,6 +1107,7 @@ export default function DesignPage() {
           currentWorkspaceName={workspace?.name}
           onUploadLogo={handleUploadLogo}
           onDeleteLogo={handleDeleteLogo}
+          onSaveLogoFromUrl={handleSaveLogoFromUrl}
           onUpdateBranding={handleUpdateBranding}
           onUpdateWebsiteInfo={handleUpdateWebsiteInfo}
           onUpdateWorkspace={handleUpdateWorkspace}

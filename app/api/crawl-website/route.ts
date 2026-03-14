@@ -147,6 +147,7 @@ ${snippetForAnalysis}
 Return a JSON object with this exact structure (no markdown fences, just raw JSON):
 {
   "companyName": "The company/brand name",
+  "tagline": "The brand's tagline/slogan if visible on the site, or a short one you'd suggest based on their business (max 8 words)",
   "description": "2-3 sentence description of what the company does",
   "industry": "Specific industry (e.g. 'E-commerce - Gifts & Occasions', 'SaaS - Restaurant Management')",
   "features": ["feature 1", "feature 2"],
@@ -154,6 +155,12 @@ Return a JSON object with this exact structure (no markdown fences, just raw JSO
   "tone": "Brand voice/tone",
   "language": "primary language of the website (en, ar, etc.)",
   "logoUrl": "absolute URL to the company/brand logo image found in the markdown (look for images with 'logo' in alt text or URL path), or null if not found",
+  "brandColors": {
+    "primary": "the main/dominant brand color as hex (e.g. '#1B4332') — look at the website's header, buttons, or logo area",
+    "accent": "a secondary/accent color as hex (e.g. '#E94560') — often used for CTAs, highlights",
+    "light": "a lighter tint of primary as hex, or a light background color used on the site"
+  },
+  "suggestedFont": "the font family name used on the website if detectable (e.g. 'Inter', 'Playfair Display', 'Cairo'), or a font that matches the brand's style. For Arabic sites suggest an Arabic-compatible font.",
   "contact": {
     "phone": "phone if found or null",
     "email": "email if found or null",
