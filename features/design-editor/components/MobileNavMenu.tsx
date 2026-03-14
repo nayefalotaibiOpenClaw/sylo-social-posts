@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { SIDEBAR_ITEMS, type SidebarTab } from "./Sidebar";
+import { useLocale } from "@/lib/i18n/context";
 
 interface WorkspaceItem {
   _id: string;
@@ -22,6 +23,7 @@ export default function MobileNavMenu({ activeTab, onTabClick, workspaces, curre
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { t } = useLocale();
 
   useEffect(() => {
     if (!open) return;
@@ -83,7 +85,7 @@ export default function MobileNavMenu({ activeTab, onTabClick, workspaces, curre
 
           {/* Navigation items */}
           <p className="px-4 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Navigate</p>
-          {SIDEBAR_ITEMS.map(({ id, icon: ItemIcon, label }) => (
+          {SIDEBAR_ITEMS.map(({ id, icon: ItemIcon, labelKey }) => (
             <button
               key={id}
               onClick={() => {
@@ -97,7 +99,7 @@ export default function MobileNavMenu({ activeTab, onTabClick, workspaces, curre
               }`}
             >
               <ItemIcon size={16} />
-              <span className="text-sm">{label}</span>
+              <span className="text-sm">{t(labelKey)}</span>
             </button>
           ))}
         </div>
