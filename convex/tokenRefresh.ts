@@ -11,7 +11,7 @@ export const refreshSingle = internalAction({
 
     if (account.provider === "instagram") {
       const res = await fetch(
-        `https://graph.instagram.com/v21.0/refresh_access_token?grant_type=ig_refresh_token&access_token=${account.accessToken}`
+        `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${account.accessToken}`
       );
       if (!res.ok) throw new Error(`Instagram token refresh failed: HTTP ${res.status}`);
       const data = await res.json();
@@ -135,7 +135,7 @@ export const refreshExpiring = internalAction({
         if (account.provider === "instagram") {
           // Instagram Business Login tokens use ig_refresh_token
           const res = await fetch(
-            `https://graph.instagram.com/v21.0/refresh_access_token?grant_type=ig_refresh_token&access_token=${account.accessToken}`
+            `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${account.accessToken}`
           );
           const data = await res.json();
 

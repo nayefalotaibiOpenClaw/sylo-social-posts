@@ -135,14 +135,11 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
           code,
         }),
       });
-      const tokenText = await tokenRes.text();
-      console.error("[IG-DEBUG-V2] Token response status:", tokenRes.status, "body:", tokenText);
-      let tokenData;
-      try { tokenData = JSON.parse(tokenText); } catch { tokenData = {}; }
       if (!tokenRes.ok) {
-        const errDetail = tokenData?.error_message || tokenData?.error?.message || tokenText;
-        throw new Error(`Instagram token exchange failed (${tokenRes.status}): ${errDetail}`);
+        const errBody = await tokenRes.text();
+        throw new Error(`Instagram token exchange failed (${tokenRes.status}): ${errBody}`);
       }
+      const tokenData = await tokenRes.json();
       if (tokenData.error_type || tokenData.error_message) {
         throw new Error(tokenData.error_message || "Instagram OAuth error");
       }
@@ -151,10 +148,14 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
       const igUserId = String(tokenData.user_id);
 
       // Step 2: Exchange for long-lived token (~60 days)
+      // Uses unversioned graph.instagram.com endpoint per Meta docs
       const longRes = await fetch(
-        `${IG_GRAPH_URL}/access_token?grant_type=ig_exchange_token&client_secret=${igClientSecret}&access_token=${shortToken}`
+        `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${encodeURIComponent(igClientSecret)}&access_token=${encodeURIComponent(shortToken)}`
       );
-      if (!longRes.ok) throw new Error(`Instagram API returned HTTP ${longRes.status}`);
+      if (!longRes.ok) {
+        const errBody = await longRes.text();
+        throw new Error(`Instagram long-lived token failed (${longRes.status}): ${errBody}`);
+      }
       const longData = await longRes.json();
       if (longData.error) throw new Error(longData.error.message);
 
@@ -166,7 +167,10 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
       const userRes = await fetch(
         `${IG_GRAPH_URL}/me?fields=id,username,name,profile_picture_url&access_token=${longToken}`
       );
-      if (!userRes.ok) throw new Error(`Instagram API returned HTTP ${userRes.status}`);
+      if (!userRes.ok) {
+        const errBody = await userRes.text();
+        throw new Error(`Instagram profile fetch failed (${userRes.status}): ${errBody}`);
+      }
       const userData = await userRes.json();
       if (userData.error) throw new Error(userData.error.message);
 
