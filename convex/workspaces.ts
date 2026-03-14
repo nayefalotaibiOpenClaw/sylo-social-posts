@@ -1,9 +1,9 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { auth } from "./auth";
 
 export const create = mutation({
   args: {
-    userId: v.id("users"),
     name: v.string(),
     slug: v.string(),
     industry: v.optional(v.string()),
@@ -11,19 +11,24 @@ export const create = mutation({
     defaultLanguage: v.union(v.literal("en"), v.literal("ar")),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     return await ctx.db.insert("workspaces", {
       ...args,
+      userId,
       createdAt: Date.now(),
     });
   },
 });
 
 export const listByUser = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
     return await ctx.db
       .query("workspaces")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
   },
 });
@@ -31,7 +36,11 @@ export const listByUser = query({
 export const get = query({
   args: { id: v.id("workspaces") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+    const workspace = await ctx.db.get(args.id);
+    if (!workspace || workspace.userId !== userId) return null;
+    return workspace;
   },
 });
 
@@ -45,8 +54,11 @@ export const update = mutation({
     defaultLanguage: v.optional(v.union(v.literal("en"), v.literal("ar"))),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.id);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     const { id, ...fields } = args;
-    // Filter out undefined values
     const updates: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(fields)) {
       if (value !== undefined) updates[key] = value;
@@ -58,6 +70,10 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("workspaces") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.id);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     await ctx.db.delete(args.id);
   },
 });
@@ -88,6 +104,10 @@ export const updateWebsiteInfo = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.id);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     await ctx.db.patch(args.id, { websiteInfo: args.websiteInfo });
   },
 });

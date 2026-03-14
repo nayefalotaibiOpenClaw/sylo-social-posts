@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/api-auth";
 
 const UPAYMENTS_BASE_URL = process.env.UPAYMENTS_BASE_URL;
 
@@ -7,6 +8,8 @@ const UPAYMENTS_BASE_URL = process.env.UPAYMENTS_BASE_URL;
  * Called client-side after redirect back from UPayments.
  */
 export async function GET(req: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
   const UPAYMENTS_API_KEY = process.env.UPAYMENTS_API_KEY;
   if (!UPAYMENTS_API_KEY || !UPAYMENTS_BASE_URL) {
     return NextResponse.json(

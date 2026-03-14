@@ -19,7 +19,7 @@ export default function MetaTestPage() {
   const user = useQuery(api.users.currentUser);
   const workspaces = useQuery(
     api.workspaces.listByUser,
-    user ? { userId: user._id } : "skip"
+    user ? {} : "skip"
   );
   const runTests = useAction(api.metaApiTest.runAllTests);
 

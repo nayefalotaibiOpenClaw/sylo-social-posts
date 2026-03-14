@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/api-auth";
 
 const UNSPLASH_API = "https://api.unsplash.com";
 
@@ -10,6 +11,9 @@ function getAccessKey() {
 
 /** GET /api/unsplash?query=restaurant&per_page=9 */
 export async function GET(req: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   const query = req.nextUrl.searchParams.get("query");
   const perPage = req.nextUrl.searchParams.get("per_page") || "12";
 
@@ -58,9 +62,17 @@ export async function GET(req: NextRequest) {
 
 /** POST /api/unsplash — trigger download event (required by Unsplash API Terms Section 6) */
 export async function POST(req: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   const { downloadLocation } = await req.json();
   if (!downloadLocation) {
     return NextResponse.json({ error: "downloadLocation required" }, { status: 400 });
+  }
+
+  // Issue 5: Validate downloadLocation to prevent SSRF / API key leakage
+  if (!downloadLocation.startsWith("https://api.unsplash.com/")) {
+    return NextResponse.json({ error: "Invalid download location" }, { status: 400 });
   }
 
   try {

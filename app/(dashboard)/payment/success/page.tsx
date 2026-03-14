@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Suspense, useEffect, useState, useRef } from "react";
 import { CheckCircle, Loader2, AlertCircle } from "lucide-react";
@@ -32,7 +32,7 @@ function PaymentSuccessContent() {
 
   const user = useQuery(api.users.currentUser);
   const activateSub = useMutation(api.subscriptions.activate);
-  const markPaid = useMutation(api.payments.markPaidByUser);
+  const verifyAndMarkPaid = useAction(api.payments.verifyAndMarkPaid);
 
   const [status, setStatus] = useState<"verifying" | "activating" | "done" | "error">("verifying");
   const [errorMsg, setErrorMsg] = useState("");
@@ -63,33 +63,21 @@ function PaymentSuccessContent() {
 
     const process = async () => {
       try {
-        // Step 1: Verify with UPayments using track_id
+        // Step 1: Verify with UPayments and mark as paid (server-side verification)
         setStatus("verifying");
-        const verifyRes = await fetch(`/api/payments/verify?track_id=${trackId}`);
-        const verifyData = await verifyRes.json();
-
-        if (verifyData.result !== "CAPTURED") {
-          setStatus("error");
-          setErrorMsg("Payment was not captured. Please contact support.");
-          return;
-        }
-
-        // Mark payment as paid with UPayments data
-        await markPaid({
-          orderId,
-          upaymentTransactionId: verifyData.paymentId,
-          upaymentTrackId: verifyData.trackId,
-        });
+        await verifyAndMarkPaid({ orderId, trackId });
 
         // Step 2: Activate subscription
         setStatus("activating");
-        const verifiedAmount = parseFloat(verifyData.amount) || 0;
+
+        // Fetch payment details for currency
+        const verifyRes = await fetch(`/api/payments/verify?track_id=${trackId}`);
+        const verifyData = await verifyRes.json();
 
         await activateSub({
           plan,
           orderId,
           paymentId: trackId || undefined,
-          amountPaid: verifiedAmount,
           currency: verifyData.currency || "USD",
         });
 
@@ -109,7 +97,7 @@ function PaymentSuccessContent() {
     };
 
     process();
-  }, [user, orderId, plan, trackId, activateSub, markPaid]);
+  }, [user, orderId, plan, trackId, activateSub, verifyAndMarkPaid]);
 
   if (status === "error") {
     return (

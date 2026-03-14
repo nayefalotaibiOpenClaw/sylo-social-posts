@@ -17,7 +17,7 @@ export default function WorkspacesPage() {
   const user = useQuery(api.users.currentUser);
   const workspaces = useQuery(
     api.workspaces.listByUser,
-    user ? { userId: user._id } : "skip"
+    user ? {} : "skip"
   );
   const createWorkspace = useMutation(api.workspaces.create);
   const deleteWorkspace = useMutation(api.workspaces.remove);
@@ -103,7 +103,6 @@ export default function WorkspacesPage() {
     const slug = form.slug.trim() || form.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     const websiteUrl = form.website.trim() || undefined;
     const workspaceId = await createWorkspace({
-      userId: user._id,
       name: form.name.trim(),
       slug,
       industry: form.industry || undefined,

@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { getInstagramAuthUrl } from "@/lib/social-providers/meta";
+import { requireAuth } from "@/lib/auth/api-auth";
 
 export async function GET(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   const { searchParams } = request.nextUrl;
   const workspaceId = searchParams.get("workspaceId");
-  const userId = searchParams.get("userId");
+  const userId = authResult.user._id;
 
-  if (!workspaceId || !userId) {
+  if (!workspaceId) {
     return NextResponse.json(
-      { error: "Missing workspaceId or userId" },
+      { error: "Missing workspaceId" },
       { status: 400 }
     );
   }

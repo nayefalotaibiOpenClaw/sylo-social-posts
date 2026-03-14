@@ -262,12 +262,12 @@ export const startTrial = mutation({
 });
 
 // Activate subscription after successful payment (authenticated user)
+// Issue 8: amountPaid is now read from the server-side payment record, not client args
 export const activate = mutation({
   args: {
     plan: v.union(v.literal("starter"), v.literal("pro")),
     orderId: v.string(),
     paymentId: v.optional(v.string()),
-    amountPaid: v.number(),
     currency: v.string(),
   },
   handler: async (ctx, args) => {
@@ -283,6 +283,9 @@ export const activate = mutation({
     if (!payment) throw new Error("Payment record not found");
     if (payment.userId !== userId) throw new Error("Payment does not belong to this user");
     if (payment.status !== "paid") throw new Error("Payment has not been completed");
+
+    // Use server-computed amount from payment record (not client-supplied)
+    const amountPaid = payment.amount;
 
     // Idempotency guard: if subscription already exists for this orderId, return it
     const existingSub = await ctx.db
@@ -318,7 +321,7 @@ export const activate = mutation({
       aiTokensUsed: 0,
       postsLimit: planConfig.postsLimit,
       postsUsed: 0,
-      amountPaid: args.amountPaid,
+      amountPaid,
       currency: args.currency,
       paymentId: args.paymentId,
       upaymentOrderId: args.orderId,

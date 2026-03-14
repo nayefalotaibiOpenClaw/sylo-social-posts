@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { auth } from "./auth";
 
 const colorsValidator = v.object({
   primary: v.string(),
@@ -16,6 +17,10 @@ const colorsValidator = v.object({
 export const getByWorkspace = query({
   args: { workspaceId: v.id("workspaces") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) return null;
     return await ctx.db
       .query("branding")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -40,6 +45,10 @@ export const upsert = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     const existing = await ctx.db
       .query("branding")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -67,6 +76,10 @@ export const updateField = mutation({
     unset: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     const branding = await ctx.db
       .query("branding")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -90,6 +103,10 @@ export const updateColors = mutation({
     colors: colorsValidator,
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     const branding = await ctx.db
       .query("branding")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -106,6 +123,10 @@ export const savePalette = mutation({
     colors: colorsValidator,
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     const branding = await ctx.db
       .query("branding")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))

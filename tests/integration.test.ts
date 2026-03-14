@@ -217,7 +217,6 @@ describe("Convex Mutations: Auth Guards", () => {
       convex.mutation(api.subscriptions.activate, {
         plan: "starter",
         orderId: "fake_order",
-        amountPaid: 40,
         currency: "USD",
       })
     ).rejects.toThrow();
@@ -234,10 +233,11 @@ describe("Convex Mutations: Auth Guards", () => {
     ).rejects.toThrow();
   });
 
-  it("payments.markPaidByUser rejects unauthenticated user", async () => {
+  it("payments.verifyAndMarkPaid rejects unauthenticated user", async () => {
     await expect(
-      convex.mutation(api.payments.markPaidByUser, {
+      convex.action(api.payments.verifyAndMarkPaid, {
         orderId: "fake_order",
+        trackId: "fake_track",
       })
     ).rejects.toThrow();
   });

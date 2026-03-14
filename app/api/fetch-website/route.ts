@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { extractBodyText } from "@/lib/website/extract-text";
+import { requireAuth } from "@/lib/auth/api-auth";
+import { validateExternalUrl } from "@/lib/security/url-validation";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const { url, screenshotBase64 } = await req.json();
 
@@ -20,6 +25,12 @@ export async function POST(req: NextRequest) {
       }
     } catch {
       return NextResponse.json({ error: "Invalid URL format." }, { status: 400 });
+    }
+
+    // ── SSRF protection: block private/internal IPs ──
+    const urlCheck = await validateExternalUrl(parsedUrl.toString());
+    if (!urlCheck.allowed) {
+      return NextResponse.json({ error: urlCheck.reason }, { status: 403 });
     }
 
     // ── Step 1: Fetch HTML via plain HTTP and extract text ──

@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { auth } from "./auth";
 
 // ─── Shared validators ──────────────────────────────────────────────
 
@@ -42,6 +43,10 @@ const businessInfoValidator = v.object({
 export const getByWorkspace = query({
   args: { workspaceId: v.id("workspaces") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) return null;
     return await ctx.db
       .query("websiteCrawls")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -55,7 +60,6 @@ export const getByWorkspace = query({
 export const upsert = mutation({
   args: {
     workspaceId: v.id("workspaces"),
-    userId: v.id("users"),
     url: v.string(),
     status: v.union(
       v.literal("discovering"),
@@ -69,6 +73,10 @@ export const upsert = mutation({
     totalProductsFetched: v.number(),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     // Check for existing crawl for this workspace
     const existing = await ctx.db
       .query("websiteCrawls")
@@ -80,6 +88,7 @@ export const upsert = mutation({
     if (existing) {
       await ctx.db.replace(existing._id, {
         ...args,
+        userId,
         lastCrawledAt: now,
         createdAt: existing.createdAt,
       });
@@ -88,6 +97,7 @@ export const upsert = mutation({
 
     return await ctx.db.insert("websiteCrawls", {
       ...args,
+      userId,
       lastCrawledAt: now,
       createdAt: now,
     });
@@ -106,6 +116,10 @@ export const updateStatus = mutation({
     businessInfo: v.optional(businessInfoValidator),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const crawl = await ctx.db.get(args.id);
+    if (!crawl || crawl.userId !== userId) throw new Error("Not authorized");
     const updates: Record<string, unknown> = {
       status: args.status,
       lastCrawledAt: Date.now(),
@@ -124,6 +138,10 @@ export const updateSections = mutation({
     sections: v.array(sectionValidator),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const crawl = await ctx.db.get(args.id);
+    if (!crawl || crawl.userId !== userId) throw new Error("Not authorized");
     await ctx.db.patch(args.id, {
       sections: args.sections,
       lastCrawledAt: Date.now(),
@@ -139,6 +157,8 @@ export const addProducts = mutation({
     products: v.array(productValidator),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const crawl = await ctx.db
       .query("websiteCrawls")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -186,10 +206,10 @@ export const markProductSaved = mutation({
     assetId: v.id("assets"),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const crawl = await ctx.db.get(args.crawlId);
-    if (!crawl) {
-      throw new Error("Crawl not found");
-    }
+    if (!crawl || crawl.userId !== userId) throw new Error("Not authorized");
 
     const updatedProducts = crawl.discoveredProducts.map((product) => {
       if (product.sourceUrl === args.productSourceUrl) {
@@ -211,8 +231,10 @@ export const removeProduct = mutation({
     productSourceUrl: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const crawl = await ctx.db.get(args.crawlId);
-    if (!crawl) throw new Error("Crawl not found");
+    if (!crawl || crawl.userId !== userId) throw new Error("Not authorized");
 
     const updatedProducts = crawl.discoveredProducts.filter(
       (p) => p.sourceUrl !== args.productSourceUrl
@@ -229,6 +251,10 @@ export const removeProduct = mutation({
 export const remove = mutation({
   args: { id: v.id("websiteCrawls") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const crawl = await ctx.db.get(args.id);
+    if (!crawl || crawl.userId !== userId) throw new Error("Not authorized");
     await ctx.db.delete(args.id);
   },
 });

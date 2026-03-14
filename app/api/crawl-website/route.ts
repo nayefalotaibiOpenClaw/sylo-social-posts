@@ -7,10 +7,15 @@ import {
   extractProductsFromMarkdown,
 } from "@/lib/website/crawl";
 import { classifySections, extractProductDetails } from "@/lib/website/classify";
+import { requireAuth } from "@/lib/auth/api-auth";
+import { validateExternalUrl } from "@/lib/security/url-validation";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const body = await req.json();
     const { url, step, sectionUrl, productUrls, limit = 6 } = body;
@@ -28,6 +33,12 @@ export async function POST(req: NextRequest) {
       }
     } catch {
       return NextResponse.json({ error: "Invalid URL format." }, { status: 400 });
+    }
+
+    // ── SSRF protection: block private/internal IPs ──
+    const urlCheck = await validateExternalUrl(parsedUrl.toString());
+    if (!urlCheck.allowed) {
+      return NextResponse.json({ error: urlCheck.reason }, { status: 403 });
     }
 
     const baseUrl = `${parsedUrl.protocol}//${parsedUrl.host}`;

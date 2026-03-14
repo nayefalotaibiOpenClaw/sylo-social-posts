@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { cleanCode } from "@/lib/ai/clean-code";
+import { requireAuth } from "@/lib/auth/api-auth";
 
 const ADAPT_SYSTEM_PROMPT = `You are a social media post layout adapter. You will receive an existing React/TSX post component and a target aspect ratio. Your job is to REWRITE the component so it looks perfect at the target ratio.
 
@@ -23,6 +24,9 @@ const ADAPT_SYSTEM_PROMPT = `You are a social media post layout adapter. You wil
 Return ONLY the raw component code. No markdown fences, no backticks, no explanation. Start with imports.`;
 
 export async function POST(req: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "API key not configured" }, { status: 500 });

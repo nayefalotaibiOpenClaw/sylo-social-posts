@@ -1,5 +1,6 @@
-import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import { action, mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { auth } from "./auth";
 import { PLANS, computeCredit } from "./subscriptions";
 
@@ -64,12 +65,15 @@ export const createPending = mutation({
 export const getPendingAmount = query({
   args: { orderId: v.string() },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+
     const payment = await ctx.db
       .query("payments")
       .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
       .first();
 
-    if (!payment) return null;
+    if (!payment || payment.userId !== userId) return null;
 
     return {
       orderId: payment.orderId,
@@ -109,31 +113,51 @@ export const markPaid = internalMutation({
   },
 });
 
-// Mark payment as paid — authenticated user version (user must own the payment)
-export const markPaidByUser = mutation({
+// Verify payment with UPayments and mark as paid — replaces markPaidByUser (Issue 7)
+// This action independently verifies with UPayments before marking as paid,
+// preventing users from self-confirming payments without actual payment.
+export const verifyAndMarkPaid = action({
   args: {
     orderId: v.string(),
-    upaymentTransactionId: v.optional(v.string()),
-    upaymentTrackId: v.optional(v.string()),
+    trackId: v.string(),
   },
   handler: async (ctx, args) => {
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const payment = await ctx.db
-      .query("payments")
-      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
-      .first();
-
-    if (!payment) throw new Error(`Payment not found: ${args.orderId}`);
-    if (payment.userId !== userId) throw new Error("Payment does not belong to this user");
+    // Verify payment belongs to this user
+    const payment = await ctx.runQuery(internal.payments.getByOrderIdInternal, {
+      orderId: args.orderId,
+    });
+    if (!payment) throw new Error("Payment not found");
+    if (payment.userId !== userId) throw new Error("Not authorized");
     if (payment.status === "paid") return payment._id;
 
-    await ctx.db.patch(payment._id, {
-      status: "paid",
-      upaymentTransactionId: args.upaymentTransactionId,
-      upaymentTrackId: args.upaymentTrackId,
-      updatedAt: Date.now(),
+    // Independently verify with UPayments
+    const apiKey = process.env.UPAYMENTS_API_KEY;
+    const baseUrl = process.env.UPAYMENTS_BASE_URL;
+    if (!apiKey || !baseUrl) throw new Error("Payment system not configured");
+
+    const res = await fetch(`${baseUrl}/get-payment-status/${args.trackId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+    const txn = data?.data?.transaction;
+
+    if (!txn || txn.result !== "CAPTURED") {
+      throw new Error("Payment not captured by gateway");
+    }
+
+    // Mark as paid using internal mutation
+    await ctx.runMutation(internal.payments.markPaid, {
+      orderId: args.orderId,
+      upaymentTransactionId: txn.payment_id,
+      upaymentTrackId: txn.track_id,
     });
 
     return payment._id;
@@ -176,6 +200,17 @@ export const getByOrderId = query({
     if (!payment || payment.userId !== userId) return null;
 
     return payment;
+  },
+});
+
+// Internal query for webhook verification — returns payment by orderId without auth
+export const getByOrderIdInternal = internalQuery({
+  args: { orderId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("payments")
+      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
+      .first();
   },
 });
 

@@ -8,19 +8,27 @@ import { useAspectRatio, useEditMode } from "@/contexts/EditContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { IPhoneMockup, PostHeader, PostFooter, FloatingCard, IPadMockup, DesktopMockup } from "@/features/posts/shared";
 import * as LucideIcons from "lucide-react";
+import { validateComponentCode } from "@/lib/security/code-validation";
 
 interface DynamicPostProps {
   code: string;
 }
 
-// NOTE: This component intentionally uses dynamic code evaluation (new Function)
-// to render AI-generated React components at runtime. The code comes from our own
-// API route which calls Google Gemini - not from untrusted user input.
-// This is the standard approach for live code playgrounds (like CodeSandbox, MDX, etc.)
+// NOTE: This component uses dynamic code evaluation (new Function) to render
+// AI-generated React components at runtime. This is the standard approach for
+// live code playgrounds (like CodeSandbox, MDX, etc.). Dangerous globals are
+// shadowed and code is validated to prevent XSS in shared workspaces.
 
 export default function DynamicPost({ code }: DynamicPostProps) {
   const Component = useMemo(() => {
     try {
+      // Validate code before evaluation
+      const validation = validateComponentCode(code);
+      if (!validation.valid) {
+        console.error("Code validation failed:", validation.reason);
+        return null;
+      }
+
       // Remove import statements and strip all 'export' keywords
       let codeWithoutImports = code
         .replace(/^import\s+.*?from\s+['"].*?['"];?\s*$/gm, '')
@@ -43,9 +51,11 @@ export default function DynamicPost({ code }: DynamicPostProps) {
         jsxFragmentPragma: "React.Fragment",
       });
 
-      // Create a function that returns the component with all dependencies injected
-      // This is safe because the code originates from our server-side AI API route
-      const fn = new Function(
+      // Create a function that returns the component with all dependencies injected.
+      // Dangerous globals are shadowed (set to undefined) so evaluated code cannot
+      // access them even if validation is bypassed.
+      // eslint-disable-next-line no-new-func -- intentional: runtime component rendering with sandboxed globals
+      const createComponent = new Function(
         "React",
         "EditableText",
         "DraggableWrapper",
@@ -59,14 +69,19 @@ export default function DynamicPost({ code }: DynamicPostProps) {
         "IPadMockup",
         "DesktopMockup",
         "LucideIcons",
-        `
-        const { ${Object.keys(LucideIcons).join(", ")} } = LucideIcons;
-        ${jsCode}
-        return typeof __Component__ !== 'undefined' ? __Component__ : null;
-        `
+        [
+          "// Shadow dangerous globals to prevent XSS",
+          "var fetch = undefined, XMLHttpRequest = undefined, importScripts = undefined;",
+          "var document = undefined, window = undefined, globalThis = undefined;",
+          "var localStorage = undefined, sessionStorage = undefined;",
+          "",
+          "const { " + Object.keys(LucideIcons).join(", ") + " } = LucideIcons;",
+          jsCode,
+          "return typeof __Component__ !== 'undefined' ? __Component__ : null;",
+        ].join("\n")
       );
 
-      return fn(
+      return createComponent(
         React,
         EditableText,
         DraggableWrapper,

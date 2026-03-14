@@ -2,14 +2,50 @@ import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 /**
+ * Verify a payment with UPayments API using the track_id.
+ * UPayments does not provide webhook HMAC signatures, so we verify
+ * by calling their getpaymentstatus API independently.
+ */
+async function verifyWithUPayments(trackId: string) {
+  const baseUrl = process.env.UPAYMENTS_BASE_URL;
+  const apiKey = process.env.UPAYMENTS_API_KEY;
+  if (!baseUrl || !apiKey) {
+    console.error("Missing UPAYMENTS_BASE_URL or UPAYMENTS_API_KEY for verification");
+    return null;
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/get-payment-status/${trackId}`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await res.json();
+    if (!res.ok || !data.status) return null;
+
+    const txn = data?.data?.transaction;
+    if (!txn) return null;
+
+    return {
+      result: txn.result as string,
+      orderId: (txn.merchant_requested_order_id || txn.order_id) as string,
+      paymentId: txn.payment_id?.toString() as string,
+      amount: parseFloat(txn.total_price) || 0,
+    };
+  } catch (err) {
+    console.error("UPayments verification error:", err);
+    return null;
+  }
+}
+
+/**
  * UPayments webhook — backup confirmation for payment results.
  * Primary activation happens via returnUrl + verify API.
  * This ensures we catch payments even if user closes browser.
  *
- * Webhook fields: payment_id, result, post_date, tran_id, ref,
- * track_id, auth, order_id, requested_order_id, refund_order_id,
- * payment_type, invoice_id, transaction_date, receipt_id, trn_udf,
- * customer_extra_data
+ * Security: Verifies payment status with UPayments API before activating,
+ * since UPayments does not provide webhook HMAC signatures.
  */
 export const handlePaymentWebhook = httpAction(async (ctx, request) => {
   try {
@@ -50,23 +86,54 @@ export const handlePaymentWebhook = httpAction(async (ctx, request) => {
     }
 
     if (result === "CAPTURED") {
-      // Mark payment paid via internal mutation (no auth needed)
+      // Verify with UPayments API before trusting webhook data
+      if (!track_id) {
+        console.error("Webhook missing track_id — cannot verify");
+        return new Response(JSON.stringify({ status: "ok" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const verified = await verifyWithUPayments(track_id.toString());
+      if (!verified || verified.result !== "CAPTURED") {
+        console.error("Payment verification failed for track_id:", track_id, "result:", verified?.result);
+        if (verified && verified.result !== "CAPTURED") {
+          await ctx.runMutation(internal.payments.markFailed, { orderId });
+        }
+        return new Response(JSON.stringify({ status: "ok" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Verify amount matches our payment record
+      const paymentRecord = await ctx.runQuery(internal.payments.getByOrderIdInternal, { orderId });
+      if (paymentRecord && verified.amount > 0) {
+        const diff = Math.abs(paymentRecord.amount - verified.amount);
+        if (diff > 0.02) {
+          console.error(`Amount mismatch: expected ${paymentRecord.amount}, got ${verified.amount} for ${orderId}`);
+          return new Response(JSON.stringify({ status: "ok" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      // Payment verified — proceed with activation
       await ctx.runMutation(internal.payments.markPaid, {
         orderId,
-        upaymentTransactionId: payment_id?.toString(),
+        upaymentTransactionId: verified.paymentId || payment_id?.toString(),
         upaymentTrackId: track_id?.toString(),
       });
 
-      // Activate subscription using orderId (looks up user from payment)
       try {
         await ctx.runMutation(internal.subscriptions.activateByOrderId, {
           orderId,
-          paymentId: payment_id?.toString(),
+          paymentId: verified.paymentId || payment_id?.toString(),
         });
       } catch (activateError) {
         const msg = activateError instanceof Error ? activateError.message : String(activateError);
-        // Idempotency: activateByOrderId returns existing sub if already created
-        // Only log unexpected errors
         if (!msg.includes("not found") && !msg.includes("already")) {
           console.error("Webhook activation error:", msg);
         }

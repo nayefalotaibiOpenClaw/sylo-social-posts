@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+import { requireAuth } from "@/lib/auth/api-auth";
 
 const UPAYMENTS_BASE_URL = process.env.UPAYMENTS_BASE_URL;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
@@ -28,6 +29,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const { plan, billingPeriod, orderId: clientOrderId, userId, userName, userEmail } = await req.json();
 
@@ -35,8 +39,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
     const period = billingPeriod === "yearly" ? "yearly" : "monthly";
-    if (!userId) {
-      return NextResponse.json({ error: "User ID required" }, { status: 400 });
+
+    // Verify the userId matches the authenticated user
+    if (userId && userId !== authResult.user._id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     if (!clientOrderId || typeof clientOrderId !== "string") {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });
@@ -94,7 +100,6 @@ export async function POST(req: NextRequest) {
     };
 
     const chargeUrl = `${UPAYMENTS_BASE_URL}/charge`;
-    console.log("UPayments request:", chargeUrl, JSON.stringify(body));
 
     const response = await fetch(chargeUrl, {
       method: "POST",
@@ -107,7 +112,6 @@ export async function POST(req: NextRequest) {
     });
 
     const responseText = await response.text();
-    console.log("UPayments response status:", response.status, "body:", responseText.slice(0, 500));
 
     let data;
     try {

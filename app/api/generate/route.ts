@@ -3,6 +3,7 @@ import { handleGenerationError } from "./_shared";
 import { generate as generateWild } from "./engines/wild";
 import { generate as generateClassic } from "./engines/classic";
 import { generate as generateAppstoreGuided } from "./engines/appstore-guided";
+import { requireAuth } from "@/lib/auth/api-auth";
 
 /**
  * Engine Router
@@ -14,6 +15,9 @@ import { generate as generateAppstoreGuided } from "./engines/appstore-guided";
  * Each engine has its own file in ./engines/ — fully independent.
  */
 export async function POST(req: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const body = await req.json();
     const { prompt, version = 7 } = body;

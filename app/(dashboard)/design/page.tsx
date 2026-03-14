@@ -33,7 +33,7 @@ export default function DesignPage() {
   const user = useQuery(api.users.currentUser);
   const workspaces = useQuery(
     api.workspaces.listByUser,
-    user ? { userId: user._id } : "skip"
+    user ? {} : "skip"
   );
 
   // Fetch workspace data
@@ -104,7 +104,7 @@ export default function DesignPage() {
   const analyzeImage = useAction(api.assets.analyzeImage);
   const assets = useQuery(
     api.assets.listForWorkspace,
-    workspaceId && user ? { workspaceId, userId: user._id } : "skip"
+    workspaceId && user ? { workspaceId } : "skip"
   );
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -399,7 +399,6 @@ export default function DesignPage() {
         if (!collectionId) {
           collectionId = await createCollection({
             workspaceId,
-            userId: user._id,
             name: "Generated Posts",
             mode: "social_grid",
             language: workspace?.defaultLanguage || "ar",
@@ -410,7 +409,6 @@ export default function DesignPage() {
         const newPostIds = await createPostBatch({
           collectionId,
           workspaceId,
-          userId: user._id,
           language: workspace?.defaultLanguage || "ar",
           posts: codes.map((code, i) => ({
             title: `${generatePrompt.slice(0, 80)} (${i + 1}/${codes.length})`,
@@ -512,7 +510,6 @@ export default function DesignPage() {
     if (!workspaceId || !user) return;
     await upsertCrawl({
       workspaceId,
-      userId: user._id,
       url,
       status: "discovering",
       sections: [],
@@ -555,7 +552,6 @@ export default function DesignPage() {
       const wi = data.websiteInfo || {};
       await upsertCrawl({
         workspaceId,
-        userId: user._id,
         url,
         status: "ready",
         businessInfo: {
@@ -608,7 +604,6 @@ export default function DesignPage() {
       console.error("Crawl discover failed:", err);
       await upsertCrawl({
         workspaceId,
-        userId: user._id,
         url,
         status: "failed",
         sections: [],
@@ -667,7 +662,6 @@ export default function DesignPage() {
 
       const assetId = await createAsset({
         workspaceId,
-        userId: user._id,
         scope: "workspace",
         fileId: storageId,
         fileName: `${product.name.slice(0, 50)}.jpg`,
@@ -873,7 +867,6 @@ export default function DesignPage() {
 
           const assetId = await createAsset({
             workspaceId: assetScope === "workspace" ? workspaceId : undefined,
-            userId: user._id,
             scope: assetScope,
             fileId: storageId,
             fileName: file.name,

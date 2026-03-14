@@ -1,6 +1,7 @@
-import { action, mutation, query } from "./_generated/server";
+import { action, mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { api, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
+import { auth } from "./auth";
 
 const assetTypeValidator = v.union(
   v.literal("iphone"),
@@ -17,12 +18,16 @@ const assetTypeValidator = v.union(
 );
 
 export const generateUploadUrl = mutation(async (ctx) => {
+  const userId = await auth.getUserId(ctx);
+  if (!userId) throw new Error("Not authenticated");
   return await ctx.storage.generateUploadUrl();
 });
 
 export const getStorageUrl = mutation({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     return await ctx.storage.getUrl(args.storageId);
   },
 });
@@ -31,7 +36,6 @@ export const getStorageUrl = mutation({
 export const create = mutation({
   args: {
     workspaceId: v.optional(v.id("workspaces")),
-    userId: v.id("users"),
     scope: v.union(v.literal("global"), v.literal("workspace")),
     fileId: v.id("_storage"),
     fileName: v.string(),
@@ -41,11 +45,18 @@ export const create = mutation({
     height: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     if (args.scope === "workspace" && !args.workspaceId) {
       throw new Error("workspaceId required for workspace-scoped assets");
     }
+    if (args.workspaceId) {
+      const workspace = await ctx.db.get(args.workspaceId);
+      if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
+    }
     return await ctx.db.insert("assets", {
       ...args,
+      userId,
       analyzingStatus: "pending",
       createdAt: Date.now(),
     });
@@ -56,9 +67,13 @@ export const create = mutation({
 export const listForWorkspace = query({
   args: {
     workspaceId: v.id("workspaces"),
-    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) return [];
+
     // Workspace-specific assets
     const workspaceAssets = await ctx.db
       .query("assets")
@@ -69,7 +84,7 @@ export const listForWorkspace = query({
     const globalAssets = await ctx.db
       .query("assets")
       .withIndex("by_user_scope", (q) =>
-        q.eq("userId", args.userId).eq("scope", "global")
+        q.eq("userId", userId).eq("scope", "global")
       )
       .collect();
 
@@ -94,12 +109,14 @@ export const listForWorkspace = query({
 
 // Get only global assets for account settings
 export const listGlobal = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
     const assets = await ctx.db
       .query("assets")
       .withIndex("by_user_scope", (q) =>
-        q.eq("userId", args.userId).eq("scope", "global")
+        q.eq("userId", userId).eq("scope", "global")
       )
       .collect();
 
@@ -116,10 +133,14 @@ export const listGlobal = query({
 export const listByType = query({
   args: {
     workspaceId: v.id("workspaces"),
-    userId: v.id("users"),
     type: assetTypeValidator,
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) return [];
+
     // Workspace assets of this type
     const workspaceAssets = await ctx.db
       .query("assets")
@@ -132,7 +153,7 @@ export const listByType = query({
     const globalAssets = (await ctx.db
       .query("assets")
       .withIndex("by_user_scope", (q) =>
-        q.eq("userId", args.userId).eq("scope", "global")
+        q.eq("userId", userId).eq("scope", "global")
       )
       .collect()
     ).filter((a) => a.type === args.type);
@@ -151,16 +172,18 @@ export const listByType = query({
 export const remove = mutation({
   args: { id: v.id("assets") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const asset = await ctx.db.get(args.id);
-    if (asset) {
-      await ctx.storage.delete(asset.fileId);
-      await ctx.db.delete(args.id);
-    }
+    if (!asset) return;
+    if (asset.userId !== userId) throw new Error("Not authorized");
+    await ctx.storage.delete(asset.fileId);
+    await ctx.db.delete(args.id);
   },
 });
 
-// Reset analysis status so it can be retried
-export const resetAnalysis = mutation({
+// Reset analysis status so it can be retried — internal only
+export const resetAnalysis = internalMutation({
   args: { id: v.id("assets") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, {
@@ -171,8 +194,8 @@ export const resetAnalysis = mutation({
   },
 });
 
-// Update asset with AI analysis results
-export const updateAnalysis = mutation({
+// Update asset with AI analysis results — internal only (called from analyzeImage action)
+export const updateAnalysis = internalMutation({
   args: {
     id: v.id("assets"),
     description: v.string(),
@@ -201,7 +224,7 @@ export const analyzeImage = action({
   handler: async (ctx, args) => {
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) {
-      await ctx.runMutation(api.assets.updateAnalysis, {
+      await ctx.runMutation(internal.assets.updateAnalysis, {
         id: args.assetId,
         description: "",
         aiAnalysis: "",
@@ -302,7 +325,7 @@ Respond in this exact JSON format:
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        await ctx.runMutation(api.assets.updateAnalysis, {
+        await ctx.runMutation(internal.assets.updateAnalysis, {
           id: args.assetId,
           description: parsed.description || "",
           aiAnalysis: parsed.aiAnalysis || "",
@@ -310,7 +333,7 @@ Respond in this exact JSON format:
         });
       } else {
         // Fallback: use the raw text as description
-        await ctx.runMutation(api.assets.updateAnalysis, {
+        await ctx.runMutation(internal.assets.updateAnalysis, {
           id: args.assetId,
           description: text.slice(0, 200),
           aiAnalysis: text,
@@ -319,7 +342,7 @@ Respond in this exact JSON format:
       }
     } catch (error) {
       console.error("Failed to analyze image:", error);
-      await ctx.runMutation(api.assets.updateAnalysis, {
+      await ctx.runMutation(internal.assets.updateAnalysis, {
         id: args.assetId,
         description: "",
         aiAnalysis: "",

@@ -25,7 +25,7 @@ export default function PublishPage() {
   const user = useQuery(api.users.currentUser);
   const workspaces = useQuery(
     api.workspaces.listByUser,
-    user ? { userId: user._id } : "skip"
+    user ? {} : "skip"
   );
 
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<Id<"workspaces"> | null>(null);

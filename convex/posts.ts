@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { auth } from "./auth";
 
 // Convert ratio string like "16:9" to valid Convex key like "r16_9"
 function ratioToKey(ratio: string): string {
@@ -10,7 +11,6 @@ export const create = mutation({
   args: {
     collectionId: v.id("collections"),
     workspaceId: v.id("workspaces"),
-    userId: v.id("users"),
     title: v.string(),
     componentCode: v.string(),
     language: v.union(v.literal("en"), v.literal("ar")),
@@ -28,9 +28,14 @@ export const create = mutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     const now = Date.now();
     return await ctx.db.insert("posts", {
       ...args,
+      userId,
       assetsUsed: args.assetsUsed ?? [],
       status: "draft",
       createdAt: now,
@@ -43,6 +48,8 @@ export const create = mutation({
 export const listByCollection = query({
   args: { collectionId: v.id("collections") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
     return await ctx.db
       .query("posts")
       .withIndex("by_collection_order", (q) =>
@@ -55,6 +62,10 @@ export const listByCollection = query({
 export const listByWorkspace = query({
   args: { workspaceId: v.id("workspaces") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) return [];
     return await ctx.db
       .query("posts")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
@@ -65,7 +76,11 @@ export const listByWorkspace = query({
 export const get = query({
   args: { id: v.id("posts") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+    const post = await ctx.db.get(args.id);
+    if (!post || post.userId !== userId) return null;
+    return post;
   },
 });
 
@@ -73,6 +88,11 @@ export const get = query({
 export const getVariants = query({
   args: { sourcePostId: v.id("posts") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
+    // Verify ownership of the source post
+    const source = await ctx.db.get(args.sourcePostId);
+    if (!source || source.userId !== userId) return [];
     return await ctx.db
       .query("posts")
       .withIndex("by_source_post", (q) =>
@@ -89,6 +109,10 @@ export const updateCode = mutation({
     componentCode: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const post = await ctx.db.get(args.id);
+    if (!post || post.userId !== userId) throw new Error("Not authorized");
     await ctx.db.patch(args.id, {
       componentCode: args.componentCode,
       updatedAt: Date.now(),
@@ -116,6 +140,10 @@ export const update = mutation({
     status: v.optional(v.union(v.literal("draft"), v.literal("final"))),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const post = await ctx.db.get(args.id);
+    if (!post || post.userId !== userId) throw new Error("Not authorized");
     const { id, ...fields } = args;
     const updates: Record<string, unknown> = { updatedAt: Date.now() };
     for (const [key, value] of Object.entries(fields)) {
@@ -138,7 +166,11 @@ export const reorder = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     for (const post of args.posts) {
+      const existing = await ctx.db.get(post.id);
+      if (!existing || existing.userId !== userId) throw new Error("Not authorized");
       const updates: Record<string, unknown> = { order: post.order };
       if (post.row !== undefined) updates.row = post.row;
       if (post.col !== undefined) updates.col = post.col;
@@ -155,8 +187,10 @@ export const updateCodeForRatio = mutation({
     componentCode: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const post = await ctx.db.get(args.id);
-    if (!post) throw new Error("Post not found");
+    if (!post || post.userId !== userId) throw new Error("Not authorized");
 
     if (args.ratio === "1:1") {
       await ctx.db.patch(args.id, { componentCode: args.componentCode, updatedAt: Date.now() });
@@ -177,7 +211,6 @@ export const createBatch = mutation({
   args: {
     collectionId: v.id("collections"),
     workspaceId: v.id("workspaces"),
-    userId: v.id("users"),
     language: v.union(v.literal("en"), v.literal("ar")),
     posts: v.array(
       v.object({
@@ -197,6 +230,10 @@ export const createBatch = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
     const newCount = args.posts.length;
 
     // Shift all existing posts' order up by newCount
@@ -217,7 +254,7 @@ export const createBatch = mutation({
       const id = await ctx.db.insert("posts", {
         collectionId: args.collectionId,
         workspaceId: args.workspaceId,
-        userId: args.userId,
+        userId,
         title: args.posts[i].title,
         componentCode: args.posts[i].componentCode,
         caption: args.posts[i].caption,
@@ -239,6 +276,10 @@ export const createBatch = mutation({
 export const remove = mutation({
   args: { id: v.id("posts") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const post = await ctx.db.get(args.id);
+    if (!post || post.userId !== userId) throw new Error("Not authorized");
     await ctx.db.delete(args.id);
   },
 });

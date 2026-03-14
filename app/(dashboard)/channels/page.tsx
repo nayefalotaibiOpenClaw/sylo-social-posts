@@ -39,7 +39,7 @@ export default function ChannelsPage() {
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const user = useQuery(api.users.currentUser);
-  const workspaces = useQuery(api.workspaces.listByUser, user ? { userId: user._id } : "skip");
+  const workspaces = useQuery(api.workspaces.listByUser, user ? {} : "skip");
 
   const workspaceParam = searchParams.get("workspace");
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<Id<"workspaces"> | null>(

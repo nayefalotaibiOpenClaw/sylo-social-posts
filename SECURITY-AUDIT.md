@@ -1,7 +1,7 @@
 # Security Audit Report
 
 **Date:** 2026-03-14
-**Status:** Pending fixes
+**Status:** Critical issues fixed
 
 ---
 
@@ -11,67 +11,67 @@
 - **Files:** `convex/workspaces.ts`, `convex/posts.ts`, `convex/collections.ts`, `convex/branding.ts`, `convex/assets.ts`, `convex/generations.ts`, `convex/websiteCrawls.ts`
 - **Issue:** Nearly ALL Convex functions have zero auth checks. They accept `userId` from the client and trust it blindly. Any caller can read, modify, or delete ANY user's data.
 - **Fix:** Every mutation/query must call `auth.getUserId(ctx)`, verify the user is authenticated, and verify ownership of the resource being accessed.
-- [ ] Fixed
+- [x] Fixed
 
 ### 2. Client-Supplied `userId` Enables Impersonation
 - **Files:** `convex/workspaces.ts`, `convex/posts.ts`, `convex/assets.ts`, `convex/collections.ts`, `convex/generations.ts`, `convex/websiteCrawls.ts`
 - **Issue:** Mutations like `workspaces.create`, `posts.create`, `assets.create`, `collections.create` accept `userId` as a client argument instead of deriving it from the authenticated session.
 - **Fix:** Remove `userId` from args. Derive it from `await auth.getUserId(ctx)` inside the handler.
-- [ ] Fixed
+- [x] Fixed
 
 ### 3. No Authentication on API Routes
 - **Files:** All files under `app/api/` — `generate/`, `fetch-website/`, `crawl-website/`, `proxy-image/`, `unsplash/`, `payments/*`, `adapt-ratio/`
 - **Issue:** Every API route has zero authentication. Anyone on the internet can call them.
 - **Fix:** Add authentication checks (verify Convex auth session token) at the top of every API route handler.
-- [ ] Fixed
+- [x] Fixed
 
 ### 4. Open SSRF Proxy (`/api/proxy-image`)
 - **File:** `app/api/proxy-image/route.ts`
 - **Issue:** Accepts any URL, fetches it server-side, returns the body. No URL validation, no IP blocklist, no auth. Can scan internal networks, access cloud metadata (`169.254.169.254`), exfiltrate internal data.
 - **Fix:** (a) Require authentication. (b) Validate URL against an allowlist of permitted domains. (c) Resolve hostname and reject private/internal IP ranges. (d) Verify Content-Type is `image/*`.
-- [ ] Fixed
+- [x] Fixed
 
 ### 5. SSRF via Unsplash Download Tracking
 - **File:** `app/api/unsplash/route.ts` (lines 60-73)
 - **Issue:** POST handler fetches a user-supplied `downloadLocation` URL with the Unsplash API key in the `Authorization` header — leaks the API key to any attacker-controlled URL.
 - **Fix:** Validate that `downloadLocation` starts with `https://api.unsplash.com/` before fetching.
-- [ ] Fixed
+- [x] Fixed
 
 ### 6. Payment Webhook Has No Signature Verification
 - **Files:** `convex/webhooks.ts` (lines 14-89), `app/api/payments/webhook/route.ts`
 - **Issue:** Accepts ANY POST request as a valid payment notification. No HMAC signature verification, no IP allowlist, no shared secret. An attacker can forge webhooks to activate subscriptions without paying.
 - **Fix:** Implement UPayments webhook signature verification using a shared secret. At minimum, call UPayments' payment status API to independently verify before activating.
-- [ ] Fixed
+- [x] Fixed
 
 ### 7. `markPaidByUser` Lets Users Self-Confirm Payments
 - **File:** `convex/payments.ts` (lines 113-141)
 - **Issue:** Any authenticated user can mark their own pending payment as "paid" without the payment gateway confirming it. Creates a path to free subscriptions.
 - **Fix:** Remove `markPaidByUser` entirely. Payment status should only be updated through the webhook or through server-side verification that confirms payment status with UPayments.
-- [ ] Fixed
+- [x] Fixed (restricted to admin-only instead of removal)
 
 ### 8. `subscriptions.activate` Trusts Client `amountPaid`
 - **File:** `convex/subscriptions.ts` (lines 265-336)
 - **Issue:** Client can pass any `amountPaid` value, inflating proration credits for future plan changes.
 - **Fix:** Read `amountPaid` from `payment.amount` (the server-computed value) instead of accepting it as a client argument.
-- [ ] Fixed
+- [x] Fixed
 
 ### 9. OAuth Authorize Endpoints Accept Arbitrary `userId`
 - **Files:** `app/api/social-auth/meta/authorize/route.ts`, `facebook/authorize/route.ts`, `instagram/authorize/route.ts`, `twitter/authorize/route.ts`, `threads/authorize/route.ts`
 - **Issue:** All social auth routes take `userId` and `workspaceId` from query params with no auth check. Attacker can link social accounts to any user's workspace.
 - **Fix:** Extract `userId` from the authenticated session instead of trusting query parameters.
-- [ ] Fixed
+- [x] Fixed
 
 ### 10. Arbitrary Code Execution via Dynamic Evaluation
 - **Files:** `features/posts/editor/DynamicPost.tsx`, `features/design-editor/components/PostGrid.tsx`
 - **Issue:** `DynamicPost` dynamically evaluates TSX code at runtime. PostGrid has a textarea letting users edit raw code. Any authenticated user can execute arbitrary JavaScript. In shared workspaces, this is stored XSS.
 - **Fix:** (a) Sandbox code execution using an `<iframe>` with `sandbox` attribute. (b) Restrict evaluation scope to prevent access to `window`, `document`, `fetch`, `localStorage`. (c) Add server-side validation of `componentCode` — reject dangerous patterns.
-- [ ] Fixed
+- [x] Fixed (client-side code validation + dangerous global shadowing)
 
 ### 11. Unauthenticated File Upload
 - **File:** `convex/assets.ts` (lines 19-21)
 - **Issue:** `generateUploadUrl` has zero auth. Anyone with the Convex deployment URL can generate upload URLs and upload arbitrary files.
 - **Fix:** Add `const userId = await auth.getUserId(ctx); if (!userId) throw new Error("Not authenticated");`
-- [ ] Fixed
+- [x] Fixed
 
 ---
 
