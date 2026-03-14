@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revokeToken } from "@/lib/social-providers/meta";
+import { requireAuth } from "@/lib/auth/api-auth";
 
 export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const { accessToken } = await request.json();
 

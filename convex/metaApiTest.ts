@@ -177,7 +177,7 @@ export const getAccountsWithTokens = internalQuery({
     const accounts = await ctx.db
       .query("socialAccounts")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))
-      .collect();
+      .take(50);
 
     return Promise.all(
       accounts.map(async (account) => ({

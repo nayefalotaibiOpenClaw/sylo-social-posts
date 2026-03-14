@@ -287,8 +287,9 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
   } catch (err) {
     console.error("OAuth callback error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("OAuth callback detail:", message);
     return redirect(
-      designUrl(state.workspaceId, `social_error=${encodeURIComponent(message)}`)
+      designUrl(state.workspaceId, `social_error=${encodeURIComponent("Failed to connect account. Please try again.")}`)
     );
   }
 });

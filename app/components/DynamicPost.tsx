@@ -94,9 +94,10 @@ export default function DynamicPost({ code, overrides, onOverridesChange }: Dyna
         return null;
       }
 
-      // Remove import statements and strip all 'export' keywords
+      // Remove import statements (single-line and multi-line) and strip all 'export' keywords
       let codeWithoutImports = code
-        .replace(/^import\s+.*?from\s+['"].*?['"];?\s*$/gm, '')
+        .replace(/^import\s+[\s\S]*?\s+from\s+['"].*?['"];?\s*$/gm, '')
+        .replace(/^import\s+['"].*?['"];?\s*$/gm, '')
         .replace(/^export\s+\{[^}]*\};?\s*$/gm, '')
         .replace(/^export\s+default\s+/gm, '')
         .replace(/^export\s+/gm, '');

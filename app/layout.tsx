@@ -23,7 +23,31 @@ const cairo = Cairo({
 
 export const metadata: Metadata = {
   title: "oDesigns Studio",
-  description: "AI-powered social media post generator",
+  description:
+    "AI-powered content for social media, app stores, and advertising",
+  openGraph: {
+    title: "oDesigns — Your brand, everywhere.",
+    description:
+      "AI-powered content for social media, app stores, and advertising",
+    url: "https://odesigns.app",
+    siteName: "oDesigns Studio",
+    images: [
+      {
+        url: "https://odesigns.app/og-image.png",
+        width: 1200,
+        height: 1200,
+        alt: "oDesigns — AI-powered content for social media, app stores, and advertising",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "oDesigns — Your brand, everywhere.",
+    description:
+      "AI-powered content for social media, app stores, and advertising",
+    images: ["https://odesigns.app/og-image.png"],
+  },
 };
 
 export default async function RootLayout({
