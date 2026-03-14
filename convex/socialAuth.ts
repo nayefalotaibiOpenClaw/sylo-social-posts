@@ -394,7 +394,8 @@ export const handleDataDeletion = httpAction(async (ctx, request) => {
       });
     }
 
-    const statusUrl = process.env.APP_URL || "http://localhost:3000";
+    const statusUrl = process.env.APP_URL;
+    if (!statusUrl) throw new Error("APP_URL environment variable must be configured");
 
     return new Response(
       JSON.stringify({

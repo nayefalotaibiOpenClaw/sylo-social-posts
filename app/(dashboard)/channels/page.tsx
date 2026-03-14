@@ -62,13 +62,14 @@ export default function ChannelsPage() {
 
   // Toast notifications from OAuth callbacks
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  // Issue 36: Map known codes to predefined messages instead of displaying raw URL params
   useEffect(() => {
     const success = searchParams.get("social_success");
     const error = searchParams.get("social_error");
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (success) setToast({ type: "success", message: decodeURIComponent(success) });
+    if (success) setToast({ type: "success", message: "Social account connected successfully" });
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    else if (error) setToast({ type: "error", message: decodeURIComponent(error) });
+    else if (error) setToast({ type: "error", message: "Failed to connect social account. Please try again." });
   }, [searchParams]);
 
   useEffect(() => {

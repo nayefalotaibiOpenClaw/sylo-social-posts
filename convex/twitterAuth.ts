@@ -84,7 +84,13 @@ export const handleTwitterCallback = httpAction(async (ctx, request) => {
       .replace(/\//g, "_")
       .replace(/=+$/, "");
 
-    if (receivedSig !== expectedSig) throw new Error("Invalid state signature");
+    // Issue 22: Constant-time HMAC comparison to prevent timing attacks
+    const sigA = new TextEncoder().encode(receivedSig);
+    const sigB = new TextEncoder().encode(expectedSig);
+    if (sigA.length !== sigB.length) throw new Error("Invalid state signature");
+    let diff = 0;
+    for (let i = 0; i < sigA.length; i++) diff |= sigA[i] ^ sigB[i];
+    if (diff !== 0) throw new Error("Invalid state signature");
 
     state = JSON.parse(atob(statePayload));
   } catch {

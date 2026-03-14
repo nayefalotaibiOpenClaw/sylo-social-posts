@@ -13,7 +13,8 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
 
 // ─── Config ──────────────────────────────────────────────────
-const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL || "https://little-toad-958.convex.cloud";
+const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
+if (!CONVEX_URL) throw new Error("NEXT_PUBLIC_CONVEX_URL env var is required for tests");
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 const convex = new ConvexHttpClient(CONVEX_URL);

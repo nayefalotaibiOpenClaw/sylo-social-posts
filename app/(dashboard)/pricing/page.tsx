@@ -186,6 +186,18 @@ export default function PricingPage() {
         return;
       }
 
+      // Issue 25: Validate checkout URL domain before redirect
+      const allowedDomains = ["upayments.com", "sandbox.upayments.com", "sandboxpayment.upayments.com"];
+      try {
+        const checkoutHost = new URL(data.checkoutUrl).hostname;
+        if (!allowedDomains.some((d) => checkoutHost === d || checkoutHost.endsWith(`.${d}`))) {
+          setToast("Invalid checkout URL");
+          return;
+        }
+      } catch {
+        setToast("Invalid checkout URL");
+        return;
+      }
       window.location.href = data.checkoutUrl;
     } catch (err) {
       console.error("Payment error:", err);

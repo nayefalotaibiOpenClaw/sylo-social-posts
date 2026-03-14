@@ -528,6 +528,15 @@ export const scheduleBulk = mutation({
     const workspace = await ctx.db.get(args.workspaceId);
     if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
 
+    // Issue 34: Validate all socialAccountIds belong to this workspace
+    const uniqueAccountIds = [...new Set(args.entries.map((e) => e.socialAccountId))];
+    for (const accountId of uniqueAccountIds) {
+      const account = await ctx.db.get(accountId);
+      if (!account || account.workspaceId !== args.workspaceId) {
+        throw new Error("Social account does not belong to this workspace");
+      }
+    }
+
     const now = Date.now();
     const ids = [];
     for (const entry of args.entries) {

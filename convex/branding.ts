@@ -68,6 +68,10 @@ export const upsert = mutation({
   },
 });
 
+const ALLOWED_BRANDING_FIELDS = [
+  "brandName", "tagline", "logo", "logoDark", "colors", "fonts", "savedPalettes",
+] as const;
+
 export const updateField = mutation({
   args: {
     workspaceId: v.id("workspaces"),
@@ -80,6 +84,12 @@ export const updateField = mutation({
     if (!userId) throw new Error("Not authenticated");
     const workspace = await ctx.db.get(args.workspaceId);
     if (!workspace || workspace.userId !== userId) throw new Error("Not authorized");
+
+    // Issue 15: Validate field against allowlist
+    if (!(ALLOWED_BRANDING_FIELDS as readonly string[]).includes(args.field)) {
+      throw new Error(`Field "${args.field}" is not a valid branding field`);
+    }
+
     const branding = await ctx.db
       .query("branding")
       .withIndex("by_workspace", (q) => q.eq("workspaceId", args.workspaceId))

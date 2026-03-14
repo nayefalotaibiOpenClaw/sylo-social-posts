@@ -30,11 +30,27 @@ export const defaultTheme: Theme = {
 
 const STORAGE_KEY = "sylo-theme";
 
+// Issue 39: Validate localStorage data against Theme schema
+const THEME_KEYS: (keyof Theme)[] = [
+  "primary", "primaryLight", "primaryDark", "accent", "accentLight",
+  "accentLime", "accentGold", "accentOrange", "border", "font",
+];
+
 function loadTheme(): Theme {
   if (typeof window === "undefined") return defaultTheme;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return { ...defaultTheme, ...JSON.parse(stored) };
+    if (!stored) return defaultTheme;
+    const parsed = JSON.parse(stored);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return defaultTheme;
+    // Only pick known theme keys with string values
+    const validated: Partial<Theme> = {};
+    for (const key of THEME_KEYS) {
+      if (key in parsed && typeof parsed[key] === "string") {
+        validated[key] = parsed[key];
+      }
+    }
+    return { ...defaultTheme, ...validated };
   } catch {}
   return defaultTheme;
 }
