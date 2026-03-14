@@ -226,7 +226,7 @@ export default function V0Original() {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight mb-5"
           >
-            Your brand, everywhere.
+            {t("landing.heroTagline")}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -234,7 +234,7 @@ export default function V0Original() {
             transition={{ delay: 0.15 }}
             className="text-lg sm:text-xl text-slate-500 dark:text-neutral-400 max-w-2xl mx-auto mb-12"
           >
-            AI-powered content for social media, app stores, and advertising
+            {t("landing.heroSubtitle")}
           </motion.p>
 
           <motion.div
@@ -385,11 +385,11 @@ export default function V0Original() {
                 <div className="flex gap-6 h-full">
                    <div className="w-1/3 space-y-4 text-slate-900">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-bold uppercase text-slate-400">Font Size</span>
+                        <span className="text-[10px] font-bold uppercase text-slate-400">{t("landing.fontSizeLabel")}</span>
                         <div className="h-10 bg-slate-100 rounded-lg flex items-center justify-center font-bold">150</div>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-[10px] font-bold uppercase text-slate-400">Font Family</span>
+                        <span className="text-[10px] font-bold uppercase text-slate-400">{t("landing.fontFamilyLabel")}</span>
                         <div className="h-10 border border-slate-200 rounded-lg px-3 flex items-center justify-between text-xs font-bold">
                            Bangers <ChevronRight className="w-3 h-3 rtl:rotate-180" />
                         </div>

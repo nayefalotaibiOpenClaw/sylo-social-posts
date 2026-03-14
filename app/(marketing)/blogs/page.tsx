@@ -18,7 +18,8 @@ function formatDate(timestamp: number, locale: string) {
 
 export default function BlogsPage() {
   const { locale, dir, t } = useLocale();
-  const blogs = useQuery(api.blogs.list, { language: locale });
+  const blogLanguage = locale === "ar" ? "ar" as const : "en" as const;
+  const blogs = useQuery(api.blogs.list, { language: blogLanguage });
 
   return (
     <div dir={dir} className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-white font-sans selection:bg-indigo-100 overflow-x-hidden">

@@ -5,8 +5,14 @@ import type { TranslationKey, Locale, Direction } from "./types";
 import { getLocaleCookie, setLocaleCookie, detectBrowserLocale } from "./utils";
 import en from "./locales/en.json";
 import ar from "./locales/ar.json";
+import es from "./locales/es.json";
+import pt from "./locales/pt.json";
+import fr from "./locales/fr.json";
+import tr from "./locales/tr.json";
+import id from "./locales/id.json";
 
-const translations: Record<Locale, Record<string, string>> = { en, ar };
+const translations: Record<Locale, Record<string, string>> = { en, ar, es, pt, fr, tr, id };
+const RTL_LOCALES: Locale[] = ["ar"];
 
 interface LocaleContextValue {
   locale: Locale;
@@ -46,14 +52,14 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(newLocale);
     setLocaleCookie(newLocale);
     document.documentElement.lang = newLocale;
-    document.documentElement.dir = newLocale === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = RTL_LOCALES.includes(newLocale) ? "rtl" : "ltr";
   }, []);
 
   // Sync HTML attributes whenever locale changes (after hydration)
   useEffect(() => {
     if (!hydrated) return;
     document.documentElement.lang = locale;
-    document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = RTL_LOCALES.includes(locale) ? "rtl" : "ltr";
   }, [locale, hydrated]);
 
   const t = useCallback(
@@ -69,7 +75,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     [locale]
   );
 
-  const dir: Direction = locale === "ar" ? "rtl" : "ltr";
+  const dir: Direction = RTL_LOCALES.includes(locale) ? "rtl" : "ltr";
 
   return (
     <LocaleContext.Provider value={{ locale, dir, setLocale, t }}>
