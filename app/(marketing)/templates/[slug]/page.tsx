@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { templatePages, getTemplatePageBySlug } from "@/lib/seo/templates";
+import { generateAlternates } from "@/lib/i18n/seo";
 import TemplatePageClient from "./TemplatePageClient";
 
 const BASE_URL = "https://odesigns.app";
@@ -46,9 +47,7 @@ export async function generateMetadata({
       description: template.metaDescription,
       images: [`${BASE_URL}/og-image.png`],
     },
-    alternates: {
-      canonical: `${BASE_URL}/templates/${template.slug}`,
-    },
+    alternates: generateAlternates(`/templates/${template.slug}`),
   };
 }
 

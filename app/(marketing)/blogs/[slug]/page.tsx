@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
+import { generateAlternates } from "@/lib/i18n/seo";
 import BlogDetailClient from "./BlogDetailClient";
 
 const BASE_URL = "https://odesigns.app";
@@ -53,9 +54,7 @@ export async function generateMetadata({
         description: blog.excerpt,
         images: [`${BASE_URL}/og-image.png`],
       },
-      alternates: {
-        canonical: `${BASE_URL}/blogs/${blog.slug}`,
-      },
+      alternates: generateAlternates(`/blogs/${blog.slug}`),
     };
   } catch {
     return {

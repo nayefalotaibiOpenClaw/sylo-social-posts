@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { useCases, getUseCaseBySlug } from "@/lib/seo/use-cases";
+import { generateAlternates } from "@/lib/i18n/seo";
 import UseCaseClient from "./UseCaseClient";
 
 const BASE_URL = "https://odesigns.app";
@@ -46,9 +47,7 @@ export async function generateMetadata({
       description: useCase.metaDescription,
       images: [`${BASE_URL}/og-image.png`],
     },
-    alternates: {
-      canonical: `${BASE_URL}/use-cases/${useCase.slug}`,
-    },
+    alternates: generateAlternates(`/use-cases/${useCase.slug}`),
   };
 }
 
