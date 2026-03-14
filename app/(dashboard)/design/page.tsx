@@ -334,6 +334,7 @@ export default function DesignPage() {
             description: a.description,
             aiAnalysis: a.aiAnalysis,
           })),
+        hasSelectedAssets: contextAssets.length > 0,
       };
 
       const res = await fetch('/api/generate', {

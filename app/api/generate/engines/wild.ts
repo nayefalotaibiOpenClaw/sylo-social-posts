@@ -61,17 +61,21 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
       contextAssetsSection,
     ].filter(Boolean).join('\n\n');
 
-    // Build asset list
-    const allAssets = context?.assets || [];
-    const assetLines: string[] = [];
-    for (const a of shuffle(allAssets.filter(a => a.type !== 'logo'))) {
-      const typeLabel = ['iphone', 'ipad', 'desktop', 'screenshot'].includes(a.type)
-        ? 'screenshot' : a.type;
-      assetLines.push(`- ${typeLabel}: ${a.url}${a.aiAnalysis ? ` — ${a.aiAnalysis}` : ''}`);
+    // Build asset list — skip when user selected specific assets
+    const hasSelectedAssets = contextAssets && contextAssets.length > 0;
+    let assetSection = '';
+    if (!hasSelectedAssets) {
+      const allAssets = context?.assets || [];
+      const assetLines: string[] = [];
+      for (const a of shuffle(allAssets.filter(a => a.type !== 'logo'))) {
+        const typeLabel = ['iphone', 'ipad', 'desktop', 'screenshot'].includes(a.type)
+          ? 'screenshot' : a.type;
+        assetLines.push(`- ${typeLabel}: ${a.url}${a.aiAnalysis ? ` — ${a.aiAnalysis}` : ''}`);
+      }
+      assetSection = assetLines.length > 0
+        ? `\n\nAvailable images (use different ones across posts — each post should pick ONE):\n${assetLines.join('\n')}`
+        : '';
     }
-    const assetSection = assetLines.length > 0
-      ? `\n\nAvailable images (use different ones across posts — each post should pick ONE):\n${assetLines.join('\n')}`
-      : '';
 
     const hasContext = contextPosts && contextPosts.length > 0;
 

@@ -465,13 +465,19 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
     const shuffledMoods = shuffle(MOODS);
     const shuffledTemplates = shuffle(TEMPLATES);
 
-    // Get screenshot assets
-    const screenshotAssets = context?.assets?.filter(a =>
-      ['screenshot', 'iphone', 'ipad', 'desktop'].includes(a.type)
-    ) || [];
-    const allUsableAssets = screenshotAssets.length > 0
-      ? screenshotAssets
-      : (context?.assets?.filter(a => a.type !== 'logo') || []);
+    // When user selected specific assets, use those; otherwise pick from all
+    const hasSelectedAssets = contextAssets && contextAssets.length > 0;
+    let allUsableAssets: { url: string; type: string; aiAnalysis?: string }[];
+    if (hasSelectedAssets) {
+      allUsableAssets = contextAssets;
+    } else {
+      const screenshotAssets = context?.assets?.filter(a =>
+        ['screenshot', 'iphone', 'ipad', 'desktop'].includes(a.type)
+      ) || [];
+      allUsableAssets = screenshotAssets.length > 0
+        ? screenshotAssets
+        : (context?.assets?.filter(a => a.type !== 'logo') || []);
+    }
 
     // Build brand context
     const brandSections: string[] = [];
