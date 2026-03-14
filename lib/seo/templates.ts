@@ -1,14 +1,18 @@
-export interface TemplatePage {
-  slug: string;
+export interface TemplatePageContent {
   title: string;
   metaTitle: string;
   metaDescription: string;
-  keywords: string[];
   heroTitle: string;
   heroSubtitle: string;
   examples: { title: string; description: string }[];
   tips: { title: string; description: string }[];
   cta: { title: string; subtitle: string };
+}
+
+export interface TemplatePage extends TemplatePageContent {
+  slug: string;
+  keywords: string[];
+  locales?: Partial<Record<string, TemplatePageContent>>;
 }
 
 export const templatePages: TemplatePage[] = [
@@ -353,4 +357,13 @@ export function getTemplatePageBySlug(
   slug: string
 ): TemplatePage | undefined {
   return templatePages.find((tp) => tp.slug === slug);
+}
+
+/** Get a template page with locale-specific content (falls back to English) */
+export function getLocalizedTemplatePage(slug: string, locale: string): (TemplatePage & TemplatePageContent) | undefined {
+  const tp = getTemplatePageBySlug(slug);
+  if (!tp) return undefined;
+  if (locale === "en" || !tp.locales?.[locale]) return tp;
+  const localized = tp.locales[locale]!;
+  return { ...tp, ...localized };
 }

@@ -5,7 +5,7 @@ import Link from "@/lib/i18n/LocaleLink";
 import { motion } from "framer-motion";
 import FloatingNav from "@/app/components/FloatingNav";
 import { useLocale } from "@/lib/i18n/context";
-import { getTemplatePageBySlug } from "@/lib/seo/templates";
+import { getLocalizedTemplatePage } from "@/lib/seo/templates";
 import { ArrowRight, Sparkles, Lightbulb } from "lucide-react";
 
 // Post components for showcase
@@ -93,8 +93,8 @@ const showcasePosts = [
 ];
 
 export default function TemplatePageClient({ slug }: { slug: string }) {
-  const { dir, t } = useLocale();
-  const template = getTemplatePageBySlug(slug);
+  const { dir, t, locale } = useLocale();
+  const template = getLocalizedTemplatePage(slug, locale);
 
   if (!template) return null;
 

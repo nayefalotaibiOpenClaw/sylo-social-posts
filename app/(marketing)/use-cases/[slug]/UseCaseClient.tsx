@@ -5,7 +5,7 @@ import Link from "@/lib/i18n/LocaleLink";
 import { motion } from "framer-motion";
 import FloatingNav from "@/app/components/FloatingNav";
 import { useLocale } from "@/lib/i18n/context";
-import { getUseCaseBySlug } from "@/lib/seo/use-cases";
+import { getLocalizedUseCase } from "@/lib/seo/use-cases";
 import {
   ArrowRight,
   Sparkles,
@@ -113,8 +113,8 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export default function UseCaseClient({ slug }: { slug: string }) {
-  const { dir, t } = useLocale();
-  const useCase = getUseCaseBySlug(slug);
+  const { dir, t, locale } = useLocale();
+  const useCase = getLocalizedUseCase(slug, locale);
 
   if (!useCase) return null;
 

@@ -1,14 +1,19 @@
-export interface UseCase {
-  slug: string;
+export interface UseCaseContent {
   title: string;
   metaTitle: string;
   metaDescription: string;
-  keywords: string[];
   heroTitle: string;
   heroSubtitle: string;
   painPoints: { title: string; description: string }[];
-  features: { title: string; description: string; icon: string }[];
+  features: { title: string; description: string }[];
   cta: { title: string; subtitle: string };
+}
+
+export interface UseCase extends UseCaseContent {
+  slug: string;
+  keywords: string[];
+  features: { title: string; description: string; icon: string }[];
+  locales?: Partial<Record<string, UseCaseContent>>;
 }
 
 export const useCases: UseCase[] = [
@@ -412,4 +417,21 @@ export const useCases: UseCase[] = [
 
 export function getUseCaseBySlug(slug: string): UseCase | undefined {
   return useCases.find((uc) => uc.slug === slug);
+}
+
+/** Get a use case with locale-specific content (falls back to English) */
+export function getLocalizedUseCase(slug: string, locale: string): (UseCase & UseCaseContent) | undefined {
+  const uc = getUseCaseBySlug(slug);
+  if (!uc) return undefined;
+  if (locale === "en" || !uc.locales?.[locale]) return uc;
+  const localized = uc.locales[locale]!;
+  return {
+    ...uc,
+    ...localized,
+    // Merge features: keep icons from English, take titles/descriptions from locale
+    features: uc.features.map((f, i) => ({
+      ...f,
+      ...(localized.features?.[i] || {}),
+    })),
+  };
 }
