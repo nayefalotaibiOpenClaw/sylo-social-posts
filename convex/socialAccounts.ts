@@ -56,6 +56,7 @@ export const connect = internalMutation({
       v.literal("instagram"),
       v.literal("tiktok"),
       v.literal("twitter"),
+      v.literal("threads"),
     ),
     providerUserId: v.string(),
     providerPageId: v.optional(v.string()),

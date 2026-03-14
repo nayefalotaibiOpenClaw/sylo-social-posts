@@ -3,6 +3,7 @@ import { auth } from "./auth";
 import { handlePaymentWebhook } from "./webhooks";
 import { handleMetaCallback, handleDeauthorize, handleDataDeletion } from "./socialAuth";
 import { handleTwitterCallback } from "./twitterAuth";
+import { handleThreadsCallback } from "./threadsAuth";
 
 const http = httpRouter();
 
@@ -41,6 +42,13 @@ http.route({
   path: "/social-auth/twitter/callback",
   method: "GET",
   handler: handleTwitterCallback,
+});
+
+// Threads OAuth callback
+http.route({
+  path: "/social-auth/threads/callback",
+  method: "GET",
+  handler: handleThreadsCallback,
 });
 
 export default http;

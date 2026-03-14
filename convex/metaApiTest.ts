@@ -139,30 +139,30 @@ export const runAllTests = action({
     }
 
     // ─── Threads API Tests ────────────────────────────────────────────
-    // Threads uses the same Instagram token but different API base
     const THREADS_GRAPH_URL = "https://graph.threads.net/v1.0";
-    // Try Instagram token first (Threads is linked to IG), then fallback to FB token
-    const threadsToken = igAccount?.accessToken || fbAccount?.accessToken;
-    if (threadsToken) {
+    const threadsAccount = accounts.find((a) => a.provider === "threads" && a.status === "active");
+    if (threadsAccount) {
+      const tToken = threadsAccount.accessToken;
+
       // 11. threads_basic — GET /me
       results.push(await testApi(
         "threads_basic",
-        `${THREADS_GRAPH_URL}/me?fields=id,username,threads_profile_picture_url&access_token=${threadsToken}`
+        `${THREADS_GRAPH_URL}/me?fields=id,username,threads_profile_picture_url&access_token=${tToken}`
       ));
 
       // 12. threads_content_publish — GET /me/threads_publishing_limit
       results.push(await testApi(
         "threads_content_publish",
-        `${THREADS_GRAPH_URL}/me/threads_publishing_limit?fields=config,quota_usage&access_token=${threadsToken}`
+        `${THREADS_GRAPH_URL}/me/threads_publishing_limit?fields=config,quota_usage&access_token=${tToken}`
       ));
 
       // 13. threads_manage_insights — GET /me/threads
       results.push(await testApi(
         "threads_manage_insights",
-        `${THREADS_GRAPH_URL}/me/threads?fields=id,text,timestamp&limit=1&access_token=${threadsToken}`
+        `${THREADS_GRAPH_URL}/me/threads?fields=id,text,timestamp&limit=1&access_token=${tToken}`
       ));
     } else {
-      results.push({ permission: "threads_account", status: "error", error: "No token available for Threads API tests" });
+      results.push({ permission: "threads_account", status: "error", error: "No active Threads account connected. Connect Threads first via Channels page." });
     }
 
     return results;
