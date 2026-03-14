@@ -49,12 +49,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { prompt, version = 7 } = body;
 
-    if (!prompt) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+    if (!prompt || typeof prompt !== "string") {
+      return NextResponse.json({ error: "Prompt is required and must be a string" }, { status: 400 });
     }
 
     // Issue 28: Validate prompt size to prevent abuse
-    if (typeof prompt === "string" && prompt.length > 5000) {
+    if (prompt.length > 5000) {
       return NextResponse.json({ error: "Prompt exceeds maximum length of 5000 characters" }, { status: 400 });
     }
 
