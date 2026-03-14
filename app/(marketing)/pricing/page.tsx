@@ -165,7 +165,7 @@ export default function PricingPage() {
       try {
         const checkoutHost = new URL(data.checkoutUrl).hostname;
         if (!allowedDomains.some((d) => checkoutHost === d || checkoutHost.endsWith(`.${d}`))) {
-          setToast("Invalid checkout URL");
+          setToast(t("pricing.invalidCheckoutUrl"));
           return;
         }
       } catch {
@@ -186,10 +186,10 @@ export default function PricingPage() {
     setLoadingPlan(planId);
     try {
       await downgradeMut({ newPlan: planId, newBillingPeriod: billingPeriod });
-      setToast("Plan downgraded successfully!");
+      setToast(t("pricing.downgradeSuccess"));
     } catch (err) {
       console.error("Downgrade error:", err);
-      setToast(err instanceof Error ? err.message : "Something went wrong.");
+      setToast(err instanceof Error ? err.message : t("pricing.error"));
     } finally {
       setLoadingPlan(null);
     }
@@ -203,9 +203,9 @@ export default function PricingPage() {
     setStartingTrial(true);
     try {
       await startTrialMut();
-      setToast("Free trial started! You can now generate up to 6 ads.");
+      setToast(t("pricing.trialStarted"));
     } catch (err) {
-      setToast(err instanceof Error ? err.message : "Something went wrong.");
+      setToast(err instanceof Error ? err.message : t("pricing.error"));
     } finally {
       setStartingTrial(false);
     }
@@ -293,9 +293,9 @@ export default function PricingPage() {
 
             <div className="mb-2">
               <span className="text-4xl font-bold">$0</span>
-              <span className="text-neutral-400 ms-1">/ 7 days</span>
+              <span className="text-neutral-400 ms-1">{t("pricing.trialDays")}</span>
             </div>
-            <p className="text-neutral-400 text-sm mb-8">Try it out — no credit card required</p>
+            <p className="text-neutral-400 text-sm mb-8">{t("pricing.trialDesc")}</p>
 
             <ul className="space-y-3 mb-8">
               <li className="flex items-center gap-3 text-sm">
@@ -330,7 +330,7 @@ export default function PricingPage() {
                 </button>
                 <p className="text-xs text-neutral-500 text-center mt-3">
                   {usage?.postsUsed}/{usage?.postsLimit} {t("pricing.adsUsed")}
-                  {usage?.daysLeft !== undefined && <> &middot; {usage.daysLeft} days left</>}
+                  {usage?.daysLeft !== undefined && <> &middot; {usage.daysLeft} {t("pricing.daysLeft")}</>}
                 </p>
               </div>
             ) : hasAnySub ? (
@@ -338,7 +338,7 @@ export default function PricingPage() {
                 disabled
                 className="w-full py-3 px-6 rounded-xl font-medium text-sm bg-neutral-800 text-neutral-500 cursor-not-allowed"
               >
-                Trial Used
+                {t("pricing.trialUsed")}
               </button>
             ) : (
               <button
@@ -349,7 +349,7 @@ export default function PricingPage() {
                 {startingTrial ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  "Start Free Trial"
+                  t("pricing.startFreeTrial")
                 )}
               </button>
             )}
@@ -430,10 +430,10 @@ export default function PricingPage() {
                         <div className="mb-3 p-3 rounded-lg bg-emerald-950/50 border border-emerald-800/30 text-xs">
                           <div className="flex items-center gap-1.5 text-emerald-400 mb-1">
                             <ArrowUp className="w-3 h-3" />
-                            <span className="font-medium">Upgrade pricing</span>
+                            <span className="font-medium">{t("pricing.upgradePricing")}</span>
                           </div>
                           <p className="text-emerald-200/60">
-                            ${credit.toFixed(2)} credit applied &middot; You pay ${proratedPrice.toFixed(2)}
+                            ${credit.toFixed(2)} {t("pricing.creditApplied")} ${proratedPrice.toFixed(2)}
                           </p>
                         </div>
                       )}
@@ -441,10 +441,10 @@ export default function PricingPage() {
                         <div className="mb-3 p-3 rounded-lg bg-blue-950/50 border border-blue-800/30 text-xs">
                           <div className="flex items-center gap-1.5 text-blue-400 mb-1">
                             <ArrowDown className="w-3 h-3" />
-                            <span className="font-medium">Downgrade</span>
+                            <span className="font-medium">{t("pricing.downgradeLabel")}</span>
                           </div>
                           <p className="text-blue-200/60">
-                            ${credit.toFixed(2)} credit converts to extended days
+                            ${credit.toFixed(2)} {t("pricing.creditExtended")}
                           </p>
                         </div>
                       )}
@@ -464,9 +464,9 @@ export default function PricingPage() {
                         ) : isCurrentPlan || isSame ? (
                           t("pricing.getCurrentPlan")
                         ) : isUpgrade ? (
-                          `Upgrade${credit > 0 ? ` — $${proratedPrice.toFixed(2)}` : ""}`
+                          `${t("pricing.upgrade")}${credit > 0 ? ` — $${proratedPrice.toFixed(2)}` : ""}`
                         ) : isDowngrade ? (
-                          "Downgrade"
+                          t("pricing.downgradeLabel")
                         ) : (
                           t("pricing.getStarted")
                         )}
@@ -483,7 +483,7 @@ export default function PricingPage() {
         {currentPlan && currentPlan !== "trial" && (
           <div className="text-center mt-8">
             <Link href="/billing" className="text-sm text-neutral-400 hover:text-white transition">
-              Manage subscription &rarr;
+              {t("pricing.manageSubscription")}
             </Link>
           </div>
         )}
@@ -492,26 +492,25 @@ export default function PricingPage() {
         {showDowngradeConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-6">
             <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8 max-w-md w-full">
-              <h3 className="text-xl font-bold mb-3">Confirm Downgrade</h3>
+              <h3 className="text-xl font-bold mb-3">{t("pricing.confirmDowngrade")}</h3>
               <p className="text-neutral-400 text-sm mb-2">
-                Your remaining credit of <span className="text-white font-medium">${getProrationCredit().toFixed(2)}</span> will be
-                converted to extended days on the <span className="text-white font-medium capitalize">{showDowngradeConfirm}</span> plan.
+                {t("pricing.downgradeConfirmMsg", { credit: `$${getProrationCredit().toFixed(2)}`, plan: showDowngradeConfirm })}
               </p>
               <p className="text-neutral-500 text-xs mb-6">
-                Your usage will be reset and new plan limits will apply immediately.
+                {t("pricing.downgradeWarning")}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowDowngradeConfirm(null)}
                   className="flex-1 py-2.5 px-4 rounded-xl bg-neutral-800 text-white text-sm font-medium hover:bg-neutral-700 transition"
                 >
-                  Cancel
+                  {t("pricing.cancel")}
                 </button>
                 <button
                   onClick={() => handleDowngradeConfirm(showDowngradeConfirm as "starter" | "pro")}
                   className="flex-1 py-2.5 px-4 rounded-xl bg-white text-black text-sm font-medium hover:bg-neutral-200 transition"
                 >
-                  Confirm Downgrade
+                  {t("pricing.confirmDowngrade")}
                 </button>
               </div>
             </div>

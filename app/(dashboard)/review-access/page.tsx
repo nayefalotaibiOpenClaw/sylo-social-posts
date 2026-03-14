@@ -4,8 +4,10 @@ import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { Loader2, CheckCircle, XCircle, ShieldCheck, Key } from "lucide-react";
+import { useLocale } from "@/lib/i18n/context";
 
 export default function ReviewAccessPage() {
+  const { t } = useLocale();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const access = useQuery(api.reviewAccess.checkAccess);
   const redeemCode = useMutation(api.reviewAccess.redeemCode);
@@ -28,13 +30,13 @@ export default function ReviewAccessPage() {
       <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="text-center">
           <ShieldCheck className="mx-auto mb-4 text-zinc-500" size={48} />
-          <p className="text-white text-lg font-semibold mb-2">Authentication Required</p>
-          <p className="text-zinc-400 mb-6">Please log in to redeem your review access code.</p>
+          <p className="text-white text-lg font-semibold mb-2">{t("reviewAccess.authRequired")}</p>
+          <p className="text-zinc-400 mb-6">{t("reviewAccess.authMessage")}</p>
           <a
             href="/login"
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
           >
-            Log In
+            {t("reviewAccess.logIn")}
           </a>
         </div>
       </div>
@@ -50,7 +52,7 @@ export default function ReviewAccessPage() {
       const res = await redeemCode({ code: code.trim() });
       setResult(res);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to redeem code");
+      setError(e instanceof Error ? e.message : t("reviewAccess.redeemError"));
     } finally {
       setLoading(false);
     }
@@ -63,22 +65,22 @@ export default function ReviewAccessPage() {
           <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Key className="text-blue-400" size={28} />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Review Access</h1>
+          <h1 className="text-2xl font-bold mb-2">{t("reviewAccess.title")}</h1>
           <p className="text-zinc-400 text-sm">
-            Enter the review code to activate Pro plan access for testing.
+            {t("reviewAccess.subtitle")}
           </p>
         </div>
 
         {/* Current Status */}
         {access && (
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
-            <p className="text-xs text-zinc-500 uppercase font-semibold mb-2">Current Account</p>
+            <p className="text-xs text-zinc-500 uppercase font-semibold mb-2">{t("reviewAccess.currentAccount")}</p>
             <p className="text-sm text-white">{access.email || "No email"}</p>
             <p className="text-sm text-zinc-400 mt-1">
-              Plan: <span className="font-semibold text-white capitalize">{access.plan}</span>
+              {t("reviewAccess.plan")} <span className="font-semibold text-white capitalize">{access.plan}</span>
               {access.expiresAt && (
                 <span className="text-zinc-500 ml-2">
-                  (expires {new Date(access.expiresAt).toLocaleDateString()})
+                  ({t("reviewAccess.expires", { date: new Date(access.expiresAt).toLocaleDateString() })})
                 </span>
               )}
             </p>
@@ -92,7 +94,7 @@ export default function ReviewAccessPage() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleRedeem()}
-            placeholder="Enter review code..."
+            placeholder={t("reviewAccess.placeholder")}
             className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
           />
 
@@ -102,7 +104,7 @@ export default function ReviewAccessPage() {
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 rounded-lg transition-colors"
           >
             {loading ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
-            {loading ? "Activating..." : "Activate Pro Access"}
+            {loading ? t("reviewAccess.activating") : t("reviewAccess.activate")}
           </button>
         </div>
 
@@ -123,7 +125,7 @@ export default function ReviewAccessPage() {
         )}
 
         <p className="text-zinc-600 text-xs text-center mt-8">
-          This page is for authorized app reviewers only.
+          {t("reviewAccess.disclaimer")}
         </p>
       </div>
     </div>

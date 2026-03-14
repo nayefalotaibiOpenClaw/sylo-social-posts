@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Suspense, useEffect, useState, useRef } from "react";
 import { CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/lib/i18n/context";
 
 export default function PaymentSuccessPage() {
   return (
@@ -22,6 +23,7 @@ export default function PaymentSuccessPage() {
 }
 
 function PaymentSuccessContent() {
+  const { t } = useLocale();
   const params = useSearchParams();
   // UPayments appends its params with `?` instead of `&` after our returnUrl,
   // so values like `plan=pro?payment_id=100...` need to be cleaned
@@ -45,18 +47,18 @@ function PaymentSuccessContent() {
     if (!orderId || !plan) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus("error");
-      setErrorMsg("Missing order information. Please contact support.");
+      setErrorMsg(t("paymentSuccess.missingOrder"));
       return;
     }
     if (plan !== "starter" && plan !== "pro") {
       setStatus("error");
-      setErrorMsg("Invalid plan. Please contact support.");
+      setErrorMsg(t("paymentSuccess.invalidPlan"));
       return;
     }
     // track_id is required for payment verification
     if (!trackId) {
       setStatus("error");
-      setErrorMsg("Payment verification failed — please contact support.");
+      setErrorMsg(t("paymentSuccess.verifyFailed"));
       return;
     }
 
@@ -92,33 +94,33 @@ function PaymentSuccessContent() {
         } else {
           console.error("Activation error:", err);
           setStatus("error");
-          setErrorMsg(message || "Something went wrong. Please contact support.");
+          setErrorMsg(message || t("paymentSuccess.genericError"));
         }
       }
     };
 
     process();
-  }, [user, orderId, plan, trackId, activateSub, verifyAndMarkPaid]);
+  }, [user, orderId, plan, trackId, activateSub, verifyAndMarkPaid, t]);
 
   if (status === "error") {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6">
         <div className="text-center max-w-md">
           <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold mb-3">Payment Issue</h1>
+          <h1 className="text-3xl font-bold mb-3">{t("paymentSuccess.issue")}</h1>
           <p className="text-neutral-400 mb-8">{errorMsg}</p>
           <div className="flex items-center justify-center gap-4">
             <Link
               href="/pricing"
               className="bg-white text-black px-6 py-3 rounded-xl font-medium hover:bg-neutral-200 transition"
             >
-              Try Again
+              {t("paymentSuccess.tryAgain")}
             </Link>
             <Link
               href="/workspaces"
               className="bg-neutral-800 text-white px-6 py-3 rounded-xl font-medium hover:bg-neutral-700 transition"
             >
-              Back to Workspaces
+              {t("paymentSuccess.backToWorkspaces")}
             </Link>
           </div>
         </div>
@@ -133,23 +135,23 @@ function PaymentSuccessContent() {
           <>
             <Loader2 className="w-12 h-12 text-neutral-400 animate-spin mx-auto mb-6" />
             <h1 className="text-2xl font-bold mb-2">
-              {status === "verifying" ? "Verifying payment..." : "Activating your plan..."}
+              {status === "verifying" ? t("paymentSuccess.verifying") : t("paymentSuccess.activating")}
             </h1>
-            <p className="text-neutral-400">Please wait a moment.</p>
+            <p className="text-neutral-400">{t("paymentSuccess.pleaseWait")}</p>
           </>
         ) : (
           <>
             <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
-            <h1 className="text-3xl font-bold mb-3">Payment Successful!</h1>
+            <h1 className="text-3xl font-bold mb-3">{t("paymentSuccess.title")}</h1>
             <p className="text-neutral-400 mb-2">
-              Your <span className="text-white font-medium capitalize">{plan}</span> plan is now active.
+              {t("paymentSuccess.planActive", { plan: plan || "" })}
             </p>
-            <p className="text-neutral-500 text-sm mb-8">Order: {orderId}</p>
+            <p className="text-neutral-500 text-sm mb-8">{t("paymentSuccess.order", { orderId: orderId || "" })}</p>
             <Link
               href="/workspaces"
               className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-xl font-medium hover:bg-neutral-200 transition"
             >
-              Start Creating
+              {t("paymentSuccess.startCreating")}
             </Link>
           </>
         )}

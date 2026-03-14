@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/lib/i18n/context";
 
 export default function PaymentCancelPage() {
   return (
@@ -20,6 +21,7 @@ export default function PaymentCancelPage() {
 }
 
 function PaymentCancelContent() {
+  const { t } = useLocale();
   const params = useSearchParams();
   const orderId = params.get("orderId");
 
@@ -27,12 +29,12 @@ function PaymentCancelContent() {
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6">
       <div className="text-center max-w-md">
         <XCircle className="w-16 h-16 text-red-400 mx-auto mb-6" />
-        <h1 className="text-3xl font-bold mb-3">Payment Cancelled</h1>
+        <h1 className="text-3xl font-bold mb-3">{t("paymentCancel.title")}</h1>
         <p className="text-neutral-400 mb-2">
-          No worries — you weren&apos;t charged. You can try again anytime.
+          {t("paymentCancel.message")}
         </p>
         {orderId && (
-          <p className="text-neutral-500 text-sm mb-8">Reference: {orderId}</p>
+          <p className="text-neutral-500 text-sm mb-8">{t("paymentCancel.reference", { orderId })}</p>
         )}
         {!orderId && <div className="mb-8" />}
         <div className="flex items-center justify-center gap-4">
@@ -40,13 +42,13 @@ function PaymentCancelContent() {
             href="/pricing"
             className="bg-white text-black px-6 py-3 rounded-xl font-medium hover:bg-neutral-200 transition"
           >
-            View Plans
+            {t("paymentCancel.viewPlans")}
           </Link>
           <Link
             href="/workspaces"
             className="bg-neutral-800 text-white px-6 py-3 rounded-xl font-medium hover:bg-neutral-700 transition"
           >
-            Back to Workspaces
+            {t("paymentCancel.backToWorkspaces")}
           </Link>
         </div>
       </div>

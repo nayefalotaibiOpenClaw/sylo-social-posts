@@ -18,9 +18,11 @@ import {
   Clock,
 } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/lib/i18n/context";
 
 export default function BillingPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const { t } = useLocale();
   const user = useQuery(api.users.currentUser);
   const usage = useQuery(api.subscriptions.getUsage);
   const activeSub = useQuery(api.subscriptions.getActive);
@@ -54,13 +56,13 @@ export default function BillingPage() {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-3">Please log in</h1>
-          <p className="text-neutral-400 mb-6">You need to be logged in to manage billing.</p>
+          <h1 className="text-2xl font-bold mb-3">{t("billing.pleaseLogIn")}</h1>
+          <p className="text-neutral-400 mb-6">{t("billing.needLogin")}</p>
           <Link
             href="/login"
             className="bg-white text-black px-6 py-3 rounded-xl font-medium hover:bg-neutral-200 transition"
           >
-            Go to Login
+            {t("billing.goToLogin")}
           </Link>
         </div>
       </div>
@@ -72,9 +74,9 @@ export default function BillingPage() {
     try {
       await cancelSub();
       setShowCancelConfirm(false);
-      setToast({ type: "success", message: "Subscription cancelled successfully." });
+      setToast({ type: "success", message: t("billing.cancelSuccess") });
     } catch (err) {
-      setToast({ type: "error", message: err instanceof Error ? err.message : "Failed to cancel subscription" });
+      setToast({ type: "error", message: err instanceof Error ? err.message : t("billing.cancelError") });
     } finally {
       setCancelling(false);
     }
@@ -97,18 +99,18 @@ export default function BillingPage() {
     if (status === "active")
       return (
         <span className="inline-flex items-center gap-1 text-xs font-medium bg-emerald-950/50 text-emerald-400 border border-emerald-800/30 px-2.5 py-1 rounded-full">
-          <CheckCircle className="w-3 h-3" /> Active
+          <CheckCircle className="w-3 h-3" /> {t("billing.active")}
         </span>
       );
     if (status === "cancelled")
       return (
         <span className="inline-flex items-center gap-1 text-xs font-medium bg-amber-950/50 text-amber-400 border border-amber-800/30 px-2.5 py-1 rounded-full">
-          <XCircle className="w-3 h-3" /> Cancelled
+          <XCircle className="w-3 h-3" /> {t("billing.cancelledStatus")}
         </span>
       );
     return (
       <span className="inline-flex items-center gap-1 text-xs font-medium bg-neutral-800 text-neutral-400 border border-neutral-700 px-2.5 py-1 rounded-full">
-        <Clock className="w-3 h-3" /> Expired
+        <Clock className="w-3 h-3" /> {t("billing.expired")}
       </span>
     );
   };
@@ -158,10 +160,10 @@ export default function BillingPage() {
             href="/workspaces"
             className="text-sm text-neutral-400 hover:text-white transition mb-6 inline-flex items-center gap-1.5"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to workspaces
+            <ArrowLeft className="w-3.5 h-3.5" /> {t("billing.backToWorkspaces")}
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">Billing & Subscription</h1>
-          <p className="text-neutral-400 mt-2">Manage your plan, usage, and payment history.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("billing.title")}</h1>
+          <p className="text-neutral-400 mt-2">{t("billing.subtitle")}</p>
         </div>
 
         {/* Current Plan Card */}
@@ -171,13 +173,13 @@ export default function BillingPage() {
               {planIcon(usage?.plan ?? null)}
               <div>
                 <h2 className="text-lg font-semibold capitalize">
-                  {usage?.plan || "No Plan"} {activeSub?.billingPeriod && (
-                    <span className="text-sm text-neutral-500 font-normal capitalize">({activeSub.billingPeriod})</span>
+                  {usage?.plan || t("billing.noPlan")} {activeSub?.billingPeriod && (
+                    <span className="text-sm text-neutral-500 font-normal capitalize">({activeSub.billingPeriod === "yearly" ? t("billing.annually") : t("billing.monthly")})</span>
                   )}
                 </h2>
                 {activeSub && (
                   <p className="text-sm text-neutral-400">
-                    {activeSub.amountPaid > 0 ? `$${activeSub.amountPaid} ${activeSub.currency}` : "Free"} &middot; {statusBadge(activeSub.status)}
+                    {activeSub.amountPaid > 0 ? `$${activeSub.amountPaid} ${activeSub.currency}` : t("billing.free")} &middot; {statusBadge(activeSub.status)}
                   </p>
                 )}
               </div>
@@ -186,7 +188,7 @@ export default function BillingPage() {
               href="/pricing"
               className="text-sm bg-neutral-800 text-white px-4 py-2 rounded-lg hover:bg-neutral-700 transition font-medium"
             >
-              Change Plan
+              {t("billing.changePlan")}
             </Link>
           </div>
 
@@ -195,19 +197,19 @@ export default function BillingPage() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-neutral-800/50 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-neutral-400 text-xs mb-1">
-                  <Calendar className="w-3.5 h-3.5" /> Started
+                  <Calendar className="w-3.5 h-3.5" /> {t("billing.started")}
                 </div>
                 <p className="text-sm font-medium">{formatDate(activeSub.startsAt)}</p>
               </div>
               <div className="bg-neutral-800/50 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-neutral-400 text-xs mb-1">
-                  <Calendar className="w-3.5 h-3.5" /> {activeSub.status === "cancelled" ? "Was set to expire" : "Expires"}
+                  <Calendar className="w-3.5 h-3.5" /> {activeSub.status === "cancelled" ? t("billing.wasSetToExpire") : t("billing.expires")}
                 </div>
                 <p className="text-sm font-medium">
                   {formatDate(activeSub.expiresAt)}
                   {usage && usage.daysLeft > 0 && activeSub.status === "active" && (
                     <span className={`ml-2 text-xs ${usage.isExpiringSoon ? "text-amber-400" : "text-neutral-500"}`}>
-                      ({usage.daysLeft} days left)
+                      ({usage.daysLeft} {t("billing.daysLeft")})
                     </span>
                   )}
                 </p>
@@ -221,7 +223,7 @@ export default function BillingPage() {
               onClick={() => setShowCancelConfirm(true)}
               className="text-sm text-red-400 hover:text-red-300 transition"
             >
-              Cancel subscription
+              {t("billing.cancelSubscription")}
             </button>
           )}
         </div>
@@ -231,14 +233,14 @@ export default function BillingPage() {
           <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 mb-6">
             <div className="flex items-center gap-2 mb-5">
               <BarChart3 className="w-4 h-4 text-neutral-400" />
-              <h3 className="font-semibold">Usage</h3>
+              <h3 className="font-semibold">{t("billing.usage")}</h3>
             </div>
 
             <div className="space-y-5">
               {/* Posts */}
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-neutral-400">Ads generated</span>
+                  <span className="text-neutral-400">{t("billing.adsGenerated")}</span>
                   <span className="text-white font-medium">
                     {usage.postsUsed} / {usage.postsLimit}
                   </span>
@@ -254,7 +256,7 @@ export default function BillingPage() {
               {/* AI Tokens */}
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-neutral-400">AI tokens</span>
+                  <span className="text-neutral-400">{t("billing.aiTokens")}</span>
                   <span className="text-white font-medium">
                     {(usage.aiTokensUsed / 1000).toFixed(0)}K / {(usage.aiTokensLimit / 1000).toFixed(0)}K
                   </span>
@@ -275,7 +277,7 @@ export default function BillingPage() {
           <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 mb-6">
             <div className="flex items-center gap-2 mb-5">
               <CreditCard className="w-4 h-4 text-neutral-400" />
-              <h3 className="font-semibold">Payment History</h3>
+              <h3 className="font-semibold">{t("billing.paymentHistory")}</h3>
             </div>
 
             <div className="space-y-3">
@@ -285,7 +287,7 @@ export default function BillingPage() {
                   className="flex items-center justify-between py-3 border-b border-neutral-800 last:border-0"
                 >
                   <div>
-                    <p className="text-sm font-medium capitalize">{p.plan} — {p.billingPeriod || "monthly"}</p>
+                    <p className="text-sm font-medium capitalize">{p.plan} — {p.billingPeriod === "yearly" ? t("billing.annually") : t("billing.monthly")}</p>
                     <p className="text-xs text-neutral-500">{formatDate(p.createdAt)}</p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -303,7 +305,7 @@ export default function BillingPage() {
           <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <Clock className="w-4 h-4 text-neutral-400" />
-              <h3 className="font-semibold">Subscription History</h3>
+              <h3 className="font-semibold">{t("billing.subscriptionHistory")}</h3>
             </div>
 
             <div className="space-y-3">
@@ -314,7 +316,7 @@ export default function BillingPage() {
                 >
                   <div>
                     <p className="text-sm font-medium capitalize">
-                      {s.plan} {s.billingPeriod && <span className="text-neutral-500 text-xs">({s.billingPeriod})</span>}
+                      {s.plan} {s.billingPeriod && <span className="text-neutral-500 text-xs">({s.billingPeriod === "yearly" ? t("billing.annually") : t("billing.monthly")})</span>}
                     </p>
                     <p className="text-xs text-neutral-500">
                       {formatDate(s.startsAt)} — {formatDate(s.expiresAt)}
@@ -338,29 +340,28 @@ export default function BillingPage() {
                 <div className="p-2 rounded-lg bg-red-950/50">
                   <AlertTriangle className="w-5 h-5 text-red-400" />
                 </div>
-                <h3 className="text-xl font-bold">Cancel Subscription</h3>
+                <h3 className="text-xl font-bold">{t("billing.cancelTitle")}</h3>
               </div>
               <p className="text-neutral-400 text-sm mb-2">
-                Are you sure you want to cancel your{" "}
-                <span className="text-white font-medium capitalize">{activeSub?.plan}</span> plan?
+                {t("billing.cancelConfirm")}{" "}
+                <span className="text-white font-medium capitalize">{activeSub?.plan}</span> {t("billing.cancelPlan")}
               </p>
               <p className="text-neutral-500 text-xs mb-6">
-                Your subscription will be marked as cancelled. When auto-renewal is enabled in the future,
-                cancelling will prevent renewal at the end of the billing period.
+                {t("billing.cancelWarning")}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowCancelConfirm(false)}
                   className="flex-1 py-2.5 px-4 rounded-xl bg-neutral-800 text-white text-sm font-medium hover:bg-neutral-700 transition"
                 >
-                  Keep Plan
+                  {t("billing.keepPlan")}
                 </button>
                 <button
                   onClick={handleCancel}
                   disabled={cancelling}
                   className="flex-1 py-2.5 px-4 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-500 transition flex items-center justify-center gap-2"
                 >
-                  {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cancel Subscription"}
+                  {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : t("billing.cancelTitle")}
                 </button>
               </div>
             </div>
