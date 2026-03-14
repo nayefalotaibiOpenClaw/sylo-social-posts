@@ -7,7 +7,7 @@ AI-powered social media post generator and design editor. Built with Next.js 16,
 - **Framework**: Next.js 16 (App Router, React 19)
 - **Backend**: Convex (real-time DB, file storage, auth)
 - **Auth**: Convex Auth with Google OAuth
-- **AI**: Google Gemini for post generation + website analysis
+- **AI**: Google Gemini (`gemini-3.1-flash-lite-preview` default, also `gemini-3-flash-preview`, `gemini-3.1-pro-preview`)
 - **Styling**: Tailwind CSS v4, CSS-only visuals (no image generation)
 - **Icons**: `lucide-react` only
 - **Payments**: UPayments (webhook-verified)
@@ -121,6 +121,36 @@ convex/
 - Seed mutations (`seedAll`, `blogs.seed`) are `internalMutation` only
 - `scheduleBulk` validates socialAccountId ownership per workspace
 - Queries use `.take(N)` limits — no unbounded `.collect()` in user-facing queries
+
+## AI Generation Engines
+
+Route: `POST /api/generate` — `version` param selects engine (default: 7).
+
+| Version | Engine | How it works |
+|---------|--------|-------------|
+| `4` | **Wild** | Single Gemini call generates all posts. AI has full creative freedom — writes complete TSX. Uses 8 mood presets (bold, minimal, energetic, etc.) for variety. Returns JSON array of `{code, caption, imageKeywords}`. |
+| `5` | **Classic** | Parallel Gemini calls (1 per post). Uses `CLASSIC_SYSTEM_PROMPT` + `buildDynamicPrompt()` for brand context. Each post gets a random copy angle + layout blueprint for diversity. AI writes complete TSX. |
+| `7` | **App Store Guided** | Template-based. AI returns JSON content (`headline`, `subtitle`, `background`, `badges`), code assembles it into pre-built TSX templates. 7 templates (A–G) with 8 background presets. |
+
+### Shared infrastructure (`_shared.ts`)
+- `getModel(id?)` — returns Gemini client. Allowed: `gemini-3.1-flash-lite-preview` (default), `gemini-3-flash-preview`, `gemini-3.1-pro-preview`
+- `runGeneration()` — parallel post generation with token tracking
+- `buildContextPostsSection()` — injects user-selected reference posts (max 5, 15K chars)
+- `buildContextAssetsSection()` — injects user-selected assets with usage hints
+- `buildRatioNote()` — adds aspect-ratio-specific layout instructions
+- `handleGenerationError()` — maps all errors to generic user-facing messages
+- Max 8 posts per request, max 4 reference images
+
+### App Store Guided Templates (V7)
+- **A**: Headline top-left, phone bleeds from bottom
+- **B**: Bold centered headline, phone bleeds from bottom
+- **C**: Phone top center, headline at bottom
+- **D**: Side split — text left, phone right
+- **E**: Badge + headline + subtitle top, phone bottom
+- **F**: Social proof / big text only, no device mockup
+- **G**: Two phones — one top, headline in middle, one bottom
+
+Background presets: `gradient-dark`, `gradient-accent`, `glow`, `glow-bottom`, `dots`, `cinematic`, `minimal`, `duotone`
 
 ## Theme System
 
