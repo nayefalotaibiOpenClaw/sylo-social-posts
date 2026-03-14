@@ -43,8 +43,8 @@ export const handleThreadsCallback = httpAction(async (ctx, request) => {
     const receivedSig = stateParam.substring(0, dotIndex);
     const statePayload = stateParam.substring(dotIndex + 1);
 
-    const secret = process.env.META_APP_SECRET;
-    if (!secret) throw new Error("META_APP_SECRET not configured");
+    const secret = process.env.THREADS_APP_SECRET || process.env.META_APP_SECRET;
+    if (!secret) throw new Error("THREADS_APP_SECRET not configured");
 
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
