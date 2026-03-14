@@ -80,30 +80,30 @@ function EnglishContent() {
           We collect the following types of information to provide and
           improve our services:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Account Information:</strong>{" "}
+            <strong className="text-white">Account Information:</strong>{" "}
             When you sign in with Google OAuth, we receive your name,
             email address, and profile picture from Google.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Workspace Data:</strong>{" "}
+            <strong className="text-white">Workspace Data:</strong>{" "}
             Information you provide when creating workspaces, including
             business name, industry, website URL, branding preferences
             (colors, fonts, logos), and language settings.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Uploaded Assets:</strong>{" "}
+            <strong className="text-white">Uploaded Assets:</strong>{" "}
             Images and files you upload to the platform, including
             product photos, screenshots, logos, and background images.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Generated Content:</strong>{" "}
+            <strong className="text-white">Generated Content:</strong>{" "}
             Post designs, component code, and AI-generated copy created
             through our platform.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Usage Analytics:</strong>{" "}
+            <strong className="text-white">Usage Analytics:</strong>{" "}
             Information about how you interact with our service,
             including feature usage, generation history, and session data
             to help us improve the platform.
@@ -119,27 +119,27 @@ function EnglishContent() {
         <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           We use your information for the following purposes:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Service Delivery:</strong>{" "}
+            <strong className="text-white">Service Delivery:</strong>{" "}
             To provide, maintain, and operate the oDesigns platform,
             including workspace management, post editing, and content
             export functionality.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">AI Content Generation:</strong>{" "}
+            <strong className="text-white">AI Content Generation:</strong>{" "}
             To generate social media post designs using your brand
             information, uploaded assets, and website data as context for
             our AI models.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Service Improvement:</strong>{" "}
+            <strong className="text-white">Service Improvement:</strong>{" "}
             To analyze usage patterns, diagnose technical issues, and
             improve the quality and reliability of our platform and
             AI-generated outputs.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Communication:</strong>{" "}
+            <strong className="text-white">Communication:</strong>{" "}
             To send you important updates about the service, respond to
             support requests, and notify you of changes to our terms or
             policies.
@@ -156,7 +156,7 @@ function EnglishContent() {
           We take the security of your data seriously and implement
           appropriate measures to protect it:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
             Your data is stored securely in our Convex cloud database
             with built-in encryption and access controls.
@@ -185,23 +185,23 @@ function EnglishContent() {
         <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           oDesigns integrates with the following third-party services:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Google OAuth:</strong>{" "}
+            <strong className="text-white">Google OAuth:</strong>{" "}
             We use Google&apos;s authentication service to securely sign
             you in. Google&apos;s use of your data is governed by{" "}
             <a
               href="https://policies.google.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
+              className="text-white underline underline-offset-2 hover:text-neutral-300"
             >
               Google&apos;s Privacy Policy
             </a>
             .
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Google Gemini AI:</strong>{" "}
+            <strong className="text-white">Google Gemini AI:</strong>{" "}
             We use Google&apos;s Gemini AI models to generate social
             media post designs and copy. Your brand information and
             assets may be sent to Google&apos;s API as context for
@@ -211,14 +211,14 @@ function EnglishContent() {
               href="https://ai.google.dev/terms"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
+              className="text-white underline underline-offset-2 hover:text-neutral-300"
             >
               API Terms of Service
             </a>
             .
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">
+            <strong className="text-white">
               Meta (Facebook &amp; Instagram):
             </strong>{" "}
             When you connect your Facebook or Instagram account, we access
@@ -237,14 +237,14 @@ function EnglishContent() {
               href="https://www.facebook.com/privacy/policy/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-900 underline underline-offset-2 hover:text-slate-600"
+              className="text-white underline underline-offset-2 hover:text-neutral-300"
             >
               Meta&apos;s Privacy Policy
             </a>
             .
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">
+            <strong className="text-white">
               TikTok:
             </strong>{" "}
             When you connect your TikTok account, we access certain data
@@ -261,14 +261,14 @@ function EnglishContent() {
               href="https://www.tiktok.com/legal/privacy-policy"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
+              className="text-white underline underline-offset-2 hover:text-neutral-300"
             >
               TikTok&apos;s Privacy Policy
             </a>
             .
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Payment Processing:</strong>{" "}
+            <strong className="text-white">Payment Processing:</strong>{" "}
             If you subscribe to a paid plan, your payment information is
             handled by our third-party payment processor. We do not
             store your credit card or banking details on our servers.
@@ -284,25 +284,25 @@ function EnglishContent() {
         <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           You have the following rights regarding your personal data:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Access:</strong>{" "}
+            <strong className="text-white">Access:</strong>{" "}
             You can access and review the personal information we hold
             about you at any time through your account settings.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Deletion:</strong>{" "}
+            <strong className="text-white">Deletion:</strong>{" "}
             You may request deletion of your account and all associated
             data by contacting us. We will process your request within
             30 days.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Data Export:</strong>{" "}
+            <strong className="text-white">Data Export:</strong>{" "}
             You can export your generated content and designs at any
             time using our built-in download and export features.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Correction:</strong>{" "}
+            <strong className="text-white">Correction:</strong>{" "}
             You may update or correct your personal information through
             your workspace settings or by contacting us directly.
           </Bullet>
@@ -348,7 +348,7 @@ function EnglishContent() {
           Privacy Policy or your personal data, please contact us at{" "}
           <a
             href="mailto:hi@oagents.app"
-            className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300 font-bold"
+            className="text-white underline underline-offset-2 hover:text-neutral-300 font-bold"
           >
             hi@oagents.app
           </a>
@@ -386,30 +386,30 @@ function ArabicContent() {
         <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           نجمع الأنواع التالية من المعلومات لتقديم خدماتنا وتحسينها:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">معلومات الحساب:</strong>{" "}
+            <strong className="text-white">معلومات الحساب:</strong>{" "}
             عند تسجيل الدخول باستخدام Google OAuth، نتلقى اسمك وعنوان
             بريدك الإلكتروني وصورة ملفك الشخصي من Google.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">بيانات مساحة العمل:</strong>{" "}
+            <strong className="text-white">بيانات مساحة العمل:</strong>{" "}
             المعلومات التي تقدمها عند إنشاء مساحات العمل، بما في ذلك اسم
             النشاط التجاري والصناعة وعنوان الموقع الإلكتروني وتفضيلات
             العلامة التجارية (الألوان والخطوط والشعارات) وإعدادات اللغة.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">الأصول المرفوعة:</strong>{" "}
+            <strong className="text-white">الأصول المرفوعة:</strong>{" "}
             الصور والملفات التي ترفعها إلى المنصة، بما في ذلك صور
             المنتجات ولقطات الشاشة والشعارات وصور الخلفية.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">المحتوى المُنشأ:</strong>{" "}
+            <strong className="text-white">المحتوى المُنشأ:</strong>{" "}
             تصاميم المنشورات وأكواد المكونات والنصوص المُنشأة بالذكاء
             الاصطناعي من خلال منصتنا.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">تحليلات الاستخدام:</strong>{" "}
+            <strong className="text-white">تحليلات الاستخدام:</strong>{" "}
             معلومات حول كيفية تفاعلك مع خدمتنا، بما في ذلك استخدام
             الميزات وسجل الإنشاء وبيانات الجلسة لمساعدتنا في تحسين
             المنصة.
@@ -425,25 +425,25 @@ function ArabicContent() {
         <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           نستخدم معلوماتك للأغراض التالية:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">تقديم الخدمة:</strong>{" "}
+            <strong className="text-white">تقديم الخدمة:</strong>{" "}
             لتوفير منصة oDesigns وصيانتها وتشغيلها، بما في ذلك إدارة
             مساحات العمل وتحرير المنشورات ووظائف تصدير المحتوى.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">إنشاء محتوى بالذكاء الاصطناعي:</strong>{" "}
+            <strong className="text-white">إنشاء محتوى بالذكاء الاصطناعي:</strong>{" "}
             لإنشاء تصاميم منشورات وسائل التواصل الاجتماعي باستخدام
             معلومات علامتك التجارية والأصول المرفوعة وبيانات الموقع
             الإلكتروني كسياق لنماذج الذكاء الاصطناعي لدينا.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">تحسين الخدمة:</strong>{" "}
+            <strong className="text-white">تحسين الخدمة:</strong>{" "}
             لتحليل أنماط الاستخدام وتشخيص المشكلات التقنية وتحسين جودة
             وموثوقية منصتنا ومخرجات الذكاء الاصطناعي.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">التواصل:</strong>{" "}
+            <strong className="text-white">التواصل:</strong>{" "}
             لإرسال تحديثات مهمة حول الخدمة والرد على طلبات الدعم
             وإخطارك بالتغييرات في شروطنا أو سياساتنا.
           </Bullet>
@@ -459,7 +459,7 @@ function ArabicContent() {
           نأخذ أمان بياناتك على محمل الجد ونطبق التدابير المناسبة
           لحمايتها:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
             يتم تخزين بياناتك بشكل آمن في قاعدة بيانات Convex السحابية
             مع تشفير مدمج وضوابط وصول.
@@ -488,23 +488,23 @@ function ArabicContent() {
         <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           تتكامل oDesigns مع خدمات الطرف الثالث التالية:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Google OAuth:</strong>{" "}
+            <strong className="text-white">Google OAuth:</strong>{" "}
             نستخدم خدمة المصادقة من Google لتسجيل دخولك بشكل آمن.
             يخضع استخدام Google لبياناتك لـ{" "}
             <a
               href="https://policies.google.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
+              className="text-white underline underline-offset-2 hover:text-neutral-300"
             >
               سياسة خصوصية Google
             </a>
             .
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">Google Gemini AI:</strong>{" "}
+            <strong className="text-white">Google Gemini AI:</strong>{" "}
             نستخدم نماذج Gemini AI من Google لإنشاء تصاميم ونصوص
             منشورات وسائل التواصل الاجتماعي. قد يتم إرسال معلومات
             علامتك التجارية وأصولك إلى واجهة برمجة تطبيقات Google كسياق
@@ -514,14 +514,14 @@ function ArabicContent() {
               href="https://ai.google.dev/terms"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
+              className="text-white underline underline-offset-2 hover:text-neutral-300"
             >
               شروط خدمة واجهة برمجة التطبيقات
             </a>
             .
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">
+            <strong className="text-white">
               Meta (فيسبوك وإنستغرام):
             </strong>{" "}
             عند ربط حسابك على فيسبوك أو إنستغرام، نصل إلى بيانات معينة
@@ -539,14 +539,14 @@ function ArabicContent() {
               href="https://www.facebook.com/privacy/policy/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-900 underline underline-offset-2 hover:text-slate-600"
+              className="text-white underline underline-offset-2 hover:text-neutral-300"
             >
               سياسة خصوصية Meta
             </a>
             .
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">
+            <strong className="text-white">
               تيك توك:
             </strong>{" "}
             عند ربط حسابك على تيك توك، نصل إلى بيانات معينة من خلال
@@ -563,14 +563,14 @@ function ArabicContent() {
               href="https://www.tiktok.com/legal/privacy-policy"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
+              className="text-white underline underline-offset-2 hover:text-neutral-300"
             >
               سياسة خصوصية تيك توك
             </a>
             .
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">معالجة الدفع:</strong>{" "}
+            <strong className="text-white">معالجة الدفع:</strong>{" "}
             إذا اشتركت في خطة مدفوعة، يتم التعامل مع معلومات الدفع
             الخاصة بك من قبل معالج الدفع التابع لطرف ثالث. نحن لا نخزن
             بيانات بطاقتك الائتمانية أو حسابك المصرفي على خوادمنا.
@@ -586,24 +586,24 @@ function ArabicContent() {
         <p className="text-neutral-400 leading-relaxed text-[15px] mb-4">
           لديك الحقوق التالية فيما يتعلق ببياناتك الشخصية:
         </p>
-        <ul className="space-y-3 text-slate-600 dark:text-neutral-400 leading-relaxed">
+        <ul className="space-y-3 text-neutral-400 leading-relaxed text-[15px]">
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">الوصول:</strong>{" "}
+            <strong className="text-white">الوصول:</strong>{" "}
             يمكنك الوصول إلى المعلومات الشخصية التي نحتفظ بها عنك
             ومراجعتها في أي وقت من خلال إعدادات حسابك.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">الحذف:</strong>{" "}
+            <strong className="text-white">الحذف:</strong>{" "}
             يمكنك طلب حذف حسابك وجميع البيانات المرتبطة به عن طريق
             التواصل معنا. سنعالج طلبك خلال ٣٠ يومًا.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">تصدير البيانات:</strong>{" "}
+            <strong className="text-white">تصدير البيانات:</strong>{" "}
             يمكنك تصدير المحتوى والتصاميم المُنشأة في أي وقت باستخدام
             ميزات التنزيل والتصدير المدمجة لدينا.
           </Bullet>
           <Bullet>
-            <strong className="text-slate-800 dark:text-neutral-200">التصحيح:</strong>{" "}
+            <strong className="text-white">التصحيح:</strong>{" "}
             يمكنك تحديث أو تصحيح معلوماتك الشخصية من خلال إعدادات مساحة
             العمل أو عن طريق التواصل معنا مباشرة.
           </Bullet>
@@ -649,7 +649,7 @@ function ArabicContent() {
           الخصوصية هذه أو بياناتك الشخصية، يرجى التواصل معنا على{" "}
           <a
             href="mailto:hi@oagents.app"
-            className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300 font-bold"
+            className="text-white underline underline-offset-2 hover:text-neutral-300 font-bold"
           >
             hi@oagents.app
           </a>
