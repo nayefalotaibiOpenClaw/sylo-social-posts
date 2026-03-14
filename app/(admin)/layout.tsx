@@ -5,8 +5,9 @@ import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import Link from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/context";
+import { localizeHref } from "@/lib/i18n/utils";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -16,15 +17,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     isAuthenticated ? {} : "skip"
   );
   const router = useRouter();
-  const { t, dir } = useLocale();
+  const { t, dir, locale } = useLocale();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+      router.push(localizeHref("/login", locale));
     }
     // Only redirect if we're authenticated AND the query has resolved to exactly false
     if (!isLoading && isAuthenticated && isAdmin === false) {
-      router.push("/workspaces");
+      router.push(localizeHref("/workspaces", locale));
     }
   }, [isLoading, isAuthenticated, isAdmin, router]);
 

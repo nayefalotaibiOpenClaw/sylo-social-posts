@@ -7,7 +7,8 @@ import { downloadPostsAsZip, downloadPostsMultiRatio } from "@/lib/export/downlo
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext, HiddenComponentsContext, SetHiddenComponentsContext } from "@/contexts/EditContext";
 import { DeviceContext } from "@/contexts/DeviceContext";
 import { useTheme, useSetTheme, type Theme } from "@/contexts/ThemeContext";
-import Link from "next/link";
+import Link from "@/lib/i18n/LocaleLink";
+import { useLocale } from "@/lib/i18n/context";
 import { useSearchParams } from "next/navigation";
 import { useConvexAuth, useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -25,6 +26,7 @@ import PublishChannelsPage from "@/features/design-editor/components/PublishChan
 import BrandPanel from "@/features/design-editor/components/BrandPanel";
 
 export default function DesignPage() {
+  const { t } = useLocale();
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("workspace") as Id<"workspaces"> | null;
   const collectionIdParam = searchParams.get("collection") as Id<"collections"> | null;
@@ -385,9 +387,9 @@ export default function DesignPage() {
         } catch (e) {
           const msg = e instanceof Error ? e.message : '';
           if (msg.includes('expired')) {
-            setUsageWarning("Your subscription has expired. Please renew to continue generating.");
+            setUsageWarning(t("design.subscriptionExpired"));
           } else if (msg.includes('No active subscription')) {
-            setUsageWarning("No active subscription found. Please subscribe to continue generating.");
+            setUsageWarning(t("design.noSubscription"));
           }
         }
       }
@@ -1055,13 +1057,13 @@ export default function DesignPage() {
       <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a]">
         <div className="text-center">
           <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-lg font-bold text-gray-700 dark:text-neutral-300 mb-2">No workspace selected</h2>
-          <p className="text-sm text-gray-400 mb-6">Select a workspace to view your posts</p>
+          <h2 className="text-lg font-bold text-gray-700 dark:text-neutral-300 mb-2">{t("design.noWorkspace")}</h2>
+          <p className="text-sm text-gray-400 mb-6">{t("design.selectWorkspace")}</p>
           <Link
             href="/workspaces"
             className="px-5 py-2.5 bg-slate-900 dark:bg-white dark:text-black text-white rounded-xl font-bold text-sm hover:scale-105 transition-all active:scale-95"
           >
-            Go to Workspaces
+            {t("design.goToWorkspaces")}
           </Link>
         </div>
       </div>
@@ -1214,7 +1216,7 @@ export default function DesignPage() {
                   </button>
                   {toolbarDropdown === 'hidden' && (
                     <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-neutral-700/60 py-1.5 min-w-[200px] max-h-[300px] overflow-y-auto z-50">
-                      <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hidden Components</div>
+                      <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t("design.hiddenComponents")}</div>
                       {Array.from(hiddenComponents).map((cid) => (
                         <button
                           key={cid}
@@ -1236,7 +1238,7 @@ export default function DesignPage() {
                           onClick={() => { setHiddenComponents(new Set()); setToolbarDropdown(null); }}
                           className="w-full px-3 py-2 text-[12px] font-bold text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
                         >
-                          Restore All
+                          {t("design.restoreAll")}
                         </button>
                       </div>
                     </div>
@@ -1305,7 +1307,7 @@ export default function DesignPage() {
                       <button key={n} onClick={() => { setGridCols(n); setToolbarDropdown(null); }}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] transition-colors ${gridCols === n ? 'font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-neutral-800' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                       >
-                        {n} {n === 1 ? 'Column' : 'Columns'}
+                        {n} {n === 1 ? t("design.column") : t("design.columns")}
                       </button>
                     ))}
                   </div>
@@ -1354,30 +1356,30 @@ export default function DesignPage() {
         {usage?.isExpired && (
           <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-red-50 border border-red-200 rounded-lg px-3 md:px-4 py-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-              <span className="text-red-600 text-sm font-medium">Your {usage.plan} plan has expired.</span>
-              <span className="text-red-500 text-xs sm:text-sm">Renew to continue generating posts.</span>
+              <span className="text-red-600 text-sm font-medium">{t("design.planExpired", { plan: usage.plan || "" })}</span>
+              <span className="text-red-500 text-xs sm:text-sm">{t("design.renewToContinue")}</span>
             </div>
             <Link href="/pricing" className="text-sm bg-red-600 text-white px-4 py-1.5 rounded-lg hover:bg-red-700 transition font-medium shrink-0">
-              Renew Plan
+              {t("design.renewPlan")}
             </Link>
           </div>
         )}
         {usage?.isExpiringSoon && !usage?.isExpired && (
           <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 md:px-4 py-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-              <span className="text-amber-700 text-sm font-medium">Your plan expires in {usage.daysLeft} day{usage.daysLeft !== 1 ? 's' : ''}.</span>
-              <span className="text-amber-600 text-xs sm:text-sm">{usage.postsUsed}/{usage.postsLimit} posts used.</span>
+              <span className="text-amber-700 text-sm font-medium">{t("design.planExpiresSoon", { days: String(usage.daysLeft) })}</span>
+              <span className="text-amber-600 text-xs sm:text-sm">{t("design.postsUsed", { used: String(usage.postsUsed), limit: String(usage.postsLimit) })}</span>
             </div>
             <Link href="/pricing" className="text-sm bg-amber-600 text-white px-4 py-1.5 rounded-lg hover:bg-amber-700 transition font-medium shrink-0">
-              Renew Now
+              {t("design.renewNow")}
             </Link>
           </div>
         )}
         {usage?.status === "none" && (
           <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 md:px-4 py-3">
-            <span className="text-blue-700 text-sm font-medium">No active plan. Subscribe to start generating AI posts.</span>
+            <span className="text-blue-700 text-sm font-medium">{t("design.noPlanMessage")}</span>
             <Link href="/pricing" className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition font-medium shrink-0">
-              View Plans
+              {t("design.viewPlans")}
             </Link>
           </div>
         )}
@@ -1386,8 +1388,8 @@ export default function DesignPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <FolderOpen className="w-12 h-12 text-gray-300 dark:text-neutral-600 mx-auto mb-4" />
-              <h2 className="text-lg font-bold text-gray-500 dark:text-neutral-400 mb-2">No collections yet</h2>
-              <p className="text-sm text-gray-400">Create a collection in your workspace to get started</p>
+              <h2 className="text-lg font-bold text-gray-500 dark:text-neutral-400 mb-2">{t("design.noCollections")}</h2>
+              <p className="text-sm text-gray-400">{t("design.createCollection")}</p>
             </div>
           </div>
         ) : posts === undefined ? (
@@ -1398,8 +1400,8 @@ export default function DesignPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <ImageIcon className="w-12 h-12 text-gray-300 dark:text-neutral-600 mx-auto mb-4" />
-              <h2 className="text-lg font-bold text-gray-500 dark:text-neutral-400 mb-2">No posts yet</h2>
-              <p className="text-sm text-gray-400">Use the Generate panel to create your first post</p>
+              <h2 className="text-lg font-bold text-gray-500 dark:text-neutral-400 mb-2">{t("design.noPosts")}</h2>
+              <p className="text-sm text-gray-400">{t("design.useGenerate")}</p>
             </div>
           </div>
         ) : (
@@ -1460,7 +1462,7 @@ export default function DesignPage() {
                     handleGenerate();
                   }
                 }}
-                placeholder="Describe the post you want to generate..."
+                placeholder={t("design.describePlaceholder")}
                 rows={2}
                 className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 dark:text-white resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
               />
@@ -1496,7 +1498,7 @@ export default function DesignPage() {
                     onClick={() => { setContextPosts([]); setContextAssets([]); }}
                     className="text-[10px] font-semibold text-slate-400 hover:text-red-500 transition-colors shrink-0"
                   >
-                    Clear all
+                    {t("design.clearAll")}
                   </button>
                 </div>
               )}

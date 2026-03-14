@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Folder, Pencil, Trash2, Globe, LayoutGrid } from "lucide-react";
-import Link from "next/link";
+import Link from "@/lib/i18n/LocaleLink";
 import { Id } from "@/convex/_generated/dataModel";
 import WorkspaceStats from "./WorkspaceStats";
 import { useLocale } from "@/lib/i18n/context";

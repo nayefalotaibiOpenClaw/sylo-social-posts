@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { useLocale } from "@/lib/i18n/context";
 import FloatingNav from "@/app/components/FloatingNav";
 import {
   Instagram,
@@ -36,6 +37,7 @@ const PROVIDERS = [
 ];
 
 export default function ChannelsPage() {
+  const { t } = useLocale();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const user = useQuery(api.users.currentUser);
@@ -67,9 +69,9 @@ export default function ChannelsPage() {
     const success = searchParams.get("social_success");
     const error = searchParams.get("social_error");
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (success) setToast({ type: "success", message: "Social account connected successfully" });
+    if (success) setToast({ type: "success", message: t("channels.connectSuccess") });
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    else if (error) setToast({ type: "error", message: "Failed to connect social account. Please try again." });
+    else if (error) setToast({ type: "error", message: t("channels.connectError") });
   }, [searchParams]);
 
   useEffect(() => {
@@ -89,12 +91,12 @@ export default function ChannelsPage() {
   };
 
   const handleDisconnect = async (accountId: Id<"socialAccounts">) => {
-    if (!confirm("Disconnect this account?")) return;
+    if (!confirm(t("channels.disconnectConfirm"))) return;
     try {
       await disconnectAccount({ id: accountId });
-      setToast({ type: "success", message: "Account disconnected" });
+      setToast({ type: "success", message: t("channels.disconnected") });
     } catch {
-      setToast({ type: "error", message: "Failed to disconnect account" });
+      setToast({ type: "error", message: t("channels.disconnectError") });
     }
   };
 
@@ -131,8 +133,8 @@ export default function ChannelsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Channels</h1>
-            <p className="text-sm text-slate-500 dark:text-neutral-500 mt-1">Connect your social media accounts</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("channels.title")}</h1>
+            <p className="text-sm text-slate-500 dark:text-neutral-500 mt-1">{t("channels.subtitle")}</p>
           </div>
 
           {/* Workspace Selector */}
@@ -152,7 +154,7 @@ export default function ChannelsPage() {
         {!selectedWorkspaceId ? (
           <div className="text-center py-20">
             <LinkIcon className="w-10 h-10 text-slate-300 dark:text-neutral-700 mx-auto mb-3" />
-            <p className="text-slate-500 dark:text-neutral-500">Select a workspace to manage channels</p>
+            <p className="text-slate-500 dark:text-neutral-500">{t("channels.selectWorkspace")}</p>
           </div>
         ) : (
           <>
@@ -160,7 +162,7 @@ export default function ChannelsPage() {
             {activeAccounts.length > 0 && (
               <div className="mb-10">
                 <h2 className="text-xs font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
-                  Connected ({activeAccounts.length})
+                  {t("channels.connected", { count: String(activeAccounts.length) })}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {activeAccounts.map((account) => {
@@ -207,7 +209,7 @@ export default function ChannelsPage() {
             {/* Connect New */}
             <div>
               <h2 className="text-xs font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
-                Connect a Channel
+                {t("channels.connectChannel")}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {PROVIDERS.map((provider) => {
@@ -234,13 +236,13 @@ export default function ChannelsPage() {
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">{provider.name}</p>
                         <p className="text-xs text-slate-400 dark:text-neutral-500">
-                          {provider.available ? "Click to connect" : "Coming soon"}
+                          {provider.available ? t("channels.clickToConnect") : t("channels.comingSoon")}
                         </p>
                       </div>
                       {provider.available ? (
                         <Zap size={14} className="text-slate-300 dark:text-neutral-600" />
                       ) : (
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 uppercase">Soon</span>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 uppercase">{t("channels.soon")}</span>
                       )}
                     </button>
                   );

@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { type Theme } from "@/contexts/ThemeContext";
 import { FONTS } from "@/features/design-editor/constants/fonts";
 import { PALETTES } from "@/features/design-editor/constants/palettes";
+import { useLocale } from "@/lib/i18n/context";
 
 interface ThemePanelProps {
   currentTheme: Theme;
@@ -12,6 +13,7 @@ interface ThemePanelProps {
 }
 
 export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) {
+  const { t } = useLocale();
   return (
     <div className="space-y-5">
       <div className="rounded-lg p-4 text-center" style={{ backgroundColor: currentTheme.primaryLight, fontFamily: currentTheme.font }}>
@@ -24,7 +26,7 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Color Palette</label>
+        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">{t("theme.colorPalette")}</label>
         <div className="space-y-1.5">
           {PALETTES.map((palette) => {
             const isSelected = palette.theme.primary === currentTheme.primary && palette.theme.primaryLight === currentTheme.primaryLight;
@@ -50,18 +52,20 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Edit Colors</label>
+        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">{t("theme.editColors")}</label>
         <div className="grid grid-cols-2 gap-2">
           {([
-            { key: 'primary', label: 'Primary' },
-            { key: 'primaryLight', label: 'Light BG' },
-            { key: 'accent', label: 'Accent' },
-            { key: 'accentLight', label: 'Accent Light' },
-            { key: 'accentLime', label: 'Highlight' },
-            { key: 'accentGold', label: 'Gold' },
-            { key: 'border', label: 'Border' },
-            { key: 'primaryDark', label: 'Dark' },
-          ] as { key: keyof Theme; label: string }[]).map(({ key, label }) => (
+            { key: 'primary', labelKey: 'theme.primary' as const },
+            { key: 'primaryLight', labelKey: 'theme.lightBg' as const },
+            { key: 'accent', labelKey: 'theme.accent' as const },
+            { key: 'accentLight', labelKey: 'theme.accentLight' as const },
+            { key: 'accentLime', labelKey: 'theme.highlight' as const },
+            { key: 'accentGold', labelKey: 'theme.gold' as const },
+            { key: 'border', labelKey: 'theme.border' as const },
+            { key: 'primaryDark', labelKey: 'theme.dark' as const },
+          ] as { key: keyof Theme; labelKey: Parameters<typeof t>[0] }[]).map(({ key, labelKey }) => {
+          const label = t(labelKey);
+          return (
             <label key={key} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 cursor-pointer hover:border-gray-300 dark:hover:border-neutral-600 transition-colors">
               <input
                 type="color"
@@ -71,12 +75,12 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
               />
               <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400">{label}</span>
             </label>
-          ))}
+          ); })}
         </div>
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">Font</label>
+        <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">{t("theme.font")}</label>
         <div className="space-y-1.5">
           {FONTS.map((font) => {
             const isSelected = font.value === currentTheme.font;

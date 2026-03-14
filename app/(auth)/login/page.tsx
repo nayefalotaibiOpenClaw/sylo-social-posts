@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/lib/i18n/LocaleLink";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -8,6 +8,7 @@ import { useConvexAuth } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLocale } from "@/lib/i18n/context";
+import { localizeHref } from "@/lib/i18n/utils";
 import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
 
 export default function LoginPage() {
@@ -15,12 +16,12 @@ export default function LoginPage() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
   const [signingIn, setSigningIn] = useState(false);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   // Redirect if already authenticated (wait for loading to finish first)
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push("/workspaces");
+      router.push(localizeHref("/workspaces", locale));
     }
   }, [isAuthenticated, isLoading, router]);
 

@@ -10,14 +10,15 @@ import {
   Lock,
   Check,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/lib/i18n/LocaleLink";
 import { useTheme as useNextTheme } from "next-themes";
 import { PostPreview, socialPosts } from "./shared";
+import { useLocale } from "@/lib/i18n/context";
 
 /* ─── Theme types ─── */
 type DemoTheme = "light" | "dark";
 
-function t(theme: DemoTheme) {
+function themeStyles(theme: DemoTheme) {
   return {
     cardBg: theme === "dark" ? "bg-neutral-900/80 backdrop-blur-xl border-neutral-700/50" : "bg-white/80 backdrop-blur-xl border-slate-200",
     cardShadow: theme === "dark" ? "shadow-2xl shadow-black/40" : "shadow-2xl shadow-slate-200/60",
@@ -59,7 +60,7 @@ const demoUrls = [
 
 /* ─── Scanning Visual ─── */
 function ScanningVisual({ theme }: { theme: DemoTheme }) {
-  const s = t(theme);
+  const s = themeStyles(theme);
   return (
     <div className={`relative w-full h-52 rounded-xl border overflow-hidden ${s.vizBg}`}>
       {[0, 1, 2, 3].map((i) => (
@@ -95,7 +96,8 @@ function ScanningVisual({ theme }: { theme: DemoTheme }) {
 
 /* ─── Extracting Visual ─── */
 function ExtractingVisual({ theme }: { theme: DemoTheme }) {
-  const s = t(theme);
+  const s = themeStyles(theme);
+  const { t } = useLocale();
   const swatches = [
     { color: "#1B4332", label: "Primary" },
     { color: "#2D6A4F", label: "Secondary" },
@@ -116,21 +118,21 @@ function ExtractingVisual({ theme }: { theme: DemoTheme }) {
       </div>
       <motion.div className="flex items-center gap-3" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
         <Type className={`w-4 h-4 ${s.labelText}`} />
-        <span className={`text-sm ${s.labelText}`}>Brand font:</span>
+        <span className={`text-sm ${s.labelText}`}>{t("landing.brandFont")}</span>
         <span className={`text-sm ${s.valueText}`}>Inter, SF Pro</span>
       </motion.div>
       <motion.div className="flex items-center gap-3 mt-2" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 }}>
         <Image className={`w-4 h-4 ${s.labelText}`} />
-        <span className={`text-sm ${s.labelText}`}>Products found:</span>
-        <span className={`text-sm ${s.valueText}`}>12 items</span>
+        <span className={`text-sm ${s.labelText}`}>{t("landing.productsFound")}</span>
+        <span className={`text-sm ${s.valueText}`}>{t("landing.productsItems", { count: "12" })}</span>
         <motion.div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.9, type: "spring" }}>
           <Check className="w-2.5 h-2.5 text-white" />
         </motion.div>
       </motion.div>
       <motion.div className="flex items-center gap-3 mt-2" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9 }}>
         <Scissors className={`w-4 h-4 ${s.labelText}`} />
-        <span className={`text-sm ${s.labelText}`}>Backgrounds:</span>
-        <span className={`text-sm ${s.valueText}`}>Removed & cleaned</span>
+        <span className={`text-sm ${s.labelText}`}>{t("landing.backgrounds")}</span>
+        <span className={`text-sm ${s.valueText}`}>{t("landing.backgroundsCleaned")}</span>
       </motion.div>
     </div>
   );
@@ -138,7 +140,7 @@ function ExtractingVisual({ theme }: { theme: DemoTheme }) {
 
 /* ─── Generating Visual ─── */
 function GeneratingVisual({ theme }: { theme: DemoTheme }) {
-  const s = t(theme);
+  const s = themeStyles(theme);
   const items = [
     { post: socialPosts[0], aspect: "1:1" as const, size: 130 },
     { post: socialPosts[2], aspect: "9:16" as const, size: 130 },
@@ -161,7 +163,8 @@ function GeneratingVisual({ theme }: { theme: DemoTheme }) {
 
 /* ─── Publishing Visual ─── */
 function PublishingVisual({ theme }: { theme: DemoTheme }) {
-  const s = t(theme);
+  const s = themeStyles(theme);
+  const { t } = useLocale();
   const channels = [
     { name: "Instagram", color: "from-purple-500 to-pink-500" },
     { name: "TikTok", color: "from-neutral-100 to-neutral-300" },
@@ -185,14 +188,14 @@ function PublishingVisual({ theme }: { theme: DemoTheme }) {
       </div>
       <motion.div className="flex items-center gap-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
         <motion.div className="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" initial={{ width: 0 }} animate={{ width: 120 }} transition={{ duration: 0.8, delay: 0.9 }} />
-        <span className="text-xs text-emerald-400 font-semibold whitespace-nowrap">Publishing...</span>
+        <span className="text-xs text-emerald-400 font-semibold whitespace-nowrap">{t("landing.publishingProgress")}</span>
       </motion.div>
     </div>
   );
 }
 
 /* ─── Done Visual ─── */
-function DoneVisual() {
+function DoneVisual({ t }: { t: (key: import("@/lib/i18n/types").TranslationKey, params?: Record<string, string>) => string }) {
   const items = [
     { post: socialPosts[0], aspect: "1:1" as const, label: "Post" },
     { post: socialPosts[3], aspect: "9:16" as const, label: "Story" },
@@ -208,7 +211,7 @@ function DoneVisual() {
         <motion.div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}>
           <Check className="w-3 h-3 text-white" />
         </motion.div>
-        <span className="text-sm font-semibold text-emerald-500">6 posts published to all channels</span>
+        <span className="text-sm font-semibold text-emerald-500">{t("landing.publishedAll", { count: "6" })}</span>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-3 items-end" style={{ scrollbarWidth: "none" }}>
         {items.map((item, i) => (
@@ -229,7 +232,8 @@ export default function HeroDemo({ theme }: { theme?: DemoTheme }) {
   useEffect(() => setMounted(true), []);
   // Use "light" as SSR default; once mounted, read resolvedTheme correctly
   const effectiveTheme: DemoTheme = theme ?? (mounted && resolvedTheme === "dark" ? "dark" : "light");
-  const s = t(effectiveTheme);
+  const s = themeStyles(effectiveTheme);
+  const { t } = useLocale();
   const [demoStep, setDemoStep] = useState<DemoStep>("idle");
   const [inputValue, setInputValue] = useState("");
   const [urlIndex, setUrlIndex] = useState(0);
@@ -274,7 +278,7 @@ export default function HeroDemo({ theme }: { theme?: DemoTheme }) {
   }, [urlIndex, typeAndStart, clearTimers]);
 
   const stepIndex = demoStep === "scanning" ? 0 : demoStep === "extracting" ? 1 : demoStep === "generating" ? 2 : demoStep === "publishing" ? 3 : demoStep === "done" ? 4 : -1;
-  const stepLabels = ["Scan", "Extract", "Generate", "Publish"];
+  const stepLabels = [t("landing.stepScan"), t("landing.stepExtract"), t("landing.stepGenerate"), t("landing.stepPublish")];
 
   /* ─── Progress Steps Row ─── */
   const ProgressSteps = () => (
@@ -322,7 +326,7 @@ export default function HeroDemo({ theme }: { theme?: DemoTheme }) {
                 <motion.span className="inline-block w-0.5 h-4 bg-indigo-400 ml-0.5 align-middle" animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} />
               </div>
               <div className={`m-1.5 px-5 py-2 rounded-lg text-sm font-bold ${s.generateBtn}`}>
-                Generate
+                {t("landing.generate")}
               </div>
             </div>
           </motion.div>
@@ -333,9 +337,9 @@ export default function HeroDemo({ theme }: { theme?: DemoTheme }) {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <ProgressSteps />
             <p className={`text-center text-sm mb-4 ${s.progressLabel}`}>
-              {demoStep === "scanning" && "Scanning your website & products..."}
-              {demoStep === "extracting" && "Extracting brand colors, fonts & product images..."}
-              {demoStep === "generating" && "Generating ads, social posts & app store previews..."}
+              {demoStep === "scanning" && t("landing.scanning")}
+              {demoStep === "extracting" && t("landing.extracting")}
+              {demoStep === "generating" && t("landing.generating")}
             </p>
             <AnimatePresence mode="wait">
               {demoStep === "scanning" && <motion.div key="s" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ScanningVisual theme={effectiveTheme} /></motion.div>}
@@ -349,7 +353,7 @@ export default function HeroDemo({ theme }: { theme?: DemoTheme }) {
         {demoStep === "publishing" && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <ProgressSteps />
-            <p className={`text-center text-sm mb-4 ${s.progressLabel}`}>Publishing to all channels...</p>
+            <p className={`text-center text-sm mb-4 ${s.progressLabel}`}>{t("landing.publishingChannels")}</p>
             <PublishingVisual theme={effectiveTheme} />
           </motion.div>
         )}
@@ -357,13 +361,13 @@ export default function HeroDemo({ theme }: { theme?: DemoTheme }) {
         {/* Done */}
         {demoStep === "done" && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <DoneVisual />
+            <DoneVisual t={t} />
             <div className="flex items-center justify-center mt-4 pt-4 border-t border-slate-200 dark:border-neutral-800">
               <Link
                 href="/login"
                 className={`px-6 py-2.5 rounded-full font-bold text-sm hover:scale-105 active:scale-95 transition-transform ${s.ctaBg}`}
               >
-                Start Creating — It&apos;s Free
+                {t("landing.startCreating")}
               </Link>
             </div>
           </motion.div>

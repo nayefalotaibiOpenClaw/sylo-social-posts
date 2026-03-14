@@ -15,6 +15,7 @@ import {
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { useLocale } from "@/lib/i18n/context";
 
 interface PublishPanelProps {
   workspaceId: Id<"workspaces">;
@@ -35,6 +36,7 @@ export default function PublishPanel({
   posts,
   postRefs,
 }: PublishPanelProps) {
+  const { t } = useLocale();
   const socialAccounts = useQuery(api.socialAccounts.listByWorkspace, {
     workspaceId,
   });
@@ -67,7 +69,7 @@ export default function PublishPanel({
   };
 
   const handleDisconnect = async (accountId: Id<"socialAccounts">) => {
-    if (!confirm("Disconnect this account?")) return;
+    if (!confirm(t("publishPanel.disconnectConfirm"))) return;
     await disconnectAccount({ id: accountId });
   };
 
@@ -143,7 +145,7 @@ export default function PublishPanel({
       {/* Connected Accounts */}
       <div>
         <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider block mb-3">
-          Connected Accounts
+          {t("publishPanel.connectedAccounts")}
         </label>
 
         {socialAccounts === undefined ? (
@@ -190,7 +192,7 @@ export default function PublishPanel({
             ))}
           </div>
         ) : (
-          <p className="text-xs text-gray-400 dark:text-neutral-500">No accounts connected yet.</p>
+          <p className="text-xs text-gray-400 dark:text-neutral-500">{t("publishPanel.noAccountsYet")}</p>
         )}
 
         <div className="mt-3 flex gap-2">
@@ -215,7 +217,7 @@ export default function PublishPanel({
       {step !== "select-account" && selectedAccountId && (
         <div>
           <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider block mb-3">
-            Select Post
+            {t("publishPanel.selectPost")}
           </label>
 
           {posts && posts.length > 0 ? (
@@ -236,7 +238,7 @@ export default function PublishPanel({
             </div>
           ) : (
             <p className="text-xs text-gray-400 dark:text-neutral-500">
-              No posts in this collection.
+              {t("publishPanel.noPostsInCollection")}
             </p>
           )}
 
@@ -246,19 +248,19 @@ export default function PublishPanel({
                 htmlFor="publish-caption"
                 className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider block mb-2 mt-4"
               >
-                Caption
+                {t("publishPanel.caption")}
               </label>
               <textarea
                 id="publish-caption"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
-                placeholder="Write a caption..."
+                placeholder={t("publishPanel.captionPlaceholder")}
                 rows={4}
                 maxLength={2200}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 text-xs text-gray-700 dark:text-neutral-300 resize-none dark:bg-neutral-800 focus:outline-none focus:border-slate-900 transition-colors"
               />
               <p className={`text-[10px] mt-1 ${caption.length > 2000 ? "text-amber-500" : "text-gray-400 dark:text-neutral-500"}`}>
-                {caption.length}/2200 characters
+                {caption.length}/2200 {t("publishPanel.characters")}
               </p>
 
               <button
@@ -274,7 +276,7 @@ export default function PublishPanel({
                       ?.provider || ""
                   )
                 )}
-                Publish Now
+                {t("publishPanel.publishNow")}
               </button>
             </>
           )}
@@ -285,9 +287,9 @@ export default function PublishPanel({
       {step === "publishing" && (
         <div className="flex flex-col items-center py-6" role="status" aria-label="Publishing post">
           <Loader2 size={24} className="animate-spin text-slate-900 dark:text-white mb-3" />
-          <p className="text-xs font-medium text-gray-600 dark:text-neutral-400">Publishing...</p>
+          <p className="text-xs font-medium text-gray-600 dark:text-neutral-400">{t("publishPanel.publishingStatus")}</p>
           <p className="text-[10px] text-gray-400 dark:text-neutral-500 mt-1">
-            This may take a moment
+            {t("publishPanel.mayTakeAMoment")}
           </p>
         </div>
       )}
@@ -312,8 +314,8 @@ export default function PublishPanel({
                 className={`text-xs font-bold ${publishResult.success ? "text-green-800" : "text-red-800"}`}
               >
                 {publishResult.success
-                  ? "Published successfully!"
-                  : "Publishing failed"}
+                  ? t("publishPanel.publishedSuccess")
+                  : t("publishPanel.publishingFailed")}
               </p>
               {publishResult.postUrl && (
                 <a
@@ -322,7 +324,7 @@ export default function PublishPanel({
                   rel="noopener noreferrer"
                   className="text-[10px] text-green-600 hover:underline flex items-center gap-1 mt-1"
                 >
-                  View post <ExternalLink size={10} />
+                  {t("publishPanel.viewPost")} <ExternalLink size={10} />
                 </a>
               )}
               {publishResult.error && (
@@ -338,7 +340,7 @@ export default function PublishPanel({
             className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all"
           >
             <RefreshCw size={12} />
-            Publish Another
+            {t("publishPanel.publishAnother")}
           </button>
         </div>
       )}
@@ -354,6 +356,7 @@ function PublishHistorySection({
 }: {
   workspaceId: Id<"workspaces">;
 }) {
+  const { t } = useLocale();
   const history = useQuery(api.publishing.listHistory, { workspaceId });
 
   if (!history || history.length === 0) return null;
@@ -363,7 +366,7 @@ function PublishHistorySection({
   return (
     <div>
       <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider block mb-3">
-        Recent Publishes
+        {t("publishPanel.recentPublishes")}
       </label>
       <div className="space-y-2">
         {recent.map((entry) => (

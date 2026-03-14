@@ -2,7 +2,7 @@
 
 import React from "react";
 import { LayoutGrid, List, Pencil, ArrowUpDown, MousePointer2, Check, Eye } from "lucide-react";
-import Link from "next/link";
+import Link from "@/lib/i18n/LocaleLink";
 import { AspectRatioType } from "@/contexts/EditContext";
 import { Id } from "@/convex/_generated/dataModel";
 

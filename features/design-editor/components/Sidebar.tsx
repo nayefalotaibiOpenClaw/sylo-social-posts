@@ -3,17 +3,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Upload, Send, X, Building2, LayoutGrid, LinkIcon, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/lib/i18n/context";
+import { localizeHref } from "@/lib/i18n/utils";
+import type { TranslationKey } from "@/lib/i18n/types";
 
 export type SidebarTab = 'brand' | 'design' | 'theme' | 'assets' | 'generate' | 'publish' | 'channels' | null;
 
-export const SIDEBAR_ITEMS: { id: SidebarTab; icon: React.ComponentType<{ size?: number }>; label: string; fullPage?: boolean }[] = [
-  { id: 'brand', icon: Building2, label: 'Brand', fullPage: true },
-  { id: 'design', icon: LayoutGrid, label: 'Design', fullPage: true },
+export const SIDEBAR_ITEMS: { id: SidebarTab; icon: React.ComponentType<{ size?: number }>; labelKey: TranslationKey; fullPage?: boolean }[] = [
+  { id: 'brand', icon: Building2, labelKey: 'sidebar.brand', fullPage: true },
+  { id: 'design', icon: LayoutGrid, labelKey: 'sidebar.design', fullPage: true },
   // theme tab removed — included in Brand page
-  { id: 'assets', icon: Upload, label: 'Assets', fullPage: true },
+  { id: 'assets', icon: Upload, labelKey: 'sidebar.assets', fullPage: true },
   // generate is now a sub-tab inside Design page
-  { id: 'publish', icon: Send, label: 'Publish', fullPage: true },
-  { id: 'channels', icon: LinkIcon, label: 'Channels', fullPage: true },
+  { id: 'publish', icon: Send, labelKey: 'sidebar.publish', fullPage: true },
+  { id: 'channels', icon: LinkIcon, labelKey: 'sidebar.channels', fullPage: true },
 ];
 
 interface WorkspaceItem {
@@ -31,6 +34,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeTab, onTabClick, children, workspaces, currentWorkspaceId, currentWorkspaceName }: SidebarProps) {
+  const { t, locale } = useLocale();
   const activeItem = SIDEBAR_ITEMS.find(i => i.id === activeTab);
   const panelOpen = activeTab !== null && activeTab !== 'generate' && !activeItem?.fullPage;
   const [hoveredTab, setHoveredTab] = useState<SidebarTab>(null);
@@ -73,14 +77,14 @@ export default function Sidebar({ activeTab, onTabClick, children, workspaces, c
           {/* Workspace dropdown */}
           {showWorkspaces && workspaces && workspaces.length > 0 && (
             <div className="absolute left-full ml-3 top-0 w-56 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-slate-200 dark:border-neutral-700 py-2 z-[200]">
-              <p className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Workspaces</p>
+              <p className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">{t("sidebar.workspaces")}</p>
               {workspaces.map((ws) => (
                 <button
                   key={ws._id}
                   onClick={() => {
                     setShowWorkspaces(false);
                     if (ws._id !== currentWorkspaceId) {
-                      router.push(`/design?workspace=${ws._id}`);
+                      router.push(localizeHref(`/design?workspace=${ws._id}`, locale));
                     }
                   }}
                   className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors ${
@@ -102,7 +106,7 @@ export default function Sidebar({ activeTab, onTabClick, children, workspaces, c
 
         {/* Center: Pill nav container */}
         <div className="border border-gray-200 dark:border-neutral-700 rounded-full flex flex-col items-center py-1.5 px-1.5 gap-0">
-          {SIDEBAR_ITEMS.map(({ id, icon: Icon, label }) => (
+          {SIDEBAR_ITEMS.map(({ id, icon: Icon, labelKey }) => (
             <div key={id} className="relative">
               <button
                 onClick={() => onTabClick(id)}
@@ -119,7 +123,7 @@ export default function Sidebar({ activeTab, onTabClick, children, workspaces, c
               {/* Tooltip */}
               {hoveredTab === id && (
                 <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-medium rounded-lg whitespace-nowrap pointer-events-none z-50 shadow-lg">
-                  {label}
+                  {t(labelKey)}
                   <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-white" />
                 </div>
               )}

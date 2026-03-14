@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import DynamicPost from "@/app/components/DynamicPost";
 import PostWrapper from "@/app/components/PostWrapper";
+import { useLocale } from "@/lib/i18n/context";
 import {
   Grid3X3,
   Instagram,
@@ -34,11 +35,11 @@ interface SocialAccount {
 type ContentType = "image" | "carousel" | "story" | "reel";
 type BulkStep = "type" | "select" | "schedule" | "channels" | "preview";
 
-const CONTENT_TYPES: { value: ContentType; label: string; icon: React.ReactNode; desc: string; ratio: string }[] = [
-  { value: "image", label: "Post", icon: <Image className="w-5 h-5" />, desc: "Single image post", ratio: "1:1" },
-  { value: "carousel", label: "Carousel", icon: <Images className="w-5 h-5" />, desc: "Multi-slide carousel (2-10)", ratio: "1:1" },
-  { value: "story", label: "Story", icon: <Square className="w-5 h-5" />, desc: "24-hour story", ratio: "9:16" },
-  { value: "reel", label: "Reel", icon: <Film className="w-5 h-5" />, desc: "Short-form video", ratio: "9:16" },
+const CONTENT_TYPES: { value: ContentType; labelKey: string; icon: React.ReactNode; descKey: string; ratio: string }[] = [
+  { value: "image", labelKey: "bulkSchedule.post", icon: <Image className="w-5 h-5" />, descKey: "bulkSchedule.singleImagePost", ratio: "1:1" },
+  { value: "carousel", labelKey: "bulkSchedule.carousel", icon: <Images className="w-5 h-5" />, descKey: "bulkSchedule.multiSlideCarousel", ratio: "1:1" },
+  { value: "story", labelKey: "bulkSchedule.story", icon: <Square className="w-5 h-5" />, descKey: "bulkSchedule.hourStory", ratio: "9:16" },
+  { value: "reel", labelKey: "bulkSchedule.reel", icon: <Film className="w-5 h-5" />, descKey: "bulkSchedule.shortFormVideo", ratio: "9:16" },
 ];
 
 function getProviderIcon(provider: string) {
@@ -108,6 +109,7 @@ export default function BulkScheduleModal({
   inline?: boolean;
 }) {
   const t = c(inline);
+  const { t: tr } = useLocale();
 
   const [step, setStep] = useState<BulkStep>("type");
   const [selectedPostIds, setSelectedPostIds] = useState<Id<"posts">[]>([]);
@@ -345,7 +347,7 @@ export default function BulkScheduleModal({
     const now = Date.now();
     const hasPastDates = timeline.some((item) => item.dateTime.getTime() <= now);
     if (hasPastDates) {
-      setError("Some scheduled times are in the past. Please adjust your start date or times.");
+      setError(tr("bulkSchedule.pastDatesError"));
       return;
     }
 
@@ -379,7 +381,7 @@ export default function BulkScheduleModal({
       // Only items with a real account can be submitted
       const submittableItems = timeline.filter((item) => item.accountId != null);
       if (submittableItems.length === 0) {
-        setError("Connect at least one account before scheduling.");
+        setError(tr("bulkSchedule.connectAccountError"));
         return;
       }
 
@@ -453,7 +455,7 @@ export default function BulkScheduleModal({
 
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to schedule posts");
+      setError(err instanceof Error ? err.message : tr("bulkSchedule.failedToSchedule"));
     } finally {
       setIsSubmitting(false);
       setSubmitProgress("");
@@ -461,11 +463,11 @@ export default function BulkScheduleModal({
   }, [isSubmitting, timeline, selectedPostIds, contentType, postCaptions, generateUploadUrl, scheduleBulk, workspaceId, timezone, onClose, isTall, isCarousel, validCarouselGroups, carouselGroups]);
 
   const steps: { key: BulkStep; label: string }[] = [
-    { key: "type", label: "Type" },
-    { key: "select", label: "Select Posts" },
-    { key: "schedule", label: "Schedule" },
-    { key: "channels", label: "Channels" },
-    { key: "preview", label: "Preview" },
+    { key: "type", label: tr("bulkSchedule.stepType") },
+    { key: "select", label: tr("bulkSchedule.stepSelectPosts") },
+    { key: "schedule", label: tr("bulkSchedule.stepSchedule") },
+    { key: "channels", label: tr("bulkSchedule.stepChannels") },
+    { key: "preview", label: tr("bulkSchedule.stepPreview") },
   ];
 
   const currentStepIndex = steps.findIndex((s) => s.key === step);
@@ -517,7 +519,7 @@ export default function BulkScheduleModal({
     <div className="space-y-6">
       <div>
         <h2 className={`text-xs font-semibold ${t.textMuted} uppercase tracking-wider mb-4`}>
-          What do you want to schedule?
+          {tr("bulkSchedule.whatSchedule")}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {CONTENT_TYPES.map((ct) => {
@@ -538,7 +540,7 @@ export default function BulkScheduleModal({
                   {ct.icon}
                 </div>
                 <div className="text-center">
-                  <span className="text-sm font-bold block">{ct.label}</span>
+                  <span className="text-sm font-bold block">{tr(ct.labelKey as Parameters<typeof tr>[0])}</span>
                   <span className={`text-[10px] ${isSelected ? "text-emerald-500" : t.textMuted}`}>{ct.ratio}</span>
                 </div>
               </button>
@@ -550,10 +552,10 @@ export default function BulkScheduleModal({
       {/* Info about the selected type */}
       <div className={`rounded-xl p-4 ${inline ? 'bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700' : 'bg-neutral-800 border border-neutral-700'}`}>
         <p className={`text-sm ${inline ? 'text-gray-700 dark:text-neutral-300' : 'text-neutral-300'}`}>
-          {contentType === "image" && "Each selected post will be scheduled as a separate image post (1:1)."}
-          {contentType === "carousel" && "Create one or more carousel posts (1:1). Each carousel needs 2-10 slides. You can group posts into separate carousels."}
-          {contentType === "story" && "Each selected post will be scheduled as a story (9:16). Posts with 9:16 variants will use that version."}
-          {contentType === "reel" && "Each selected post will be scheduled as a reel (9:16). Posts with 9:16 variants will use that version."}
+          {contentType === "image" && tr("bulkSchedule.imageDesc")}
+          {contentType === "carousel" && tr("bulkSchedule.carouselDesc")}
+          {contentType === "story" && tr("bulkSchedule.storyDesc")}
+          {contentType === "reel" && tr("bulkSchedule.reelDesc")}
         </p>
       </div>
     </div>
@@ -574,7 +576,7 @@ export default function BulkScheduleModal({
             </p>
             {isCarousel && (
               <p className={`text-xs ${t.textMuted} mt-1`}>
-                Click posts to add/remove from the active carousel. Each carousel needs 2-10 slides.
+                {tr("bulkSchedule.clickToAdd")}
               </p>
             )}
           </div>
@@ -584,7 +586,7 @@ export default function BulkScheduleModal({
               className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
             >
               <CheckCheck className="w-3.5 h-3.5" />
-              {selectedPostIds.length === allPosts.length ? "Deselect All" : "Select All"}
+              {selectedPostIds.length === allPosts.length ? tr("bulkSchedule.deselectAll") : tr("bulkSchedule.selectAll")}
             </button>
           )}
         </div>
@@ -625,7 +627,7 @@ export default function BulkScheduleModal({
               onClick={addCarouselGroup}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-50 border border-dashed border-emerald-300 transition-colors whitespace-nowrap"
             >
-              + New Carousel
+              {tr("bulkSchedule.newCarousel")}
             </button>
           </div>
         )}
@@ -637,7 +639,7 @@ export default function BulkScheduleModal({
         ) : allPosts.length === 0 ? (
           <div className={`text-center py-12 ${t.textMuted}`}>
             <Grid3X3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No posts found in this workspace</p>
+            <p className="text-sm">{tr("bulkSchedule.noPostsFound")}</p>
           </div>
         ) : (
           <>
@@ -703,7 +705,7 @@ export default function BulkScheduleModal({
                       }}
                       onFocus={(e) => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
                       onClick={(e) => e.stopPropagation()}
-                      placeholder="Add caption..."
+                      placeholder={tr("bulkSchedule.addCaption")}
                       rows={1}
                       maxLength={2200}
                       className={`w-full mt-1 px-1.5 py-1 rounded-md text-[10px] leading-relaxed resize-none overflow-hidden ${t.input} border-0 ${
@@ -819,12 +821,12 @@ export default function BulkScheduleModal({
           {/* Frequency */}
           {showFrequency && (
             <div className="p-4">
-              <label className={`block text-xs font-semibold ${t.textMuted} uppercase tracking-wider mb-3`}>Frequency</label>
+              <label className={`block text-xs font-semibold ${t.textMuted} uppercase tracking-wider mb-3`}>{tr("bulkSchedule.frequency")}</label>
               <div className="flex gap-2">
                 {([
-                  { value: "now" as const, label: "Now" },
-                  { value: "daily" as const, label: "Every day" },
-                  { value: "pick_days" as const, label: "Pick days" },
+                  { value: "now" as const, label: tr("bulkSchedule.now") },
+                  { value: "daily" as const, label: tr("bulkSchedule.everyDay") },
+                  { value: "pick_days" as const, label: tr("bulkSchedule.pickDays") },
                 ]).map((opt) => (
                   <button
                     key={opt.value}
@@ -870,7 +872,7 @@ export default function BulkScheduleModal({
           {frequency !== "now" && <div className="p-4">
             <div className="flex items-center justify-between mb-3">
               <label className={`text-xs font-semibold ${t.textMuted} uppercase tracking-wider`}>
-                {showMultipleTimes ? "Times per day" : "Publish time"}
+                {showMultipleTimes ? tr("bulkSchedule.timesPerDay") : tr("bulkSchedule.publishTime")}
               </label>
               {showMultipleTimes && (
                 <button onClick={() => setTimesPerDay((prev) => [...prev, "12:00"])} className="text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold">
@@ -903,7 +905,7 @@ export default function BulkScheduleModal({
           {/* Calendar + Timezone */}
           {frequency !== "now" && <div className="p-4">
             <label className={`block text-xs font-semibold ${t.textMuted} uppercase tracking-wider mb-3`}>
-              {isCarousel ? "Publish date" : "Start date"}
+              {isCarousel ? tr("bulkSchedule.publishDate") : tr("bulkSchedule.startDate")}
             </label>
             {(() => {
               const selected = new Date(startDate + "T00:00:00");
@@ -1009,7 +1011,7 @@ export default function BulkScheduleModal({
 
             {/* Timezone below calendar */}
             <div className={`flex items-center gap-2 mt-4 pt-3 border-t ${t.separator}`}>
-              <span className={`text-[10px] font-semibold ${t.textMuted} uppercase tracking-wider`}>Timezone</span>
+              <span className={`text-[10px] font-semibold ${t.textMuted} uppercase tracking-wider`}>{tr("bulkSchedule.timezone")}</span>
               <span className={`text-xs font-medium ${t.textSub}`}>{timezone}</span>
             </div>
           </div>}
@@ -1033,12 +1035,12 @@ export default function BulkScheduleModal({
 
   const renderChannelsStep = () => (
     <div className="space-y-4">
-      <p className={`text-sm ${t.textSub}`}>Select which accounts to publish to. ({selectedAccountIds.size} selected)</p>
+      <p className={`text-sm ${t.textSub}`}>{tr("bulkSchedule.selectAccounts", { count: String(selectedAccountIds.size) })}</p>
       {accounts.length === 0 ? (
         <div className={`text-center py-12 ${t.textMuted}`}>
           <Send className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">No connected accounts</p>
-          <p className={`text-xs ${t.textMuted} mt-1`}>Connect accounts from the Channels tab first.</p>
+          <p className="text-sm">{tr("bulkSchedule.noConnectedAccounts")}</p>
+          <p className={`text-xs ${t.textMuted} mt-1`}>{tr("bulkSchedule.connectFirst")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -1107,7 +1109,7 @@ export default function BulkScheduleModal({
         </div>
 
         {previewCards.length === 0 ? (
-          <p className={`text-sm ${t.textMuted} text-center py-8`}>No items. Go back and select posts.</p>
+          <p className={`text-sm ${t.textMuted} text-center py-8`}>{tr("bulkSchedule.noItems")}</p>
         ) : (
           <div className={isTall
             ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3"
@@ -1163,7 +1165,7 @@ export default function BulkScheduleModal({
 
                 {/* Caption */}
                 <p className={`text-[10px] leading-relaxed px-1 mt-0.5 ${card.caption ? t.textSub : t.textMuted} ${card.caption ? 'line-clamp-3' : 'italic'}`}>
-                  {card.caption || "No caption"}
+                  {card.caption || tr("bulkSchedule.noCaption")}
                 </p>
               </div>
             ))}
@@ -1173,7 +1175,7 @@ export default function BulkScheduleModal({
         {/* Summary */}
         <p className={`text-xs ${t.textMuted}`}>
           {selectedAccountIds.size === 0
-            ? "Preview only — connect an account to publish."
+            ? tr("bulkSchedule.previewOnly")
             : isCarousel
               ? validCarouselGroups.length === 1
                 ? `This carousel (${validCarouselGroups[0].length} slides) will be published to ${selectedAccountIds.size} account${selectedAccountIds.size !== 1 ? "s" : ""}.`
@@ -1264,7 +1266,7 @@ export default function BulkScheduleModal({
                   disabled={isSubmitting}
                   className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
                 >
-                  Back
+                  {tr("bulkSchedule.back")}
                 </button>
               )}
               {step === "preview" ? (
@@ -1274,7 +1276,7 @@ export default function BulkScheduleModal({
                   className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-white bg-[#1B4332] hover:bg-[#2D6A4F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                  {isSubmitting ? "Scheduling..." : "Confirm"}
+                  {isSubmitting ? tr("bulkSchedule.scheduling") : tr("bulkSchedule.confirm")}
                 </button>
               ) : (
                 <button
@@ -1282,7 +1284,7 @@ export default function BulkScheduleModal({
                   disabled={!canProceed()}
                   className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-white bg-[#1B4332] hover:bg-[#2D6A4F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Next
+                  {tr("bulkSchedule.next")}
                   <ChevronRight size={14} />
                 </button>
               )}
@@ -1319,7 +1321,7 @@ export default function BulkScheduleModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className={`${t.bg} ${t.border} border rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col`}>
         <div className={`flex items-center justify-between px-6 py-4 border-b ${t.separator}`}>
-          <h2 className={`text-lg font-bold ${t.text}`}>Schedule Posts</h2>
+          <h2 className={`text-lg font-bold ${t.text}`}>{tr("bulkSchedule.schedule")}</h2>
           <button onClick={onClose} className="p-2 rounded-lg text-neutral-500 hover:text-white hover:bg-neutral-800 transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -1346,7 +1348,7 @@ export default function BulkScheduleModal({
               disabled={isSubmitting}
               className="px-4 py-2 rounded-lg text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors disabled:opacity-50"
             >
-              {currentStepIndex === 0 ? "Cancel" : "Back"}
+              {currentStepIndex === 0 ? tr("bulkSchedule.cancel") : tr("bulkSchedule.back")}
             </button>
 
             {step === "preview" ? (
@@ -1356,7 +1358,7 @@ export default function BulkScheduleModal({
                 className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {isSubmitting ? "Scheduling..." : "Confirm & Schedule"}
+                {isSubmitting ? tr("bulkSchedule.scheduling") : tr("bulkSchedule.confirmSchedule")}
               </button>
             ) : (
               <button
@@ -1364,7 +1366,7 @@ export default function BulkScheduleModal({
                 disabled={!canProceed()}
                 className="px-5 py-2 rounded-lg text-sm font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Next
+                {tr("bulkSchedule.next")}
               </button>
             )}
           </div>

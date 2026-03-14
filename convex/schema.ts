@@ -509,7 +509,7 @@ export default defineSchema({
     .index("by_user_created", ["userId", "createdAt"])
     .index("by_created", ["createdAt"]),
 
-  // ─── Blogs ─────────────────────────────────────────
+  // ─── Blogs / Use-Cases / Templates ─────────────────
   blogs: defineTable({
     title: v.string(),
     slug: v.string(),
@@ -521,9 +521,28 @@ export default defineSchema({
     publishedAt: v.number(),
     tags: v.array(v.string()),
     published: v.boolean(),
+    // Content type — "blog" (default), "use-case", or "template"
+    type: v.optional(v.union(v.literal("blog"), v.literal("use-case"), v.literal("template"))),
+    // SEO fields for use-cases/templates
+    metaTitle: v.optional(v.string()),
+    keywords: v.optional(v.array(v.string())),
+    // Hero section
+    heroTitle: v.optional(v.string()),
+    heroSubtitle: v.optional(v.string()),
+    // CTA section
+    ctaTitle: v.optional(v.string()),
+    ctaSubtitle: v.optional(v.string()),
+    // Structured sections (painPoints, features, examples, tips)
+    sections: v.optional(v.array(v.object({
+      sectionType: v.string(),
+      title: v.string(),
+      description: v.string(),
+      icon: v.optional(v.string()),
+    }))),
   })
     .index("by_slug", ["slug"])
-    .index("by_published", ["published", "publishedAt"]),
+    .index("by_published", ["published", "publishedAt"])
+    .index("by_type_language", ["type", "language"]),
 
   // ─── Generations ─────────────────────────────────────
   generations: defineTable({

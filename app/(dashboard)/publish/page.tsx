@@ -9,6 +9,7 @@ import ScheduledPostCard from "@/features/publishing/components/ScheduledPostCar
 import CalendarView from "@/features/publishing/components/CalendarView";
 import BulkScheduleModal from "@/features/publishing/components/BulkScheduleModal";
 import { type ScheduleStatus } from "@/features/publishing/components/helpers";
+import { useLocale } from "@/lib/i18n/context";
 import {
   Calendar,
   Grid3X3,
@@ -21,6 +22,7 @@ import {
 type ViewMode = "grid" | "calendar";
 
 export default function PublishPage() {
+  const { t } = useLocale();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const user = useQuery(api.users.currentUser);
   const workspaces = useQuery(
@@ -70,7 +72,7 @@ export default function PublishPage() {
   const cancelled = groupByStatus("cancelled");
 
   const handleCancel = async (id: Id<"scheduledPosts">) => {
-    if (!confirm("Cancel this scheduled post?")) return;
+    if (!confirm(t("publish.cancelConfirm"))) return;
     await cancelPost({ id });
   };
 
@@ -90,9 +92,9 @@ export default function PublishPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Publish</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("publish.title")}</h1>
             <p className="text-sm text-slate-500 dark:text-neutral-500 mt-1">
-              Schedule and manage your social media posts
+              {t("publish.subtitle")}
             </p>
           </div>
 
@@ -121,7 +123,7 @@ export default function PublishPage() {
                   onChange={(e) => setChannelFilter(e.target.value)}
                   className="bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg pl-8 pr-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-neutral-600 appearance-none"
                 >
-                  <option value="all">All Channels</option>
+                  <option value="all">{t("publish.allChannels")}</option>
                   {activeAccounts.map((a) => (
                     <option key={a._id} value={a._id}>
                       {a.providerAccountName}
@@ -163,7 +165,7 @@ export default function PublishPage() {
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Schedule
+                {t("publish.schedule")}
               </button>
             )}
           </div>
@@ -173,21 +175,21 @@ export default function PublishPage() {
         {!selectedWorkspaceId ? (
           <div className="text-center py-20">
             <Send className="w-10 h-10 text-slate-300 dark:text-neutral-700 mx-auto mb-3" />
-            <p className="text-slate-500 dark:text-neutral-500">Select a workspace to manage publishing</p>
+            <p className="text-slate-500 dark:text-neutral-500">{t("publish.selectWorkspace")}</p>
           </div>
         ) : viewMode === "calendar" ? (
           <CalendarView scheduledPosts={filteredPosts} accounts={activeAccounts} />
         ) : (
           <div className="space-y-8">
             <PostSection
-              title="Queued"
+              title={t("publish.queued")}
               posts={queued}
               accounts={activeAccounts}
               onCancel={handleCancel}
             />
             {publishing.length > 0 && (
               <PostSection
-                title="Publishing"
+                title={t("publish.publishing")}
                 posts={publishing}
                 accounts={activeAccounts}
                 onCancel={handleCancel}
@@ -195,7 +197,7 @@ export default function PublishPage() {
             )}
             {published.length > 0 && (
               <PostSection
-                title="Published"
+                title={t("publish.published")}
                 posts={published}
                 accounts={activeAccounts}
                 onCancel={handleCancel}
@@ -203,7 +205,7 @@ export default function PublishPage() {
             )}
             {failed.length > 0 && (
               <PostSection
-                title="Failed"
+                title={t("publish.failed")}
                 posts={failed}
                 accounts={activeAccounts}
                 onCancel={handleCancel}
@@ -211,7 +213,7 @@ export default function PublishPage() {
             )}
             {cancelled.length > 0 && (
               <PostSection
-                title="Cancelled"
+                title={t("publish.cancelled")}
                 posts={cancelled}
                 accounts={activeAccounts}
                 onCancel={handleCancel}
@@ -221,9 +223,9 @@ export default function PublishPage() {
             {allPosts.length === 0 && (
               <div className="text-center py-20">
                 <Calendar className="w-10 h-10 text-slate-300 dark:text-neutral-700 mx-auto mb-3" />
-                <p className="text-slate-500 dark:text-neutral-500">No scheduled posts yet</p>
+                <p className="text-slate-500 dark:text-neutral-500">{t("publish.noScheduled")}</p>
                 <p className="text-xs text-slate-400 dark:text-neutral-600 mt-1">
-                  Click &quot;Schedule&quot; to set up your publishing queue
+                  {t("publish.scheduleHint")}
                 </p>
               </div>
             )}

@@ -26,6 +26,7 @@ import type * as publishing from "../publishing.js";
 import type * as reviewAccess from "../reviewAccess.js";
 import type * as schedulePatterns from "../schedulePatterns.js";
 import type * as seedAll from "../seedAll.js";
+import type * as seedTemplates from "../seedTemplates.js";
 import type * as socialAccounts from "../socialAccounts.js";
 import type * as socialAuth from "../socialAuth.js";
 import type * as subscriptions from "../subscriptions.js";
@@ -63,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   reviewAccess: typeof reviewAccess;
   schedulePatterns: typeof schedulePatterns;
   seedAll: typeof seedAll;
+  seedTemplates: typeof seedTemplates;
   socialAccounts: typeof socialAccounts;
   socialAuth: typeof socialAuth;
   subscriptions: typeof subscriptions;

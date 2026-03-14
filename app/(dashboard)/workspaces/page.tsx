@@ -9,6 +9,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import WorkspaceCard from "@/features/workspace/components/WorkspaceCard";
 import WorkspaceForm, { type WorkspaceFormData } from "@/features/workspace/components/WorkspaceForm";
 import { useLocale } from "@/lib/i18n/context";
+import { localizeHref } from "@/lib/i18n/utils";
 import FloatingNav from "@/app/components/FloatingNav";
 
 export default function WorkspacesPage() {
@@ -24,7 +25,7 @@ export default function WorkspacesPage() {
   const updateWorkspace = useMutation(api.workspaces.update);
   const updateWebsiteInfo = useMutation(api.workspaces.updateWebsiteInfo);
   const logAndIncrement = useMutation(api.aiUsage.logAndIncrement);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<Id<"workspaces"> | null>(null);
@@ -41,7 +42,7 @@ export default function WorkspacesPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated && process.env.NODE_ENV !== "development") {
-      router.push("/login");
+      router.push(localizeHref("/login", locale));
     }
   }, [authLoading, isAuthenticated, router]);
 

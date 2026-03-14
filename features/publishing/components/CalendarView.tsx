@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import { ChevronLeft, ChevronRight, X, Instagram, Facebook, Send, Clock, Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import { formatTime, getStatusColor, getCalendarColor, getDaysInMonth, getFirstDayOfMonth, type ScheduleStatus } from "./helpers";
+import { useLocale } from "@/lib/i18n/context";
 
 interface ScheduledPost {
   _id: Id<"scheduledPosts">;
@@ -51,6 +52,7 @@ export default function CalendarView({
   scheduledPosts: ScheduledPost[];
   accounts: SocialAccount[];
 }) {
+  const { t, locale } = useLocale();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
@@ -75,8 +77,8 @@ export default function CalendarView({
   })();
 
   const selectedPosts = selectedDay ? postsByDay[selectedDay] || [] : [];
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const monthName = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const dayNames = [t("calendar.sun"), t("calendar.mon"), t("calendar.tue"), t("calendar.wed"), t("calendar.thu"), t("calendar.fri"), t("calendar.sat")];
+  const monthName = currentDate.toLocaleDateString(locale === "ar" ? "ar-SA" : locale, { month: "long", year: "numeric" });
 
   return (
     <div className="flex gap-6 flex-col lg:flex-row">
@@ -88,7 +90,7 @@ export default function CalendarView({
               onClick={() => setCurrentDate(new Date())}
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-300 bg-neutral-800 hover:bg-neutral-700 transition-colors"
             >
-              Today
+              {t("calendar.today")}
             </button>
             <button
               onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
@@ -160,7 +162,7 @@ export default function CalendarView({
         <div className="lg:w-80 bg-neutral-900 border border-neutral-800 rounded-xl p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-white">
-              {new Date(year, month, selectedDay).toLocaleDateString("en-US", {
+              {new Date(year, month, selectedDay).toLocaleDateString(locale === "ar" ? "ar-SA" : locale, {
                 weekday: "long", month: "short", day: "numeric",
               })}
             </h3>
@@ -170,7 +172,7 @@ export default function CalendarView({
           </div>
 
           {selectedPosts.length === 0 ? (
-            <p className="text-sm text-neutral-500 text-center py-8">No posts scheduled</p>
+            <p className="text-sm text-neutral-500 text-center py-8">{t("calendar.noPostsScheduled")}</p>
           ) : (
             <div className="space-y-3">
               {selectedPosts.map((post) => {
@@ -187,7 +189,7 @@ export default function CalendarView({
                         <span className="text-xs text-neutral-400">{formatTime(post.scheduledFor)}</span>
                         <StatusBadge status={post.status} />
                       </div>
-                      <p className="text-sm text-neutral-300 line-clamp-2">{post.caption || "No caption"}</p>
+                      <p className="text-sm text-neutral-300 line-clamp-2">{post.caption || t("postCard.noCaption")}</p>
                       {acct && (
                         <div className="flex items-center gap-1.5 text-xs text-neutral-500">
                           {getProviderIcon(acct.provider)}

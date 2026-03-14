@@ -17,6 +17,7 @@ import {
   Check,
 } from "lucide-react";
 import { formatDateTime, getStatusColor, type ScheduleStatus } from "./helpers";
+import { useLocale } from "@/lib/i18n/context";
 
 interface ScheduledPost {
   _id: Id<"scheduledPosts">;
@@ -91,6 +92,7 @@ export default function ScheduledPostCard({
   onCancel: (id: Id<"scheduledPosts">) => void;
   onUpdate?: (id: Id<"scheduledPosts">, caption: string) => void;
 }) {
+  const { t } = useLocale();
   const account = accounts.find((a) => a._id === post.socialAccountId);
   const [editing, setEditing] = useState(false);
   const [editCaption, setEditCaption] = useState(post.caption);
@@ -134,20 +136,20 @@ export default function ScheduledPostCard({
                 className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors"
               >
                 <Check className="w-3 h-3" />
-                Save
+                {t("postCard.save")}
               </button>
               <button
                 onClick={() => { setEditing(false); setEditCaption(post.caption); }}
                 className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-neutral-400 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 transition-colors"
               >
-                Cancel
+                {t("postCard.cancel")}
               </button>
             </div>
           </div>
         ) : (
           <div className="group relative">
             <p className="text-sm text-slate-700 dark:text-neutral-300 line-clamp-2 leading-relaxed">
-              {post.caption || "No caption"}
+              {post.caption || t("postCard.noCaption")}
             </p>
             {post.status === "scheduled" && onUpdate && (
               <button
@@ -184,7 +186,7 @@ export default function ScheduledPostCard({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors"
             >
               <Trash2 className="w-3 h-3" />
-              Cancel
+              {t("postCard.cancel")}
             </button>
           </div>
         )}

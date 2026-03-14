@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Sparkles, Globe, X, Loader2, RefreshCw, Image as ImageIcon, LayoutGrid } from "lucide-react";
+import { useLocale } from "@/lib/i18n/context";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type WorkspaceRecord = any;
@@ -47,12 +48,14 @@ export default function GeneratePanel({
   websiteScreenshot, setWebsiteScreenshot,
   websiteScreenshotRef, onWebsiteScreenshot,
 }: GeneratePanelProps) {
+  const { t } = useLocale();
+
   return (
     <div className="space-y-4">
       {/* Workspace context summary */}
       {(workspace || branding) && (
         <div className="rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 p-3 space-y-1.5">
-          <label className="text-[10px] font-black text-gray-400 dark:text-neutral-500 uppercase tracking-widest block">Context</label>
+          <label className="text-[10px] font-black text-gray-400 dark:text-neutral-500 uppercase tracking-widest block">{t("generate.context")}</label>
           <div className="flex items-center gap-2">
             {assets?.find((a: AssetRecord) => a.type === 'logo')?.url && (
               <img src={assets.find((a: AssetRecord) => a.type === 'logo')!.url!} alt="" className="w-6 h-6 rounded object-contain" />
@@ -67,10 +70,10 @@ export default function GeneratePanel({
               <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400 bg-white dark:bg-neutral-800 px-2 py-0.5 rounded border border-gray-200 dark:border-neutral-700">{workspace.industry}</span>
             )}
             {workspace?.defaultLanguage && (
-              <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400 bg-white dark:bg-neutral-800 px-2 py-0.5 rounded border border-gray-200 dark:border-neutral-700">{workspace.defaultLanguage === 'ar' ? 'Arabic' : 'English'}</span>
+              <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400 bg-white dark:bg-neutral-800 px-2 py-0.5 rounded border border-gray-200 dark:border-neutral-700">{workspace.defaultLanguage === 'ar' ? t("generate.arabic") : t("generate.english")}</span>
             )}
             {assets && assets.filter((a: AssetRecord) => a.analyzingStatus === 'done').length > 0 && (
-              <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400 bg-white dark:bg-neutral-800 px-2 py-0.5 rounded border border-gray-200">{assets.filter((a: AssetRecord) => a.analyzingStatus === 'done').length} assets</span>
+              <span className="text-[10px] font-semibold text-gray-500 dark:text-neutral-400 bg-white dark:bg-neutral-800 px-2 py-0.5 rounded border border-gray-200">{t("generate.assets", { count: String(assets.filter((a: AssetRecord) => a.analyzingStatus === 'done').length) })}</span>
             )}
           </div>
         </div>
@@ -98,16 +101,16 @@ export default function GeneratePanel({
         </div>
       )}
 
-      <p className="text-sm text-gray-500 dark:text-neutral-400">Describe the post you want and AI will generate it with your brand context.</p>
+      <p className="text-sm text-gray-500 dark:text-neutral-400">{t("generate.describe")}</p>
       <textarea
         value={generatePrompt}
         onChange={(e) => setGeneratePrompt(e.target.value)}
-        placeholder="e.g. A post about our new delivery tracking feature with a phone mockup showing live order status"
+        placeholder={t("generate.placeholder")}
         className="w-full h-28 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm text-gray-900 dark:text-white resize-none focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800"
       />
       <div className="flex gap-3">
         <div className="flex-1">
-          <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5 block">Posts</label>
+          <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5 block">{t("generate.posts")}</label>
           <div className="flex gap-1">
             {[1, 2, 3, 4].map((n) => (
               <button
@@ -125,15 +128,15 @@ export default function GeneratePanel({
           </div>
         </div>
         <div className="flex-1">
-          <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5 block">Style</label>
+          <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5 block">{t("generate.style")}</label>
           <div className="flex gap-1">
             {([
-              { v: 5 as const, label: 'Classic' },
-              { v: 1 as const, label: 'Guided' },
-              { v: 2 as const, label: 'Creative' },
-              { v: 3 as const, label: 'Free' },
-              { v: 4 as const, label: 'Wild' },
-            ]).map(({ v, label }) => (
+              { v: 5 as const, labelKey: 'generate.classic' as const },
+              { v: 1 as const, labelKey: 'generate.guided' as const },
+              { v: 2 as const, labelKey: 'generate.creative' as const },
+              { v: 3 as const, labelKey: 'generate.free' as const },
+              { v: 4 as const, labelKey: 'generate.wild' as const },
+            ]).map(({ v, labelKey }) => (
               <button
                 key={v}
                 onClick={() => setGenerateVersion(v)}
@@ -143,7 +146,7 @@ export default function GeneratePanel({
                     : 'bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700'
                 }`}
               >
-                {label}
+                {t(labelKey)}
               </button>
             ))}
           </div>
@@ -156,19 +159,19 @@ export default function GeneratePanel({
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-[#1B4332] text-white hover:bg-[#2D6A4F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {generating ? (
-            <><Loader2 size={16} className="animate-spin" /> Generating...</>
+            <><Loader2 size={16} className="animate-spin" /> {t("generate.generating")}</>
           ) : (
-            <><Sparkles size={16} /> Generate {generateCount}</>
+            <><Sparkles size={16} /> {t("generate.generate")} {generateCount}</>
           )}
         </button>
         <button
           onClick={onGenerateAllLayouts}
           disabled={generating || !generatePrompt.trim()}
           className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-bold bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Generate one post per layout (all 24 layouts)"
+          title={t("generate.allLayoutsTitle")}
         >
           <LayoutGrid size={16} />
-          <span className="text-xs">All</span>
+          <span className="text-xs">{t("generate.allLayouts")}</span>
         </button>
       </div>
       {generateError && (
@@ -177,7 +180,7 @@ export default function GeneratePanel({
       {generatedPosts.length > 0 && (
         <div>
           <label className="text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
-            Generated ({generatedPosts.length})
+            {t("generate.generated", { count: String(generatedPosts.length) })}
           </label>
           <div className="space-y-1.5">
             {generatedPosts.map((gp) => (
