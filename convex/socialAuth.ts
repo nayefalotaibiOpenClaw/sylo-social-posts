@@ -109,8 +109,8 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
   const redirectUri = process.env.META_REDIRECT_URI;
 
   // Use platform-specific credentials with fallback to META_* env vars
-  const igClientId = process.env.META_APP_ID;
-  const igClientSecret = process.env.META_APP_SECRET;
+  const igClientId = process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID;
+  const igClientSecret = process.env.INSTAGRAM_APP_SECRET || process.env.META_APP_SECRET;
   const fbClientId = process.env.FACEBOOK_APP_ID || process.env.META_APP_ID;
   const fbClientSecret = process.env.FACEBOOK_APP_SECRET || process.env.META_APP_SECRET;
 
@@ -135,9 +135,12 @@ export const handleMetaCallback = httpAction(async (ctx, request) => {
           code,
         }),
       });
-      const tokenData = await tokenRes.json();
+      const tokenText = await tokenRes.text();
+      console.error("[IG-DEBUG-V2] Token response status:", tokenRes.status, "body:", tokenText);
+      let tokenData;
+      try { tokenData = JSON.parse(tokenText); } catch { tokenData = {}; }
       if (!tokenRes.ok) {
-        const errDetail = tokenData?.error_message || tokenData?.error?.message || JSON.stringify(tokenData);
+        const errDetail = tokenData?.error_message || tokenData?.error?.message || tokenText;
         throw new Error(`Instagram token exchange failed (${tokenRes.status}): ${errDetail}`);
       }
       if (tokenData.error_type || tokenData.error_message) {

@@ -6,7 +6,6 @@ const TIKTOK_USER_URL = "https://open.tiktokapis.com/v2/user/info/";
 
 const TIKTOK_SCOPES = [
   "user.info.basic",
-  "user.info.profile",
   "video.publish",
   "video.upload",
 ];
@@ -142,22 +141,27 @@ export const handleTikTokCallback = httpAction(async (ctx, request) => {
     const openId = tokenData.open_id;
 
     // ─── Step 2: Fetch user profile ─────────────────────────────────
-    const userRes = await fetch(
-      `${TIKTOK_USER_URL}?fields=open_id,display_name,avatar_url,username`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
+    let displayName = "TikTok User";
+    let avatarUrl: string | undefined;
+
+    try {
+      const userRes = await fetch(
+        `${TIKTOK_USER_URL}?fields=open_id,display_name,avatar_url`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      const userData = await userRes.json();
+      console.log("TikTok user info response:", JSON.stringify(userData));
+
+      if (userRes.ok && userData.data?.user) {
+        displayName = userData.data.user.display_name || displayName;
+        avatarUrl = userData.data.user.avatar_url;
       }
-    );
-
-    const userData = await userRes.json();
-    if (!userRes.ok || userData.error?.code) {
-      throw new Error(userData.error?.message || "Failed to fetch user profile");
+    } catch (e) {
+      console.error("TikTok user info fetch failed, using defaults:", e);
     }
-
-    const user = userData.data?.user;
-    const displayName = user?.display_name || "TikTok User";
-    const username = user?.username;
-    const avatarUrl = user?.avatar_url;
 
     // ─── Step 3: Store account ──────────────────────────────────────
     await ctx.runMutation(internal.socialAccounts.connect, {
@@ -166,7 +170,7 @@ export const handleTikTokCallback = httpAction(async (ctx, request) => {
       provider: "tiktok",
       providerUserId: openId || user?.open_id,
       providerAccountId: openId || user?.open_id,
-      providerAccountName: username ? `@${username}` : displayName,
+      providerAccountName: displayName,
       providerAccountImage: avatarUrl,
       accessToken,
       refreshToken,
@@ -178,7 +182,7 @@ export const handleTikTokCallback = httpAction(async (ctx, request) => {
       canReadInsights: false,
     });
 
-    const accountLabel = username ? `@${username}` : displayName;
+    const accountLabel = displayName;
     const successMsg = `Connected: TikTok ${accountLabel}`;
     return redirect(
       designUrl(state.workspaceId, `social_success=${encodeURIComponent(successMsg)}`)

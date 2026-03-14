@@ -245,6 +245,30 @@ function EnglishContent() {
             .
           </Bullet>
           <Bullet>
+            <strong className="text-slate-800 dark:text-neutral-200">
+              TikTok:
+            </strong>{" "}
+            When you connect your TikTok account, we access certain data
+            through TikTok&apos;s APIs to enable content publishing. This
+            includes your TikTok display name, username, and profile picture.
+            We use this data solely to publish content you create or schedule
+            through oDesigns and to display your connected account. Access
+            tokens are stored securely and encrypted. You can disconnect your
+            TikTok account at any time from the Channels page, which revokes
+            our access. We do not sell, share, or use your TikTok data for
+            advertising or any purpose other than providing the oDesigns
+            publishing service. TikTok&apos;s use of your data is governed by{" "}
+            <a
+              href="https://www.tiktok.com/legal/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
+            >
+              TikTok&apos;s Privacy Policy
+            </a>
+            .
+          </Bullet>
+          <Bullet>
             <strong className="text-slate-800 dark:text-neutral-200">Payment Processing:</strong>{" "}
             If you subscribe to a paid plan, your payment information is
             handled by our third-party payment processor. We do not
@@ -519,6 +543,30 @@ function ArabicContent() {
               className="text-slate-900 underline underline-offset-2 hover:text-slate-600"
             >
               سياسة خصوصية Meta
+            </a>
+            .
+          </Bullet>
+          <Bullet>
+            <strong className="text-slate-800 dark:text-neutral-200">
+              تيك توك:
+            </strong>{" "}
+            عند ربط حسابك على تيك توك، نصل إلى بيانات معينة من خلال
+            واجهات برمجة تطبيقات تيك توك لتمكين نشر المحتوى. يشمل ذلك
+            اسم العرض واسم المستخدم وصورة الملف الشخصي على تيك توك.
+            نستخدم هذه البيانات فقط لنشر المحتوى الذي تنشئه أو تجدوله
+            عبر oDesigns ولعرض حسابك المتصل. يتم تخزين رموز الوصول بشكل
+            آمن ومشفر. يمكنك إلغاء ربط حسابك على تيك توك في أي وقت من
+            صفحة القنوات، مما يلغي وصولنا. نحن لا نبيع أو نشارك أو
+            نستخدم بيانات تيك توك الخاصة بك للإعلانات أو لأي غرض آخر غير
+            تقديم خدمة النشر في oDesigns. يخضع استخدام تيك توك لبياناتك
+            لـ{" "}
+            <a
+              href="https://www.tiktok.com/legal/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-900 dark:text-white underline underline-offset-2 hover:text-slate-600 dark:hover:text-neutral-300"
+            >
+              سياسة خصوصية تيك توك
             </a>
             .
           </Bullet>

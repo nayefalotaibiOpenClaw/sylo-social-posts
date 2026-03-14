@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const clientId = process.env.META_APP_ID;
+  const clientId = process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID;
   const redirectUri = process.env.META_REDIRECT_URI;
-  const appSecret = process.env.META_APP_SECRET;
+  const appSecret = process.env.INSTAGRAM_APP_SECRET || process.env.META_APP_SECRET;
 
   if (!clientId || !redirectUri || !appSecret) {
     return NextResponse.json(

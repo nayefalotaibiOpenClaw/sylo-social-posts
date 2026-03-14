@@ -9,7 +9,6 @@ const TIKTOK_USER_URL = "https://open.tiktokapis.com/v2/user/info/";
 // ─── Scopes ─────────────────────────────────────────────────────────
 export const TIKTOK_SCOPES = [
   "user.info.basic",
-  "user.info.profile",
   "video.publish",
   "video.upload",
 ];
@@ -138,7 +137,7 @@ export async function getTikTokUser(accessToken: string): Promise<{
   username?: string;
 }> {
   const res = await fetch(
-    `${TIKTOK_USER_URL}?fields=open_id,display_name,avatar_url,username`,
+    `${TIKTOK_USER_URL}?fields=open_id,display_name,avatar_url`,
     {
       headers: { Authorization: `Bearer ${accessToken}` },
     }
@@ -167,16 +166,17 @@ export async function getTikTokUser(accessToken: string): Promise<{
 
 export async function publishPhotoToTikTok(params: {
   accessToken: string;
-  imageUrls: string[];
+  imageData: Uint8Array;
+  contentType: string;
   caption: string;
 }): Promise<{ publishId: string }> {
-  const { accessToken, imageUrls, caption } = params;
+  const { accessToken, imageData, contentType, caption } = params;
 
-  if (imageUrls.length < 1 || imageUrls.length > 35) {
-    throw new Error("TikTok photo posts require 1-35 images");
+  if (imageData.length > 20 * 1024 * 1024) {
+    throw new Error("Image exceeds 20MB limit for TikTok");
   }
 
-  // Step 1: Initialize photo publish
+  // Step 1: Initialize photo upload
   const initRes = await fetch(
     "https://open.tiktokapis.com/v2/post/publish/content/init/",
     {
@@ -191,8 +191,10 @@ export async function publishPhotoToTikTok(params: {
           privacy_level: "SELF_ONLY",
         },
         source_info: {
-          source: "PULL_FROM_URL",
-          photo_images: imageUrls,
+          source: "FILE_UPLOAD",
+          photo_upload_params: {
+            photo_count: 1,
+          },
         },
         post_mode: "DIRECT_POST",
         media_type: "PHOTO",
@@ -206,6 +208,23 @@ export async function publishPhotoToTikTok(params: {
     throw new Error(
       `TikTok publish error: ${initData.error?.message || initRes.statusText}`
     );
+  }
+
+  const uploadUrl = initData.data?.photo_upload_urls?.[0];
+  if (!uploadUrl) throw new Error("TikTok did not return an upload URL");
+
+  // Step 2: Upload image file
+  const uploadRes = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType,
+      "Content-Length": String(imageData.length),
+    },
+    body: imageData,
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error(`TikTok image upload failed: ${await uploadRes.text()}`);
   }
 
   return {
