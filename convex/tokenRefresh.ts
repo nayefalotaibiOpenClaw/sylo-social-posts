@@ -75,6 +75,22 @@ export const refreshSingle = internalAction({
         refreshToken: data.refresh_token,
         tokenExpiresAt: Date.now() + (data.expires_in || 7200) * 1000,
       });
+    } else if (account.provider === "threads") {
+      const clientSecret = process.env.THREADS_APP_SECRET || process.env.META_APP_SECRET;
+      if (!clientSecret) throw new Error("Threads credentials not configured");
+
+      const res = await fetch(
+        `https://graph.threads.net/v1.0/refresh_access_token?grant_type=th_exchange_token&access_token=${account.accessToken}`
+      );
+      if (!res.ok) throw new Error(`Threads token refresh failed: HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+
+      await ctx.runMutation(internal.socialAccounts.updateToken, {
+        id: args.accountId,
+        accessToken: data.access_token,
+        tokenExpiresAt: Date.now() + (data.expires_in || 5184000) * 1000,
+      });
     }
   },
 });
@@ -203,6 +219,34 @@ export const refreshExpiring = internalAction({
           });
 
           console.log(`Refreshed Twitter token for account ${account._id}`);
+        } else if (account.provider === "threads") {
+          const clientSecret = process.env.THREADS_APP_SECRET || process.env.META_APP_SECRET;
+          if (!clientSecret) {
+            console.error("Threads credentials not configured for token refresh");
+            continue;
+          }
+
+          const res = await fetch(
+            `https://graph.threads.net/v1.0/refresh_access_token?grant_type=th_exchange_token&access_token=${account.accessToken}`
+          );
+          const data = await res.json();
+
+          if (data.error) {
+            console.error(`Threads token refresh failed for ${account._id}:`, data.error.message);
+            await ctx.runMutation(internal.socialAccounts.markExpired, {
+              id: account._id,
+            });
+            continue;
+          }
+
+          const expiresIn = data.expires_in || 5184000;
+          await ctx.runMutation(internal.socialAccounts.updateToken, {
+            id: account._id,
+            accessToken: data.access_token,
+            tokenExpiresAt: Date.now() + expiresIn * 1000,
+          });
+
+          console.log(`Refreshed Threads token for account ${account._id}`);
         }
       } catch (error) {
         console.error(`Token refresh error for ${account._id}:`, error);

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   const clientId = process.env.THREADS_APP_ID || process.env.META_APP_ID;
   const redirectUri = process.env.THREADS_REDIRECT_URI;
-  const hmacSecret = process.env.META_APP_SECRET;
+  const hmacSecret = process.env.THREADS_APP_SECRET || process.env.META_APP_SECRET;
 
   if (!clientId || !redirectUri || !hmacSecret) {
     return NextResponse.json(
