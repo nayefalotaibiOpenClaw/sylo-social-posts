@@ -59,7 +59,7 @@ interface AgentRequest {
 
 // ─── System Prompt ────────────────────────────────────────────────
 
-function buildAgentSystemPrompt(ctx: AgentRequest["context"], posts: PostSummary[]): string {
+function buildAgentSystemPrompt(ctx: AgentRequest["context"], posts: PostSummary[], generateVersion: 4 | 5 | 7): string {
   // Build compact post digest (all posts, lightweight)
   let postDigest = "";
   if (posts.length > 0) {
@@ -103,11 +103,12 @@ Your available tools (use ONLY these exact names):
 - Website: ${ctx.website || "Not set"}
 - Total posts: ${posts.length}
 - Assets available: ${ctx.assets?.length || 0}
+- Generation mode: ${generateVersion === 7 ? "App Store Preview (guided templates with device mockups)" : generateVersion === 5 ? "Classic (social media posts)" : "Wild (social media posts, full creative freedom)"}
 ${postDigest}
 
 ## Guidelines
 1. Be concise and helpful. Don't over-explain.
-2. When the user asks to generate posts, use the generate_posts tool with a well-crafted prompt. Avoid duplicating text/headlines from existing posts.
+2. When the user asks to generate posts, use the generate_posts tool with a well-crafted prompt. Avoid duplicating text/headlines from existing posts. Do NOT set the 'style' parameter — the user's selected generation mode will be used automatically.
 3. When the user refers to a specific post (e.g., "post 1", "the first post", "the third one"), use the correct 1-based index.
 4. Before editing a post, read it first to understand its current state unless you already know.
 5. When updating brand colors, generate a complete harmonious palette — don't change just one color in isolation.
@@ -172,6 +173,8 @@ export async function POST(req: NextRequest) {
     const body: AgentRequest = await req.json();
     const { message, history = [], context, posts = [], postCodes: postCodesArr = [], referenceImages, contextPosts, contextAssets, model: requestedModel, generateVersion, targetRatio } = body;
 
+    console.log("[Agent] Request:", { message, generateVersion, model: requestedModel, targetRatio, postsCount: posts.length, historyLength: history.length });
+
     // Build index → code map for quick lookup
     const postCodesMap = new Map<number, string>();
     for (const pc of postCodesArr) {
@@ -205,7 +208,7 @@ export async function POST(req: NextRequest) {
     const contents: Content[] = [];
 
     // Add system prompt as first user turn
-    const systemPrompt = buildAgentSystemPrompt(context, posts);
+    const systemPrompt = buildAgentSystemPrompt(context, posts, generateVersion ?? 4);
     contents.push({
       role: "user",
       parts: [{ text: systemPrompt }],
@@ -410,6 +413,8 @@ async function handleGeneratePosts(
   }
   const count = Math.min(Math.max(1, Number(args.count) || 2), 8);
   const version = args.style ? styleToVersion(args.style as string) : ctx.generateVersion;
+
+  console.log("[Agent] generate_posts:", { prompt, count, version, argsStyle: args.style, ctxVersion: ctx.generateVersion });
 
   // Call the existing generate API internally
   const { generate: generateWild } = await import("@/app/api/generate/engines/wild");

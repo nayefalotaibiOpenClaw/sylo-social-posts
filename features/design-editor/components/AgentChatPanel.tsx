@@ -415,7 +415,7 @@ export default function AgentChatPanel({
 
   return (
     <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] md:w-full max-w-3xl px-0 md:px-4 z-[110]">
-      <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-neutral-700/80 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
+      <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-neutral-700/80 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-visible">
         {/* Chat history — 3 states: full, last, collapsed */}
         {messages.length > 0 && chatView === 'collapsed' && (
           <div className="flex items-center justify-between px-4 py-1.5 border-b border-slate-100 dark:border-neutral-800">
