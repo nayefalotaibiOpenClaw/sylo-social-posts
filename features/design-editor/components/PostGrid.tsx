@@ -769,9 +769,7 @@ export default function PostGrid({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm('Delete this post?')) {
-                          onRemovePost({ id: post._id });
-                        }
+                        onRemovePost({ id: post._id });
                       }}
                       className="p-2 rounded-xl hover:bg-red-50 text-red-500 transition-colors"
                       title="Delete post"

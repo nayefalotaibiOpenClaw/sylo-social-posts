@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Download, Loader2, ChevronUp, ChevronDown, Sparkles } from "lucide-react";
+import { Download, Loader2, ChevronUp, ChevronDown, Sparkles, Trash2 } from "lucide-react";
 import { useLocale } from "@/lib/i18n/context";
 
 const ALL_RATIOS = ["1:1", "3:4", "4:3", "9:16", "16:9"] as const;
@@ -14,9 +14,10 @@ interface DownloadBarProps {
   onClear: () => void;
   onDownload: (ratios: string[]) => void;
   onAddToContext?: () => void;
+  onDeleteSelected?: () => void;
 }
 
-export default function DownloadBar({ selectedCount, downloading, downloadProgress, currentRatio, onClear, onDownload, onAddToContext }: DownloadBarProps) {
+export default function DownloadBar({ selectedCount, downloading, downloadProgress, currentRatio, onClear, onDownload, onAddToContext, onDeleteSelected }: DownloadBarProps) {
   const { t } = useLocale();
   const [expanded, setExpanded] = useState(false);
   const [selectedRatios, setSelectedRatios] = useState<Set<string>>(new Set([currentRatio]));
@@ -39,7 +40,7 @@ export default function DownloadBar({ selectedCount, downloading, downloadProgre
   };
 
   return (
-    <div className="fixed bottom-28 md:bottom-20 left-1/2 -translate-x-1/2 z-[70]">
+    <div className="fixed bottom-36 md:bottom-24 left-1/2 -translate-x-1/2 z-[70]">
       <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border border-gray-200/60 dark:border-neutral-700/60 px-2 py-1.5 flex flex-col gap-1.5">
         {expanded && (
           <div className="flex flex-col gap-1.5 pb-1.5 border-b border-gray-200/60 dark:border-neutral-700/60 px-1.5">
@@ -79,6 +80,15 @@ export default function DownloadBar({ selectedCount, downloading, downloadProgre
             >
               <Sparkles size={12} />
               {t("download.useAsContext")}
+            </button>
+          )}
+          {onDeleteSelected && (
+            <button
+              onClick={onDeleteSelected}
+              className="px-3 py-1.5 rounded-xl text-[12px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center gap-1"
+            >
+              <Trash2 size={12} />
+              {t("download.delete")}
             </button>
           )}
           <button

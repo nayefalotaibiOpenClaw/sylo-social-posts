@@ -70,6 +70,7 @@ export default function DesignPage() {
   const updatePostCodeForRatio = useMutation(api.posts.updateCodeForRatio);
   const reorderPosts = useMutation(api.posts.reorder);
   const removePost = useMutation(api.posts.remove);
+  const removePostBatch = useMutation(api.posts.removeBatch);
   const createPost = useMutation(api.posts.create);
   const createPostBatch = useMutation(api.posts.createBatch);
   const createCollection = useMutation(api.collections.create);
@@ -1338,6 +1339,13 @@ export default function DesignPage() {
     );
   }, []);
 
+  const handleDeleteSelected = useCallback(async () => {
+    if (selectedPosts.length === 0) return;
+    const ids = selectedPosts.map(id => id as Id<"posts">);
+    await removePostBatch({ ids });
+    setSelectedPosts([]);
+  }, [selectedPosts, removePostBatch]);
+
   const handleAddToContext = useCallback(() => {
     if (selectedPosts.length === 0) return;
     const newContextPosts = selectedPosts
@@ -2256,6 +2264,7 @@ export default function DesignPage() {
           onClear={() => setSelectedPosts([])}
           onDownload={handleDownloadSelected}
           onAddToContext={handleAddToContext}
+          onDeleteSelected={handleDeleteSelected}
         />
       )}
 

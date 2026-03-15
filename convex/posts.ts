@@ -320,3 +320,16 @@ export const remove = mutation({
     await ctx.db.delete(args.id);
   },
 });
+
+export const removeBatch = mutation({
+  args: { ids: v.array(v.id("posts")) },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    for (const id of args.ids) {
+      const post = await ctx.db.get(id);
+      if (!post || post.userId !== userId) throw new Error("Not authorized");
+      await ctx.db.delete(id);
+    }
+  },
+});
