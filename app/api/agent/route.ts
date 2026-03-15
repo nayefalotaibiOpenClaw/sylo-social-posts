@@ -53,6 +53,7 @@ interface AgentRequest {
   contextAssets?: { url: string; type: string; label?: string; description?: string; aiAnalysis?: string }[];
   // Current generation settings
   model?: string;
+  generateVersion?: 4 | 5 | 7;
   targetRatio?: string;
 }
 
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body: AgentRequest = await req.json();
-    const { message, history = [], context, posts = [], postCodes: postCodesArr = [], referenceImages, contextPosts, contextAssets, model: requestedModel, targetRatio } = body;
+    const { message, history = [], context, posts = [], postCodes: postCodesArr = [], referenceImages, contextPosts, contextAssets, model: requestedModel, generateVersion, targetRatio } = body;
 
     // Build index → code map for quick lookup
     const postCodesMap = new Map<number, string>();
@@ -305,7 +306,7 @@ export async function POST(req: NextRequest) {
           const toolResult = await executeToolCall(
             name,
             args as Record<string, unknown>,
-            { posts, postCodes: postCodesMap, totalPosts: posts.length, context, modelId, targetRatio, referenceImages, contextPosts, contextAssets }
+            { posts, postCodes: postCodesMap, totalPosts: posts.length, context, modelId, generateVersion: generateVersion ?? 4, targetRatio, referenceImages, contextPosts, contextAssets }
           );
 
           toolCallResults.push({
@@ -357,6 +358,7 @@ interface ToolContext {
   totalPosts: number;
   context: AgentRequest["context"];
   modelId: string;
+  generateVersion: 4 | 5 | 7;
   targetRatio?: string;
   referenceImages?: { base64: string; mimeType: string }[];
   contextPosts?: string[];
@@ -407,7 +409,7 @@ async function handleGeneratePosts(
     return { summary: "No prompt provided for generation.", error: true };
   }
   const count = Math.min(Math.max(1, Number(args.count) || 2), 8);
-  const version = styleToVersion(args.style as string | undefined);
+  const version = args.style ? styleToVersion(args.style as string) : ctx.generateVersion;
 
   // Call the existing generate API internally
   const { generate: generateWild } = await import("@/app/api/generate/engines/wild");

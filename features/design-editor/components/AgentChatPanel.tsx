@@ -303,6 +303,7 @@ export default function AgentChatPanel({
           posts: postSummaries,
           postCodes,
           model: generateModel,
+          generateVersion,
           targetRatio: aspectRatio,
           referenceImages: chatImages.length > 0 ? chatImages.map(img => ({ base64: img.base64, mimeType: img.mimeType })) : undefined,
           contextPosts: contextPosts.length > 0 ? contextPosts.map(p => p.code) : undefined,
