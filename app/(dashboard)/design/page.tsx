@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, Columns3, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles, EyeOff, Eye, X, Zap, Clock, ChevronRight, Check } from "lucide-react";
+import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, Columns3, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles, EyeOff, Eye, X, Zap, Clock, ChevronRight, Check, Bot } from "lucide-react";
 import MobileNavMenu from "@/features/design-editor/components/MobileNavMenu";
 import { downloadPostsAsZip, downloadPostsMultiRatio } from "@/lib/export/download";
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext, HiddenComponentsContext, SetHiddenComponentsContext } from "@/contexts/EditContext";
@@ -24,6 +24,7 @@ import PostGrid from "@/features/design-editor/components/PostGrid";
 import DownloadBar from "@/features/design-editor/components/DownloadBar";
 import PublishChannelsPage from "@/features/design-editor/components/PublishChannelsPage";
 import BrandPanel from "@/features/design-editor/components/BrandPanel";
+import AgentChatPanel from "@/features/design-editor/components/AgentChatPanel";
 
 export default function DesignPage() {
   const { t } = useLocale();
@@ -163,6 +164,7 @@ export default function DesignPage() {
   const [contextPosts, setContextPosts] = useState<{ id: string; code: string }[]>([]);
   const [contextAssets, setContextAssets] = useState<{ id: string; url: string; type: string; label?: string; description?: string; aiAnalysis?: string }[]>([]);
   const [showAssetPicker, setShowAssetPicker] = useState(false);
+  const [chatMode, setChatMode] = useState<'quick' | 'agent'>('quick');
 
   // Local order state for drag-and-drop (syncs with Convex)
   const [localOrder, setLocalOrder] = useState<string[]>([]);
@@ -1450,8 +1452,115 @@ export default function DesignPage() {
           </DeviceContext.Provider>
         )}
 
-        {/* Floating chat input — always visible */}
-          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] md:w-full max-w-3xl px-0 md:px-4 z-[60]">
+        {/* Floating chat — Quick or Agent mode */}
+          {chatMode === 'agent' ? (
+          <AgentChatPanel
+            workspaceId={workspaceId}
+            workspace={workspace ? { name: workspace.name, website: workspace.website, industry: workspace.industry, defaultLanguage: workspace.defaultLanguage, websiteInfo: workspace.websiteInfo as Record<string, unknown> | undefined } : null}
+            branding={branding ? { brandName: branding.brandName, tagline: branding.tagline, colors: branding.colors, fonts: branding.fonts } : null}
+            posts={(posts || []).map(p => ({ _id: p._id, title: p.title, componentCode: p.componentCode, order: p.order }))}
+            assets={(assets || []).map(a => ({ _id: a._id, url: a.url ?? null, type: a.type, fileName: a.fileName, label: a.label, description: a.description, aiAnalysis: a.aiAnalysis }))}
+            logoUrl={logoUrl}
+            aspectRatio={aspectRatio}
+            setAspectRatio={setAspectRatio}
+            onPostsGenerated={async (codes, captions, imageKeywords, usage) => {
+              if (usage) {
+                try {
+                  const usageResult = await logAndIncrement({
+                    workspaceId: workspaceId || undefined,
+                    category: "generation",
+                    model: (usage.model as string) || "gemini-3.1-flash-lite-preview",
+                    promptTokens: (usage.promptTokens as number) || 0,
+                    completionTokens: (usage.completionTokens as number) || 0,
+                    totalTokens: (usage.totalTokens as number) || 0,
+                    endpoint: "/api/agent",
+                    postsGenerated: codes.length,
+                  });
+                  if (usageResult?.limitReached) setShowLimitModal(true);
+                } catch (e) {
+                  const msg = e instanceof Error ? e.message : '';
+                  if (msg.includes('expired') || msg.includes('No active subscription')) {
+                    setUsageWarning(msg.includes('expired') ? "Your subscription has expired." : "No active subscription found.");
+                  }
+                }
+              }
+              if (workspaceId && user) {
+                let collectionId = activeCollectionId;
+                if (!collectionId) {
+                  collectionId = await createCollection({ workspaceId, name: "Generated Posts", mode: "social_grid", language: workspace?.defaultLanguage || "ar", aspectRatio: "1:1" });
+                }
+                await createPostBatch({
+                  collectionId, workspaceId, language: workspace?.defaultLanguage || "ar",
+                  posts: codes.map((code, i) => ({ title: `Agent generated (${i + 1}/${codes.length})`, componentCode: code, device: "none" as const, caption: captions[i] || undefined, imageKeywords: imageKeywords[i]?.length ? imageKeywords[i] : undefined })),
+                });
+              }
+            }}
+            onPostEdited={async (postIndex, newCode, postId) => {
+              const id = postId || posts?.[postIndex]?._id;
+              if (id) await updatePostCode({ id: id as Id<"posts">, componentCode: newCode });
+            }}
+            onPostsDeleted={async (postIndices, postIds) => {
+              if (postIds && postIds.length > 0) {
+                for (const id of postIds) {
+                  await removePost({ id: id as Id<"posts"> });
+                }
+              } else {
+                for (const idx of postIndices) {
+                  const post = posts?.[idx];
+                  if (post) await removePost({ id: post._id as Id<"posts"> });
+                }
+              }
+            }}
+            onBrandUpdated={async (updates) => {
+              if (!workspaceId || !branding) return;
+              let newTheme = { ...currentTheme };
+              if (updates.colors) {
+                const mergedColors = { ...branding.colors, ...updates.colors };
+                await updateBrandingField({ workspaceId, field: "colors", value: mergedColors });
+                newTheme = { ...newTheme, ...mergedColors };
+              }
+              if (updates.fonts) {
+                const mergedFonts = { ...branding.fonts, ...updates.fonts };
+                await updateBrandingField({ workspaceId, field: "fonts", value: mergedFonts });
+                if (updates.fonts.heading) newTheme = { ...newTheme, font: `'${updates.fonts.heading}', sans-serif` };
+              }
+              if (updates.brandName) await updateBrandingField({ workspaceId, field: "brandName", value: updates.brandName });
+              if (updates.tagline) await updateBrandingField({ workspaceId, field: "tagline", value: updates.tagline });
+              setTheme(newTheme);
+            }}
+            onAdaptRatio={async (postIndices, ratios, postIds) => {
+              for (let j = 0; j < postIndices.length; j++) {
+                const id = postIds?.[j] || posts?.[postIndices[j]]?._id;
+                const post = id ? posts?.find(p => p._id === id) || posts?.[postIndices[j]] : posts?.[postIndices[j]];
+                if (!post) continue;
+                for (const ratio of ratios) {
+                  try {
+                    const res = await fetch('/api/adapt-ratio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: post.componentCode, targetRatio: ratio }) });
+                    if (res.ok) { const data = await res.json(); if (data.code) await updatePostCodeForRatio({ id: post._id as Id<"posts">, ratio: ratio as AspectRatioType, componentCode: data.code }); }
+                  } catch (err) { console.error(`Failed to adapt post ${idx + 1} to ${ratio}:`, err); }
+                }
+              }
+            }}
+            contextPosts={contextPosts}
+            setContextPosts={setContextPosts}
+            contextAssets={contextAssets}
+            setContextAssets={setContextAssets}
+            chatImages={chatImages}
+            setChatImages={setChatImages}
+            onChatImageUpload={handleChatImageUpload}
+            chatImageInputRef={chatImageInputRef}
+            generateModel={generateModel}
+            setGenerateModel={setGenerateModel}
+            generateCount={generateCount}
+            setGenerateCount={setGenerateCount}
+            generateVersion={generateVersion}
+            setGenerateVersion={setGenerateVersion}
+            adaptingRatios={adaptingRatios}
+            usageWarning={usageWarning}
+            onSwitchToQuick={() => setChatMode('quick')}
+          />
+          ) : (
+          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] md:w-full max-w-3xl px-0 md:px-4 z-[110]">
             <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-neutral-700/80 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]">
               <textarea
                 value={generatePrompt}
@@ -1536,7 +1645,7 @@ export default function DesignPage() {
 
                     {/* Asset picker popup */}
                     {showAssetPicker && (
-                      <div className="absolute bottom-12 left-0 w-72 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-2xl shadow-2xl z-[100] overflow-hidden">
+                      <div className="absolute bottom-12 left-0 w-72 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-2xl shadow-2xl z-[120] overflow-hidden">
                         {/* Upload option */}
                         <button
                           onClick={() => { chatImageInputRef.current?.click(); }}
@@ -1597,9 +1706,17 @@ export default function DesignPage() {
                     className="h-7 px-2 rounded-full bg-slate-100 dark:bg-neutral-800 text-[10px] font-bold text-slate-500 dark:text-neutral-400 border-none outline-none cursor-pointer hover:text-slate-700 dark:hover:text-neutral-200 transition-colors"
                   >
                     <option value="gemini-3.1-flash-lite-preview">Flash Lite</option>
-                    <option value="gemini-3.1-flash-preview">Flash</option>
+                    <option value="gemini-3-flash-preview">Flash</option>
                     <option value="gemini-3.1-pro-preview">Pro</option>
                   </select>
+                  {/* Agent mode toggle */}
+                  <button
+                    onClick={() => setChatMode('agent')}
+                    title="Switch to Agent mode"
+                    className="w-7 h-7 rounded-full border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-400 dark:hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                  >
+                    <Bot size={14} />
+                  </button>
                 </div>
 
                 {/* Right: options + send */}
@@ -1688,6 +1805,7 @@ export default function DesignPage() {
               <p className="text-xs text-amber-600 font-medium mt-2 text-center">{usageWarning}</p>
             )}
           </div>
+          )}
 
       </main>
       </div>

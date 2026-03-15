@@ -472,11 +472,11 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
       allUsableAssets = contextAssets;
     } else {
       const screenshotAssets = context?.assets?.filter(a =>
-        ['screenshot', 'iphone', 'ipad', 'desktop'].includes(a.type)
+        ['screenshot', 'iphone', 'ipad', 'desktop', 'android_phone', 'android_tablet', 'product'].includes(a.type)
       ) || [];
       allUsableAssets = screenshotAssets.length > 0
         ? screenshotAssets
-        : (context?.assets?.filter(a => a.type !== 'logo') || []);
+        : (context?.assets?.filter(a => a.type !== 'logo' && a.type !== 'background') || []);
     }
 
     // Build brand context
