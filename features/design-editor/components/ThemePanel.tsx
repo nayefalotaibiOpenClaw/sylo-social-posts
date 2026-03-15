@@ -16,12 +16,18 @@ export default function ThemePanel({ currentTheme, setTheme }: ThemePanelProps) 
   const { t } = useLocale();
   return (
     <div className="space-y-5">
-      <div className="rounded-lg p-4 text-center" style={{ backgroundColor: currentTheme.primaryLight, fontFamily: currentTheme.font }}>
-        <p className="text-lg font-black" style={{ color: currentTheme.primary }}>معاينة مباشرة</p>
-        <p className="text-xs font-bold" style={{ color: currentTheme.accent }}>هذا مثال على شكل النصوص</p>
-        <div className="flex justify-center gap-1.5 mt-2">
-          <span className="px-3 py-1 rounded-full text-white text-[10px] font-bold" style={{ backgroundColor: currentTheme.accent }}>زر</span>
-          <span className="px-3 py-1 rounded-full text-[10px] font-bold" style={{ backgroundColor: currentTheme.accentLime, color: currentTheme.primary }}>مميز</span>
+      <div className="grid grid-cols-3 gap-1.5 rounded-lg overflow-hidden" style={{ fontFamily: currentTheme.font }}>
+        <div className="p-3 flex flex-col items-center justify-center gap-1.5" style={{ backgroundColor: currentTheme.primary }}>
+          <p className="text-[10px] font-black leading-tight text-center" style={{ color: currentTheme.primaryLight }}>Dark</p>
+          <span className="px-2 py-0.5 rounded-full text-[8px] font-bold" style={{ backgroundColor: currentTheme.accent, color: currentTheme.primaryLight }}>CTA</span>
+        </div>
+        <div className="p-3 flex flex-col items-center justify-center gap-1.5" style={{ backgroundColor: currentTheme.primaryLight }}>
+          <p className="text-[10px] font-black leading-tight text-center" style={{ color: currentTheme.primary }}>Light</p>
+          <span className="px-2 py-0.5 rounded-full text-[8px] font-bold" style={{ backgroundColor: currentTheme.accentLime, color: currentTheme.primary }}>CTA</span>
+        </div>
+        <div className="p-3 flex flex-col items-center justify-center gap-1.5" style={{ backgroundColor: currentTheme.accentGold }}>
+          <p className="text-[10px] font-black leading-tight text-center" style={{ color: currentTheme.primaryDark }}>Warm</p>
+          <span className="px-2 py-0.5 rounded-full text-[8px] font-bold" style={{ backgroundColor: currentTheme.primary, color: currentTheme.primaryLight }}>CTA</span>
         </div>
       </div>
 

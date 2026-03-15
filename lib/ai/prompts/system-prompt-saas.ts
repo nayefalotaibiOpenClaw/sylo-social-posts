@@ -38,9 +38,9 @@ Small pill at top of some posts (not all). Build as:
 - Use t.accentLime bg + t.primaryDark text, or t.accent bg + t.primaryLight text
 
 ## CRITICAL: COLOR & CONTRAST SYSTEM
-⚠ Token names like "primaryLight" do NOT always mean a light color! Colors vary per theme.
-⚠ A "COLOR RULES FOR THIS THEME" section will be injected below with the EXACT background/text pairings you MUST use.
-⚠ Follow those pairings EXACTLY. Do not guess or assume which colors are dark or light.
+⚠ The ACTUAL hex values of each theme token are listed in the "ACTUAL THEME COLOR VALUES" section below.
+⚠ Use those hex values to judge which colors are dark/light — never guess from token names.
+⚠ Always pick a LIGHT color for text on dark backgrounds and a DARK color for text on light backgrounds.
 ⚠ Headlines: ALWAYS font-bold or font-extrabold.
 ⚠ NEVER use opacity or semi-transparent text.
 

@@ -17,6 +17,7 @@ import {
   buildRatioNote,
   buildContextPostsSection,
   buildContextAssetsSection,
+  buildThemeColorValues,
 } from "../_shared";
 
 const SAAS_MOODS = [
@@ -53,67 +54,8 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
       if (ctx.logoUrl) brandContext.push(`Logo URL: ${ctx.logoUrl} (do NOT use as <img> — mention brand name in text instead)`);
     }
 
-    // Compute contrast-safe pairings server-side so AI doesn't have to guess
-    let themeColorSection = '';
-    const tc = (context as GenerationContext)?.themeColors;
-    if (tc) {
-      const lum = (hex: string) => {
-        const c = hex.replace('#', '');
-        const r = parseInt(c.substring(0, 2), 16) / 255;
-        const g = parseInt(c.substring(2, 4), 16) / 255;
-        const b = parseInt(c.substring(4, 6), 16) / 255;
-        return 0.299 * r + 0.587 * g + 0.114 * b;
-      };
-
-      const all = [
-        { t: 't.primary', l: lum(tc.primary) },
-        { t: 't.primaryLight', l: lum(tc.primaryLight) },
-        { t: 't.primaryDark', l: lum(tc.primaryDark) },
-        { t: 't.accent', l: lum(tc.accent) },
-        { t: 't.accentLight', l: lum(tc.accentLight) },
-        { t: 't.accentLime', l: lum(tc.accentLime) },
-        { t: 't.accentGold', l: lum(tc.accentGold) },
-        { t: 't.accentOrange', l: lum(tc.accentOrange) },
-      ];
-
-      // Find darkest and lightest tokens
-      const sorted = [...all].sort((a, b) => a.l - b.l);
-      const darkest = sorted[0]; // lowest luminance
-      const lightest = sorted[sorted.length - 1]; // highest luminance
-
-      // Find a warm accent for the 3rd background option
-      const goldLum = lum(tc.accentGold);
-      const warmBgText = goldLum > 0.5 ? darkest.t : lightest.t;
-
-      themeColorSection = `\n\n## COLOR RULES FOR THIS THEME (MANDATORY — follow exactly)
-You MUST use ONLY these exact pairings. Do not deviate.
-
-**DARK POST** (~40% of posts):
-- background: ${darkest.t}
-- headline text: ${lightest.t}
-- body/subtitle text: ${lightest.t}
-- CSS element fills: t.accent, t.accentLight
-- highlighted element: t.accentLime or t.accentGold
-
-**LIGHT POST** (~30% of posts):
-- background: ${lightest.t}
-- headline text: ${darkest.t}
-- body/subtitle text: ${darkest.t}
-- CSS element fills: t.accent, t.border
-- highlighted element: t.primary
-
-**WARM ACCENT POST** (~30% of posts):
-- background: t.accentGold
-- headline text: ${warmBgText}
-- body/subtitle text: ${warmBgText}
-- CSS element fills: ${warmBgText === darkest.t ? lightest.t : darkest.t} with low opacity borders
-- highlighted element: t.primary
-
-**PILL BADGES (on any background):**
-- background: t.accentLime, text: ${darkest.t}
-
-⚠ NEVER use any other background/text combination. These are the ONLY safe pairings.`;
-    }
+    // Show AI the actual hex values so it can pick contrasting pairs
+    const themeColorSection = buildThemeColorValues((context as GenerationContext)?.themeColors);
 
     const contextPostsSection = buildContextPostsSection(contextPosts);
     const contextAssetsSection = buildContextAssetsSection(contextAssets);

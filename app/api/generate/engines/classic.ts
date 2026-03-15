@@ -18,6 +18,7 @@ import {
   buildDistinctNote,
   buildContextPostsSection,
   buildContextAssetsSection,
+  buildThemeColorValues,
 } from "../_shared";
 
 export async function generate(req: GenerateRequest): Promise<NextResponse> {
@@ -25,11 +26,12 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
     const { prompt, context, count = 1, targetRatio, referenceImages, model, contextPosts, contextAssets } = req;
     const postCount = Math.min(Math.max(1, Number(count) || 1), 8);
 
-    // System prompt: classic + dynamic brand context + reference posts
+    // System prompt: classic + dynamic brand context + theme colors + reference posts
     const dynamicSection = context ? buildDynamicPrompt(context as GenerationContext) : "";
+    const themeColorSection = buildThemeColorValues((context as GenerationContext)?.themeColors);
     const contextPostsSection = buildContextPostsSection(contextPosts);
     const contextAssetsSection = buildContextAssetsSection(contextAssets);
-    const systemPrompt = [CLASSIC_SYSTEM_PROMPT, dynamicSection, contextPostsSection, contextAssetsSection]
+    const systemPrompt = [CLASSIC_SYSTEM_PROMPT, dynamicSection, themeColorSection, contextPostsSection, contextAssetsSection]
       .filter(Boolean)
       .join('\n\n');
 

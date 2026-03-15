@@ -16,6 +16,7 @@ import {
   buildRatioNote,
   buildContextPostsSection,
   buildContextAssetsSection,
+  buildThemeColorValues,
 } from "../_shared";
 
 const WILD_MOODS = [
@@ -52,11 +53,13 @@ export async function generate(req: GenerateRequest): Promise<NextResponse> {
       if (ctx.logoUrl) brandContext.push(`Logo URL: ${ctx.logoUrl}`);
     }
 
+    const themeColorSection = buildThemeColorValues((context as GenerationContext)?.themeColors);
     const contextPostsSection = buildContextPostsSection(contextPosts);
     const contextAssetsSection = buildContextAssetsSection(contextAssets);
     const systemPrompt = [
       WILD_SYSTEM_PROMPT,
       brandContext.length > 0 ? `## BRAND CONTEXT\n${brandContext.join('\n')}` : '',
+      themeColorSection,
       contextPostsSection,
       contextAssetsSection,
     ].filter(Boolean).join('\n\n');
