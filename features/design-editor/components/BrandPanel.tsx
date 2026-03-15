@@ -249,8 +249,8 @@ export default function BrandPanel({
   return (
     <div className="flex-1 bg-white dark:bg-[#0a0a0a] flex flex-col overflow-hidden">
       {/* ── Floating Nav ── */}
-      <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-        <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
+      <div className="shrink-0 pt-4 pb-2 px-3 sm:px-6 relative z-[90]">
+        <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-3 sm:px-5 h-14 flex items-center gap-2 sm:gap-4">
           {onTabClick && <MobileNavMenu activeTab={activeTab ?? 'brand'} onTabClick={onTabClick} workspaces={wsList} currentWorkspaceId={wsId} currentWorkspaceName={wsName} />}
           {onTabClick && <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700 md:hidden" />}
           {/* Brand name / logo */}
@@ -268,10 +268,10 @@ export default function BrandPanel({
           </div>
 
           {/* Divider */}
-          <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700" />
+          <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700 hidden sm:block" />
 
           {/* Page title */}
-          <span className="text-sm font-semibold text-slate-500 dark:text-neutral-400">Brand Kit</span>
+          <span className="text-sm font-semibold text-slate-500 dark:text-neutral-400 hidden sm:inline">Brand Kit</span>
 
           {/* Spacer */}
           <div className="flex-1" />
@@ -282,10 +282,10 @@ export default function BrandPanel({
               setFetchUrl(workspace?.website || "");
               setShowFetchPopup(true);
             }}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-slate-200 dark:border-neutral-700 text-xs font-bold text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-neutral-600 transition-all"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full border border-slate-200 dark:border-neutral-700 text-xs font-bold text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-neutral-600 transition-all"
           >
             <Globe size={13} />
-            {businessInfo ? "Refetch" : "Fetch"}
+            <span className="hidden sm:inline">{businessInfo ? "Refetch" : "Fetch"}</span>
           </button>
 
           <button
@@ -300,10 +300,10 @@ export default function BrandPanel({
 
       {/* ── Scrollable Content ── */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
           {/* ── Brand Hero ── */}
-          <div className="flex items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             {/* Logos — clickable to upload */}
             <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
               const file = e.target.files?.[0];
@@ -405,15 +405,17 @@ export default function BrandPanel({
                 className="text-sm text-slate-400 dark:text-neutral-500 mt-0.5"
                 onSave={(val) => onUpdateBranding("tagline", val)}
               />
-              <div className="flex items-center gap-3 mt-2">
-                <div className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
+                <div className="inline-flex items-center gap-1.5 text-xs text-slate-400 min-w-0">
                   <Globe size={12} className="shrink-0" />
-                  <InlineEdit
-                    value={workspace?.website || ""}
-                    placeholder="https://example.com"
-                    className="text-xs text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300"
-                    onSave={(val) => onUpdateWorkspace({ website: val })}
-                  />
+                  <span className="truncate max-w-[200px] sm:max-w-none">
+                    <InlineEdit
+                      value={workspace?.website || ""}
+                      placeholder="https://example.com"
+                      className="text-xs text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300"
+                      onSave={(val) => onUpdateWorkspace({ website: val })}
+                    />
+                  </span>
                   {workspace?.website && (
                     <a href={workspace.website} target="_blank" rel="noopener noreferrer" className="shrink-0 hover:text-slate-600">
                       <ExternalLink size={10} />

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, Columns3, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles, EyeOff, Eye, X, Zap, Clock, ChevronRight, Check, Bot } from "lucide-react";
+import { Loader2, FolderOpen, Image as ImageIcon, Proportions, Smartphone, LayoutGrid, Columns3, ArrowUpDown, Pencil, MousePointer2, Download, Paperclip, ArrowUp, Sparkles, EyeOff, Eye, X, Zap, Clock, ChevronRight, ChevronDown, Check, Bot } from "lucide-react";
 import MobileNavMenu from "@/features/design-editor/components/MobileNavMenu";
 import { downloadPostsAsZip, downloadPostsMultiRatio } from "@/lib/export/download";
 import { EditContext, AspectRatioContext, AspectRatioType, SelectedIdContext, SetSelectedIdContext, HiddenComponentsContext, SetHiddenComponentsContext } from "@/contexts/EditContext";
@@ -185,6 +185,9 @@ export default function DesignPage() {
   const [contextPosts, setContextPosts] = useState<{ id: string; code: string }[]>([]);
   const [contextAssets, setContextAssets] = useState<{ id: string; url: string; type: string; label?: string; description?: string; aiAnalysis?: string }[]>([]);
   const [showAssetPicker, setShowAssetPicker] = useState(false);
+  const [showQuickCountDropdown, setShowQuickCountDropdown] = useState(false);
+  const [showQuickStyleDropdown, setShowQuickStyleDropdown] = useState(false);
+  const [showQuickRatioDropdown, setShowQuickRatioDropdown] = useState(false);
   const [chatMode, setChatMode] = useState<'quick' | 'agent'>('quick');
 
   // Local order state for drag-and-drop (syncs with Convex)
@@ -251,6 +254,21 @@ export default function DesignPage() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showAssetPicker]);
+
+  // Close quick-mode mobile dropdowns on click outside
+  const quickCountRef = useRef<HTMLDivElement>(null);
+  const quickStyleRef = useRef<HTMLDivElement>(null);
+  const quickRatioRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showQuickCountDropdown && !showQuickStyleDropdown && !showQuickRatioDropdown) return;
+    const handler = (e: MouseEvent) => {
+      if (showQuickCountDropdown && quickCountRef.current && !quickCountRef.current.contains(e.target as Node)) setShowQuickCountDropdown(false);
+      if (showQuickStyleDropdown && quickStyleRef.current && !quickStyleRef.current.contains(e.target as Node)) setShowQuickStyleDropdown(false);
+      if (showQuickRatioDropdown && quickRatioRef.current && !quickRatioRef.current.contains(e.target as Node)) setShowQuickRatioDropdown(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showQuickCountDropdown, showQuickStyleDropdown, showQuickRatioDropdown]);
 
   const toggleCodeView = (id: string) => {
     setCodeViewPosts(prev => {
@@ -883,7 +901,7 @@ export default function DesignPage() {
     if (!workspaceId || !user || !product.imageUrl) return;
     try {
       // Proxy through our API to avoid CORS issues
-      const imgRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(product.imageUrl)}`);
+      const imgRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(product.imageUrl)}&source=crawl`);
       if (!imgRes.ok) throw new Error("Failed to download product image");
       const blob = await imgRes.blob();
 
@@ -1582,7 +1600,7 @@ export default function DesignPage() {
 
             <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700" />
 
-            {postCount != null && <span className="text-xs font-medium text-slate-400">{postCount} post{postCount !== 1 ? 's' : ''}</span>}
+            {postCount != null && <span className="hidden sm:inline text-xs font-medium text-slate-400">{postCount} post{postCount !== 1 ? 's' : ''}</span>}
 
             <div className="flex-1" />
 
@@ -2004,7 +2022,7 @@ export default function DesignPage() {
                 }}
                 placeholder={t("design.describePlaceholder")}
                 rows={2}
-                className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 dark:text-white resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
+                className="w-full px-5 pt-4 pb-2 text-base md:text-sm text-slate-900 dark:text-white resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
               />
               {/* Context chips (posts + assets) */}
               {(contextPosts.length > 0 || contextAssets.length > 0) && (
@@ -2144,8 +2162,8 @@ export default function DesignPage() {
 
                 {/* Right: options + send */}
                 <div className="flex items-center gap-1">
-                  {/* Post count */}
-                  <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5">
+                  {/* Post count — desktop pills */}
+                  <div className="hidden md:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5">
                     {[1, 2, 4, 6, 8].map((n) => (
                       <button
                         key={n}
@@ -2160,9 +2178,36 @@ export default function DesignPage() {
                       </button>
                     ))}
                   </div>
+                  {/* Post count — mobile dropdown */}
+                  <div className="relative md:hidden" ref={quickCountRef}>
+                    <button
+                      onClick={() => setShowQuickCountDropdown(prev => !prev)}
+                      className="flex items-center gap-1 h-7 px-2.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-[11px] font-bold text-slate-700 dark:text-neutral-300"
+                    >
+                      {generateCount}x
+                      <ChevronDown size={12} />
+                    </button>
+                    {showQuickCountDropdown && (
+                      <div className="absolute bottom-9 right-0 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-2xl z-[120] overflow-hidden py-1 min-w-[48px]">
+                        {[1, 2, 4, 6, 8].map((n) => (
+                          <button
+                            key={n}
+                            onClick={() => { setGenerateCount(n); setShowQuickCountDropdown(false); }}
+                            className={`w-full px-4 py-2 text-xs font-semibold text-center transition-colors ${
+                              generateCount === n
+                                ? 'bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white'
+                                : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-neutral-800 dark:text-neutral-400'
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Style selector */}
-                  <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
+                  {/* Style selector — desktop pills */}
+                  <div className="hidden md:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
                     {([
                       { v: 4 as const, label: 'Social Media', title: 'Social Media' },
                       { v: 8 as const, label: 'SaaS', title: 'SaaS — typography-driven, CSS-only' },
@@ -2182,9 +2227,40 @@ export default function DesignPage() {
                       </button>
                     ))}
                   </div>
+                  {/* Style selector — mobile dropdown */}
+                  <div className="relative md:hidden ml-1" ref={quickStyleRef}>
+                    <button
+                      onClick={() => setShowQuickStyleDropdown(prev => !prev)}
+                      className="flex items-center gap-1 h-7 px-2.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-[11px] font-bold text-slate-700 dark:text-neutral-300"
+                    >
+                      {generateVersion === 4 ? 'Social' : generateVersion === 8 ? 'SaaS' : 'App'}
+                      <ChevronDown size={12} />
+                    </button>
+                    {showQuickStyleDropdown && (
+                      <div className="absolute bottom-9 right-0 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-2xl z-[120] overflow-hidden py-1 min-w-[120px]">
+                        {([
+                          { v: 4 as const, label: 'Social Media' },
+                          { v: 8 as const, label: 'SaaS' },
+                          { v: 7 as const, label: 'App Store' },
+                        ]).map(({ v, label }) => (
+                          <button
+                            key={v}
+                            onClick={() => { setGenerateVersion(v); setShowQuickStyleDropdown(false); }}
+                            className={`w-full px-4 py-2 text-xs font-semibold text-left transition-colors ${
+                              generateVersion === v
+                                ? 'bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white'
+                                : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-neutral-800 dark:text-neutral-400'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Ratio selector */}
-                  <div className="flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
+                  {/* Ratio selector — desktop pills */}
+                  <div className="hidden md:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
                     {(['1:1', '9:16', '3:4', '4:3', '16:9'] as AspectRatioType[]).map((r) => (
                       <button
                         key={r}
@@ -2199,6 +2275,33 @@ export default function DesignPage() {
                         {r}
                       </button>
                     ))}
+                  </div>
+                  {/* Ratio selector — mobile dropdown */}
+                  <div className="relative md:hidden ml-1" ref={quickRatioRef}>
+                    <button
+                      onClick={() => setShowQuickRatioDropdown(prev => !prev)}
+                      className="flex items-center gap-1 h-7 px-2.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-[11px] font-bold text-slate-700 dark:text-neutral-300"
+                    >
+                      {aspectRatio}
+                      <ChevronDown size={12} />
+                    </button>
+                    {showQuickRatioDropdown && (
+                      <div className="absolute bottom-9 right-0 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-2xl z-[120] overflow-hidden py-1">
+                        {(['1:1', '9:16', '3:4', '4:3', '16:9'] as AspectRatioType[]).map((r) => (
+                          <button
+                            key={r}
+                            onClick={() => { setAspectRatio(r); setShowQuickRatioDropdown(false); }}
+                            className={`w-full px-4 py-2 text-xs font-semibold text-left transition-colors ${
+                              aspectRatio === r
+                                ? 'bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white'
+                                : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-neutral-800 dark:text-neutral-400'
+                            }`}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Send */}

@@ -175,7 +175,13 @@ export default function AgentChatPanel({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAssetPicker, setShowAssetPicker] = useState(false);
+  const [showRatioDropdown, setShowRatioDropdown] = useState(false);
+  const [showCountDropdown, setShowCountDropdown] = useState(false);
+  const [showStyleDropdown, setShowStyleDropdown] = useState(false);
 
+  const ratioDropdownRef = useRef<HTMLDivElement>(null);
+  const countDropdownRef = useRef<HTMLDivElement>(null);
+  const styleDropdownRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const assetPickerRef = useRef<HTMLDivElement>(null);
@@ -201,6 +207,24 @@ export default function AgentChatPanel({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [showAssetPicker]);
+
+  // Close mobile dropdowns on click outside
+  useEffect(() => {
+    if (!showRatioDropdown && !showCountDropdown && !showStyleDropdown) return;
+    const handler = (e: MouseEvent) => {
+      if (showRatioDropdown && ratioDropdownRef.current && !ratioDropdownRef.current.contains(e.target as Node)) {
+        setShowRatioDropdown(false);
+      }
+      if (showCountDropdown && countDropdownRef.current && !countDropdownRef.current.contains(e.target as Node)) {
+        setShowCountDropdown(false);
+      }
+      if (showStyleDropdown && styleDropdownRef.current && !styleDropdownRef.current.contains(e.target as Node)) {
+        setShowStyleDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showRatioDropdown, showCountDropdown, showStyleDropdown]);
 
   // Auto-expand when first message is sent
   const expandOnFirstMessage = useCallback(() => {
@@ -570,7 +594,7 @@ export default function AgentChatPanel({
           }}
           placeholder="Describe the post you want to generate..."
           rows={2}
-          className="w-full px-5 pt-4 pb-2 text-sm text-slate-900 dark:text-white resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
+          className="w-full px-5 pt-4 pb-2 text-base sm:text-sm text-slate-900 dark:text-white resize-none focus:outline-none placeholder:text-slate-400 bg-transparent"
         />
 
         {/* Context chips */}
@@ -748,8 +772,8 @@ export default function AgentChatPanel({
 
           {/* Right: options + send */}
           <div className="flex items-center gap-1">
-            {/* Post count */}
-            <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5">
+            {/* Post count — desktop pills */}
+            <div className="hidden md:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5">
               {[1, 2, 4, 6, 8].map((n) => (
                 <button
                   key={n}
@@ -764,9 +788,36 @@ export default function AgentChatPanel({
                 </button>
               ))}
             </div>
+            {/* Post count — mobile dropdown */}
+            <div className="relative md:hidden" ref={countDropdownRef}>
+              <button
+                onClick={() => setShowCountDropdown((prev) => !prev)}
+                className="flex items-center gap-1 h-7 px-2.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-[11px] font-bold text-slate-700 dark:text-neutral-300"
+              >
+                {generateCount}x
+                <ChevronDown size={12} />
+              </button>
+              {showCountDropdown && (
+                <div className="absolute bottom-9 right-0 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-2xl z-[120] overflow-hidden py-1 min-w-[48px]">
+                  {[1, 2, 4, 6, 8].map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => { setGenerateCount(n); setShowCountDropdown(false); }}
+                      className={`w-full px-4 py-2 text-xs font-semibold text-center transition-colors ${
+                        generateCount === n
+                          ? "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white"
+                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-neutral-800 dark:text-neutral-400"
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-            {/* Style selector */}
-            <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
+            {/* Style selector — desktop pills */}
+            <div className="hidden md:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
               {([
                 { v: 4 as const, label: "Social Media", title: "Social Media" },
                 { v: 8 as const, label: "SaaS", title: "SaaS — typography-driven, CSS-only" },
@@ -786,9 +837,40 @@ export default function AgentChatPanel({
                 </button>
               ))}
             </div>
+            {/* Style selector — mobile dropdown */}
+            <div className="relative md:hidden ml-1" ref={styleDropdownRef}>
+              <button
+                onClick={() => setShowStyleDropdown((prev) => !prev)}
+                className="flex items-center gap-1 h-7 px-2.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-[11px] font-bold text-slate-700 dark:text-neutral-300"
+              >
+                {generateVersion === 4 ? "Social" : generateVersion === 8 ? "SaaS" : "App"}
+                <ChevronDown size={12} />
+              </button>
+              {showStyleDropdown && (
+                <div className="absolute bottom-9 right-0 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-2xl z-[120] overflow-hidden py-1 min-w-[120px]">
+                  {([
+                    { v: 4 as const, label: "Social Media" },
+                    { v: 8 as const, label: "SaaS" },
+                    { v: 7 as const, label: "App Store" },
+                  ]).map(({ v, label }) => (
+                    <button
+                      key={v}
+                      onClick={() => { setGenerateVersion(v); setShowStyleDropdown(false); }}
+                      className={`w-full px-4 py-2 text-xs font-semibold text-left transition-colors ${
+                        generateVersion === v
+                          ? "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white"
+                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-neutral-800 dark:text-neutral-400"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-            {/* Ratio selector */}
-            <div className="flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
+            {/* Ratio selector — desktop pills */}
+            <div className="hidden md:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
               {(["1:1", "9:16", "3:4", "4:3", "16:9"] as AspectRatioType[]).map((r) => (
                 <button
                   key={r}
@@ -803,6 +885,33 @@ export default function AgentChatPanel({
                   {r}
                 </button>
               ))}
+            </div>
+            {/* Ratio selector — mobile dropdown */}
+            <div className="relative md:hidden ml-1" ref={ratioDropdownRef}>
+              <button
+                onClick={() => setShowRatioDropdown((prev) => !prev)}
+                className="flex items-center gap-1 h-7 px-2.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-[11px] font-bold text-slate-700 dark:text-neutral-300"
+              >
+                {aspectRatio}
+                <ChevronDown size={12} />
+              </button>
+              {showRatioDropdown && (
+                <div className="absolute bottom-9 right-0 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-2xl z-[120] overflow-hidden py-1">
+                  {(["1:1", "9:16", "3:4", "4:3", "16:9"] as AspectRatioType[]).map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => { setAspectRatio(r); setShowRatioDropdown(false); }}
+                      className={`w-full px-4 py-2 text-xs font-semibold text-left transition-colors ${
+                        aspectRatio === r
+                          ? "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white"
+                          : "text-slate-500 hover:bg-slate-50 dark:hover:bg-neutral-800 dark:text-neutral-400"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Send */}

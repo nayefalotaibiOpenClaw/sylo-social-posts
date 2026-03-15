@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/api-auth";
-import { validateProxyUrl } from "@/lib/security/url-validation";
+import { validateProxyUrl, validateExternalUrl } from "@/lib/security/url-validation";
 
 const MAX_PROXY_RESPONSE_BYTES = 10 * 1024 * 1024; // 10 MB
 
@@ -13,8 +13,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "url parameter required" }, { status: 400 });
   }
 
-  // SSRF protection: validate URL against allowlist and block private IPs
-  const validation = await validateProxyUrl(url);
+  // For crawled product images, skip domain allowlist but still block private IPs
+  const source = req.nextUrl.searchParams.get("source");
+  const validation = source === "crawl"
+    ? await validateExternalUrl(url)
+    : await validateProxyUrl(url);
   if (!validation.allowed) {
     return NextResponse.json({ error: validation.reason }, { status: 403 });
   }
