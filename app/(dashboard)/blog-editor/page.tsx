@@ -288,7 +288,7 @@ export default function BlogsPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Top nav bar */}
           <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-            <nav className="max-w-5xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-3">
+            <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
               <button
                 onClick={() => router.push(localizeHref(`/blog-editor?workspace=${workspaceId}`, locale))}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-600 dark:hover:text-neutral-300 transition-all"
@@ -298,7 +298,7 @@ export default function BlogsPage() {
 
               <div className="w-px h-5 bg-slate-200 dark:bg-neutral-700" />
 
-              <span className="hidden md:flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
+              <span className="hidden md:flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white shrink-0">
                 <FileText size={14} />
                 Blog
               </span>
@@ -481,8 +481,8 @@ export default function BlogsPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top nav */}
         <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-          <nav className="max-w-5xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
+          <nav className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
+            <span className="flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white shrink-0">
               <FileText size={14} />
               Blog Posts
             </span>

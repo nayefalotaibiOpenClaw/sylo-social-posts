@@ -1330,12 +1330,12 @@ export default function DesignPage() {
       {activeTab !== 'brand' && activeTab !== 'publish' && activeTab !== 'channels' && activeTab !== 'assets' && <div className="flex-1 flex flex-col overflow-hidden">
         {/* Nav Header with Design/Generate sub-tab switcher */}
         <div className="shrink-0 pt-4 pb-2 px-6 relative z-[90]">
-          <nav ref={toolbarRef} className="max-w-5xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-3">
+          <nav ref={toolbarRef} className="max-w-4xl mx-auto bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-neutral-700/50 rounded-full shadow-sm px-5 h-14 flex items-center gap-4">
             {/* Mobile: nav menu / Desktop: Design label — single element */}
             <div className="md:hidden">
               <MobileNavMenu activeTab={activeTab} onTabClick={handleTabClick} workspaces={workspaces?.map(w => ({ _id: w._id, name: w.name }))} currentWorkspaceId={workspaceId ?? undefined} currentWorkspaceName={workspace?.name} />
             </div>
-            <span className="hidden md:flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
+            <span className="hidden md:flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white shrink-0">
               <LayoutGrid size={14} />
               Design
             </span>
