@@ -124,6 +124,7 @@ export default defineSchema({
     analyzingStatus: v.optional(v.union(v.literal("pending"), v.literal("done"), v.literal("failed"))),
     width: v.optional(v.number()),
     height: v.optional(v.number()),
+    archived: v.optional(v.boolean()),
     createdAt: v.number(),
   })
     .index("by_workspace", ["workspaceId"])
@@ -496,7 +497,8 @@ export default defineSchema({
       v.literal("crawl"),
       v.literal("classification"),
       v.literal("product_extraction"),
-      v.literal("blog_generation")
+      v.literal("blog_generation"),
+      v.literal("background_removal")
     ),
     model: v.string(),
     promptTokens: v.number(),

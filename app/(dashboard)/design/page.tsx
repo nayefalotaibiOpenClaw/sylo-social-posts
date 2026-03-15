@@ -117,11 +117,17 @@ export default function DesignPage() {
   const generateUploadUrl = useMutation(api.assets.generateUploadUrl);
   const createAsset = useMutation(api.assets.create);
   const removeAsset = useMutation(api.assets.remove);
+  const archiveAsset = useMutation(api.assets.archive);
   const analyzeImage = useAction(api.assets.analyzeImage);
   const assets = useQuery(
     api.assets.listForWorkspace,
     workspaceId && user ? { workspaceId } : "skip"
   );
+
+  const [removingBgAssetIds, setRemovingBgAssetIds] = useState<Set<string>>(new Set());
+  const [bgRemovalError, setBgRemovalError] = useState<string | null>(null);
+  // "library" = @imgly only (free, real alpha), "hybrid" = Gemini + @imgly (better isolation, costs tokens)
+  const [bgRemovalMode, setBgRemovalMode] = useState<"library" | "hybrid">("library");
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeMode, setActiveMode] = useState<'default' | 'edit' | 'reorder' | 'select'>('default');
@@ -164,8 +170,8 @@ export default function DesignPage() {
   const [usageWarning, setUsageWarning] = useState<string | null>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [generateCount, setGenerateCount] = useState(2);
-  const [generateVersion, setGenerateVersion] = useState<4 | 5 | 7>(7);
-  const [generateModel, setGenerateModel] = useState('gemini-3.1-pro-preview');
+  const [generateVersion, setGenerateVersion] = useState<4 | 5 | 7>(4);
+  const [generateModel, setGenerateModel] = useState('gemini-3.1-flash-lite-preview');
   const [codeViewPosts, setCodeViewPosts] = useState<Set<string>>(new Set());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [fetchingWebsite, setFetchingWebsite] = useState(false);
@@ -186,7 +192,7 @@ export default function DesignPage() {
   useEffect(() => {
     setLocalOrder(prev => {
       const serverIds = posts.map(p => p._id);
-      const serverIdSet = new Set(serverIds);
+      const serverIdSet: Set<string> = new Set(serverIds);
       // First load: use server order directly
       if (prev.length === 0) return serverIds;
       // All server posts deleted: preserve generated post IDs
@@ -375,7 +381,7 @@ export default function DesignPage() {
           };
         })() : undefined,
         assets: (assets || [])
-          .filter(a => a.url)
+          .filter(a => a.url && !a.archived)
           .map(a => ({
             id: a._id,
             url: a.url || '',
@@ -468,6 +474,15 @@ export default function DesignPage() {
             imageKeywords: imageKeywords[i]?.length ? imageKeywords[i] : undefined,
           })),
         });
+
+        // Prepend new post IDs to localOrder so they appear at the top immediately
+        if (newPostIds.length > 0) {
+          setLocalOrder(prev => {
+            const newIdSet = new Set(newPostIds as string[]);
+            const filtered = prev.filter(id => !newIdSet.has(id));
+            return [...(newPostIds as string[]), ...filtered];
+          });
+        }
 
         // Adapt to additional ratios in background
         const extraRatios = targetRatios.filter(r => r !== '1:1');
@@ -1157,6 +1172,166 @@ export default function DesignPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const removeBackgroundForOne = async (asset: any) => {
+    // Step 1: Fetch original image
+    const imgRes = await fetch(asset.url);
+    if (!imgRes.ok) throw new Error("Failed to fetch image");
+    const originalBlob = await imgRes.blob();
+
+    let inputForLibrary: Blob = originalBlob;
+    let usage = null;
+
+    // Step 2 (hybrid mode only): Gemini nano banana pre-processing
+    if (bgRemovalMode === "hybrid") {
+      const mimeType = originalBlob.type || "image/png";
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          resolve(result.split(",")[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(originalBlob);
+      });
+
+      const res = await fetch("/api/remove-background", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mimeType }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        usage = data.usage;
+        const resultBytes = Uint8Array.from(atob(data.imageBase64), c => c.charCodeAt(0));
+        inputForLibrary = new Blob([resultBytes], { type: data.mimeType });
+      }
+    }
+
+    // Step 3: @imgly/background-removal — produces real alpha transparency
+    const { removeBackground } = await import("@imgly/background-removal");
+    const transparentBlob: Blob = await removeBackground(inputForLibrary, {
+      model: "isnet_quint8",
+      output: { format: "image/png" as const },
+    });
+
+    // Step 4: Compress if over 10MB (library outputs uncompressed PNGs)
+    let finalBlob = transparentBlob;
+    if (transparentBlob.size > 9 * 1024 * 1024) {
+      const bmpUrl = URL.createObjectURL(transparentBlob);
+      try {
+        const img = new Image();
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error("Failed to load processed image"));
+          img.src = bmpUrl;
+        });
+        let { width, height } = img;
+        const maxDim = 2048;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const webpBlob = await new Promise<Blob | null>(r => canvas.toBlob(r, "image/webp", 0.9));
+          if (webpBlob && webpBlob.size < transparentBlob.size) {
+            finalBlob = webpBlob;
+          }
+        }
+      } finally {
+        URL.revokeObjectURL(bmpUrl);
+      }
+    }
+
+    const uploadMime = finalBlob.type || "image/png";
+    const uploadUrl = await generateUploadUrl();
+    const uploadRes = await fetch(uploadUrl, {
+      method: "POST",
+      headers: { "Content-Type": uploadMime },
+      body: finalBlob,
+    });
+    if (!uploadRes.ok) throw new Error("Failed to upload processed image");
+    const { storageId } = await uploadRes.json();
+
+    const ext = uploadMime === "image/webp" ? ".webp" : ".png";
+    const newFileName = asset.fileName.replace(/\.[^.]+$/, "") + "_nobg" + ext;
+    const assetId = await createAsset({
+      workspaceId: asset.workspaceId || workspaceId,
+      scope: asset.scope || "workspace",
+      fileId: storageId,
+      fileName: newFileName,
+      type: asset.type,
+    });
+
+    analyzeImage({
+      assetId,
+      storageId,
+      fileName: newFileName,
+      assetType: asset.type,
+      userId: user!._id,
+      workspaceId: asset.workspaceId || workspaceId,
+    }).catch(console.error);
+
+    // Log AI usage (Gemini tokens — only in hybrid mode)
+    if (usage) {
+      logAndIncrement({
+        workspaceId: asset.workspaceId || workspaceId,
+        category: "background_removal",
+        model: usage.model,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+        totalTokens: usage.totalTokens,
+        endpoint: "/api/remove-background",
+      }).catch(console.error);
+    }
+
+    // Archive the original asset
+    await archiveAsset({ id: asset._id, archived: true });
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleRemoveBackground = async (assetOrAssets: any | any[]) => {
+    if (!workspaceId || !user) return;
+    setBgRemovalError(null);
+    const assetList = Array.isArray(assetOrAssets) ? assetOrAssets : [assetOrAssets];
+    const validAssets = assetList.filter((a: { url?: string; _id: string }) => a.url && !removingBgAssetIds.has(a._id));
+    if (validAssets.length === 0) return;
+
+    const newIds = new Set(removingBgAssetIds);
+    validAssets.forEach((a: { _id: string }) => newIds.add(a._id));
+    setRemovingBgAssetIds(new Set(newIds));
+
+    let failCount = 0;
+    // Process all in parallel
+    await Promise.allSettled(
+      validAssets.map(async (asset: { _id: string }) => {
+        try {
+          await removeBackgroundForOne(asset);
+        } catch (err) {
+          failCount++;
+          console.error(`Remove background failed for ${asset._id}:`, err);
+        } finally {
+          setRemovingBgAssetIds(prev => {
+            const next = new Set(prev);
+            next.delete(asset._id);
+            return next;
+          });
+        }
+      })
+    );
+
+    if (failCount > 0) {
+      setBgRemovalError(`Background removal failed for ${failCount} image${failCount > 1 ? "s" : ""}. Please try again.`);
+    }
+  };
+
   const togglePostSelection = useCallback((id: string) => {
     setSelectedPosts(prev =>
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
@@ -1365,6 +1540,10 @@ export default function DesignPage() {
               workspaceId: workspaceId || undefined,
             }).catch(console.error);
           }}
+          onRemoveBackground={handleRemoveBackground}
+          removingBgAssetIds={removingBgAssetIds}
+          bgRemovalError={bgRemovalError}
+          onArchiveAsset={(id, archived) => archiveAsset({ id: id as Id<"assets">, archived })}
         />
       )}
 
@@ -1714,10 +1893,18 @@ export default function DesignPage() {
                 if (!collectionId) {
                   collectionId = await createCollection({ workspaceId, name: "Generated Posts", mode: "social_grid", language: workspace?.defaultLanguage || "ar", aspectRatio: "1:1" });
                 }
-                await createPostBatch({
+                const newPostIds = await createPostBatch({
                   collectionId, workspaceId, language: workspace?.defaultLanguage || "ar",
                   posts: codes.map((code, i) => ({ title: `Agent generated (${i + 1}/${codes.length})`, componentCode: code, device: "none" as const, caption: captions[i] || undefined, imageKeywords: imageKeywords[i]?.length ? imageKeywords[i] : undefined })),
                 });
+                // Prepend new post IDs to localOrder so they appear at the top immediately
+                if (newPostIds.length > 0) {
+                  setLocalOrder(prev => {
+                    const newIdSet = new Set(newPostIds as string[]);
+                    const filtered = prev.filter(id => !newIdSet.has(id));
+                    return [...(newPostIds as string[]), ...filtered];
+                  });
+                }
               }
             }}
             onPostEdited={async (postIndex, newCode, postId) => {
@@ -1887,9 +2074,9 @@ export default function DesignPage() {
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Workspace Assets</span>
                         </div>
                         <div className="px-3 pb-3 max-h-52 overflow-y-auto">
-                          {assets && assets.filter((a) => a.url).length > 0 ? (
+                          {assets && assets.filter((a) => a.url && !a.archived).length > 0 ? (
                             <div className="grid grid-cols-4 gap-1.5">
-                              {assets.filter((a): a is typeof a & { url: string } => !!a.url).map((asset) => {
+                              {assets.filter((a): a is typeof a & { url: string } => !!a.url && !a.archived).map((asset) => {
                                 const isSelected = contextAssetIds.has(asset._id);
                                 return (
                                   <button
@@ -1925,15 +2112,7 @@ export default function DesignPage() {
                       </div>
                     )}
                   </div>
-                  <select
-                    value={generateModel}
-                    onChange={(e) => setGenerateModel(e.target.value)}
-                    className="h-7 px-2 rounded-full bg-slate-100 dark:bg-neutral-800 text-[10px] font-bold text-slate-500 dark:text-neutral-400 border-none outline-none cursor-pointer hover:text-slate-700 dark:hover:text-neutral-200 transition-colors"
-                  >
-                    <option value="gemini-3.1-flash-lite-preview">Flash Lite</option>
-                    <option value="gemini-3-flash-preview">Flash</option>
-                    <option value="gemini-3.1-pro-preview">Pro</option>
-                  </select>
+                  {/* Model dropdown hidden — defaults to Flash Lite */}
                   {/* Agent mode toggle */}
                   <button
                     onClick={() => setChatMode('agent')}
@@ -1966,15 +2145,14 @@ export default function DesignPage() {
                   {/* Style selector */}
                   <div className="hidden sm:flex items-center bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 ml-1">
                     {([
-                      { v: 5 as const, label: 'C', title: 'Classic' },
-                      { v: 4 as const, label: 'W', title: 'Wild' },
-                      { v: 7 as const, label: 'AG', title: 'App Store Guided' },
+                      { v: 4 as const, label: 'Social Media', title: 'Social Media' },
+                      { v: 7 as const, label: 'App Store Preview', title: 'App Store Preview' },
                     ]).map(({ v, label, title }) => (
                       <button
                         key={v}
                         onClick={() => setGenerateVersion(v)}
                         title={title}
-                        className={`w-7 h-7 rounded-full text-[10px] font-bold transition-colors ${
+                        className={`px-2.5 h-7 rounded-full text-[10px] font-bold transition-colors whitespace-nowrap ${
                           generateVersion === v
                             ? 'bg-white dark:bg-neutral-700 text-slate-900 dark:text-white shadow-sm'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300'

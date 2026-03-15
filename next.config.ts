@@ -34,13 +34,27 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' data: blob: https://*.convex.cloud wss://*.convex.cloud https://generativelanguage.googleapis.com",
+              "connect-src 'self' data: blob: https://*.convex.cloud wss://*.convex.cloud https://generativelanguage.googleapis.com https://staticimgly.com",
               "frame-ancestors 'none'",
             ].join("; "),
+          },
+        ],
+      },
+      // Cross-origin isolation for @imgly/background-removal (SharedArrayBuffer / WASM)
+      {
+        source: "/design",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "credentialless",
           },
         ],
       },

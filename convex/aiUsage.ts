@@ -5,9 +5,10 @@ import { auth } from "./auth";
 
 // ── Model pricing (per 1M tokens, paid tier, prompts <= 200k) ──
 const MODEL_COSTS: Record<string, { inputPer1M: number; outputPer1M: number }> = {
-  "gemini-3.1-pro-preview":        { inputPer1M: 2.00, outputPer1M: 12.00 },
-  "gemini-3.1-flash-preview":      { inputPer1M: 0.50, outputPer1M: 3.00 },
-  "gemini-3.1-flash-lite-preview": { inputPer1M: 0.25, outputPer1M: 1.50 },
+  "gemini-3.1-pro-preview":            { inputPer1M: 2.00, outputPer1M: 12.00 },
+  "gemini-3.1-flash-preview":          { inputPer1M: 0.50, outputPer1M: 3.00 },
+  "gemini-3.1-flash-lite-preview":     { inputPer1M: 0.25, outputPer1M: 1.50 },
+  "gemini-3.1-flash-image-preview":    { inputPer1M: 0.50, outputPer1M: 60.00 },
 };
 
 export function estimateCost(model: string, promptTokens: number, completionTokens: number): number {
@@ -23,7 +24,8 @@ const categoryValidator = v.union(
   v.literal("crawl"),
   v.literal("classification"),
   v.literal("product_extraction"),
-  v.literal("blog_generation")
+  v.literal("blog_generation"),
+  v.literal("background_removal")
 );
 
 // Helper to find user's usable subscription

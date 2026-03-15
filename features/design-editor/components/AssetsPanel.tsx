@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Upload, Image as ImageIcon, X, Check, Loader2, RefreshCw } from "lucide-react";
+import { Upload, Image as ImageIcon, X, Check, Loader2, RefreshCw, Eraser } from "lucide-react";
 import { useLocale } from "@/lib/i18n/context";
 
 const ASSET_TYPES = [
@@ -38,6 +38,8 @@ interface AssetsPanelProps {
   onAssetUpload: () => void;
   onRemoveAsset: (id: string) => void;
   onRetryAnalysis: (asset: AssetRecord) => void;
+  onRemoveBackground: (asset: AssetRecord) => void;
+  removingBgAssetIds?: Set<string>;
 }
 
 export default function AssetsPanel({
@@ -55,6 +57,8 @@ export default function AssetsPanel({
   onAssetUpload,
   onRemoveAsset,
   onRetryAnalysis,
+  onRemoveBackground,
+  removingBgAssetIds,
 }: AssetsPanelProps) {
   const { t } = useLocale();
 
@@ -152,10 +156,11 @@ export default function AssetsPanel({
         </div>
       )}
 
-      {/* Asset List grouped by type */}
-      {assets && assets.length > 0 ? (
+      {/* Asset List grouped by type (active only — archived hidden from sidebar) */}
+      {assets && assets.filter((a: AssetRecord) => !a.archived).length > 0 ? (
         (() => {
-          const grouped = assets.reduce((acc: Record<string, typeof assets>, asset: AssetRecord) => {
+          const activeAssets = assets.filter((a: AssetRecord) => !a.archived);
+          const grouped = activeAssets.reduce((acc: Record<string, typeof assets>, asset: AssetRecord) => {
             const type = asset.type;
             if (!acc[type]) acc[type] = [];
             acc[type].push(asset);
@@ -197,12 +202,27 @@ export default function AssetsPanel({
                         <RefreshCw size={10} className="text-white" />
                       </button>
                     )}
-                    <button
-                      onClick={() => onRemoveAsset(asset._id)}
-                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={10} />
-                    </button>
+                    <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {removingBgAssetIds?.has(asset._id) ? (
+                        <div className="w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center">
+                          <Loader2 size={10} className="animate-spin" />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => onRemoveBackground(asset)}
+                          className="w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors"
+                          title="Remove background"
+                        >
+                          <Eraser size={10} />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onRemoveAsset(asset._id)}
+                        className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <p className="text-[9px] text-white truncate font-medium">{asset.description || asset.fileName}</p>
                     </div>
@@ -212,7 +232,7 @@ export default function AssetsPanel({
             </div>
           ));
         })()
-      ) : assets && assets.length === 0 ? (
+      ) : assets && assets.filter((a: AssetRecord) => !a.archived).length === 0 ? (
         <div className="text-center py-6">
           <ImageIcon className="w-8 h-8 text-gray-300 dark:text-neutral-600 mx-auto mb-2" />
           <p className="text-xs text-gray-400 dark:text-neutral-500">{t("assets.noAssets")}</p>

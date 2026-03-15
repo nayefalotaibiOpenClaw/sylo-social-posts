@@ -210,6 +210,19 @@ export const remove = mutation({
   },
 });
 
+// Archive/unarchive an asset — archived assets are excluded from AI generation context
+export const archive = mutation({
+  args: { id: v.id("assets"), archived: v.boolean() },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const asset = await ctx.db.get(args.id);
+    if (!asset) throw new Error("Asset not found");
+    if (asset.userId !== userId) throw new Error("Not authorized");
+    await ctx.db.patch(args.id, { archived: args.archived });
+  },
+});
+
 // Reset analysis status so it can be retried — internal only
 export const resetAnalysis = internalMutation({
   args: { id: v.id("assets") },
