@@ -101,14 +101,22 @@ import { useTheme } from './ThemeContext';
 // Any icon from 'lucide-react'
 \`\`\`
 
-## THEME COLORS
+## THEME COLORS — HOW TO APPLY THEM
 \`\`\`tsx
 const t = useTheme();
 // t.primary, t.primaryDark, t.primaryLight
 // t.accent, t.accentLight, t.accentLime, t.accentGold, t.accentOrange
 // t.border, t.font (font FAMILY only, NOT a color)
-// ⚠ ALL colors from t.* only. NEVER hardcode hex. NEVER Tailwind color classes.
 \`\`\`
+
+⚠ CRITICAL: Apply ALL colors via the \`style={{ }}\` prop. NEVER via className.
+**WRONG:** \`className="text-primaryDark"\` or \`className="bg-accent"\` — these are NOT real Tailwind classes and will render invisible!
+**RIGHT:** \`style={{ color: t.primaryDark }}\` or \`style={{ backgroundColor: t.accent }}\`
+**WRONG:** \`className="text-white"\` or \`className="bg-black"\` — hardcoded Tailwind colors
+**RIGHT:** \`style={{ color: t.primaryLight }}\` or \`style={{ backgroundColor: t.primaryDark }}\`
+
+You CAN use Tailwind for layout/sizing: \`className="text-3xl font-bold p-6 rounded-xl flex"\`
+You MUST NOT use Tailwind for colors: no \`text-*\`, \`bg-*\`, \`border-*\` color classes.
 
 ## RESPONSIVE
 \`\`\`tsx
@@ -128,7 +136,7 @@ const isWide = ratio === '16:9' || ratio === '4:3';
 1. **NO EXTERNAL IMAGES.** No <img> with URLs. No <MockupFrame>. CSS + text only.
 2. **ORIGINAL COPY.** Every headline written for THIS brand. No generic text. No repeats across posts.
 3. \`const t = useTheme()\` and \`const ratio = useAspectRatio()\` as FIRST lines
-4. ALL colors from t.* — NEVER hardcode hex
+4. ALL colors via style={{ color: t.*, backgroundColor: t.* }} — NEVER className for colors
 5. ALL visible text in \`<EditableText>\`
 6. Content sections in \`<DraggableWrapper id="unique-id">\`
 7. Export: \`export default function PostName() { ... }\`
